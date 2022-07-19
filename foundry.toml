@@ -1,6 +1,6 @@
-[default]
+[profile.default]
 src = 'src'
 out = 'out'
-libs = ['lib']
+libs = ['lib', 'node_modules', 'src']
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
