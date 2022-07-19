@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@openzeppelin/contracts": "^4.7.0"
+    "@openzeppelin/contracts": "^4.7.0",
+    "solmate": "^6.5.0"
   }
 }
