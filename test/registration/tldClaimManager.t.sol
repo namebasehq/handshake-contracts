@@ -13,11 +13,7 @@ contract TldClaimManagerTests is Test {
 
     ITldClaimManager internal manager;
 
-    bytes32 validMerkleRoot = 0x8440f47b2d349b35bb84843dc23a3768bdfe592fc11e977c48ee59c412d33eec;
 
-    bytes32[15] validProofs;
-
-    address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
 
     function setUp() public {
@@ -26,50 +22,152 @@ contract TldClaimManagerTests is Test {
     }
 
      function testClaimWithInvalidProofs() public {
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
+        bytes32 namehash = bytes32(uint256(0x01));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        //validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+        validProofs[2] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+
+        //Act
+        manager.setMerkleRoot(validMerkleRoot);        
+        bool result = manager.canClaim(validWallet, namehash, validProofs);
+        
+        //Assert
+        assertFalse(result);
+     }
+
+     function testClaimWithInvalidWallet() public {
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address invalidWallet = address(0x69420);
+
+        bytes32 namehash = bytes32(uint256(0x01));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
+        //Act
+        manager.setMerkleRoot(validMerkleRoot);        
+        bool result = manager.canClaim(invalidWallet, namehash, validProofs);
+        
+        //Assert
+        assertFalse(result);
      }
 
      function testClaimWithCorrectProofs() public {
-        manager.setMerkleRoot(validMerkleRoot);
-
-        bytes32[] memory proofs = new bytes32[](15);
         
-        proofs[0] = 0x86c7361e7fd927669e6adeba95b3c1ba71686a32bbc8a5657f7a603c1435d53f;
-        proofs[1] = 0x87d54213e3d7886d98391596a0f8dc12d1a527765da8f8c1f00671a62d191ecf;
-        proofs[2] = 0x40166748979c1f5fd475ac41ccf0667e2420b67a6c6996a0db677e20bc85ca7b;
-        proofs[3] = 0x10abc2e16a0671db44d4cb6c250f1529962012721032bb12b511d7b0407701a1;
-        proofs[4] = 0xdc098917e2b7e26911d5e392ec467930c081802ef76d2f43a3cb0994af838521;
-        proofs[5] = 0x6ee35263058a391e53edb586d9184df8dbc8fa4fe0bbb7e79ac28a04c0430ef8;
-        proofs[6] = 0x60d2b22a2f07489ef9e73abd9da0128ae4de718ee814da5691b589b6dd60d172;
-        proofs[7] = 0xf14ebecb770adb565462e22c1329155558bbefa475eaf8c3a5ce741e1513660c;
-        proofs[8] = 0x231ea7c9e4869ffcebe52c5b2bb6091116e1c722b02c7476934313f2b402c0ad;
-        proofs[9] = 0x331dbd144832ef10d157bc12538affc1f1c55efe395cbb8494c9706e1c66bad3;
-        proofs[10] = 0x5bda95d9377a239fb189a01cac622ab905da5baebe8e435565ccad4455cd02ce;
-        proofs[11] = 0xcfae86557f21d841839fec4a090bb731e99c8bec81f5696b0df5fe2530023554;
-        proofs[12] = 0x2395509f7b8ae8a244797ff00eb3e3d3764892a18de9bd5740fe4db53cb7acb6;
-        proofs[13] = 0xdb69769459d33ac14d09ed9cb840fe27b3ff704e337ae69663e003cfb134f54b;
-        proofs[14] = 0xa895f65e130c88b9c7abd18b1721f43e39f27bb08a7858dca7759722763c239b;
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
-        bool result = manager.canClaim(validWallet, 0x0, proofs);
+        bytes32 namehash = bytes32(uint256(0x01));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
+        //Act
+        manager.setMerkleRoot(validMerkleRoot);        
+        bool result = manager.canClaim(validWallet, namehash, validProofs);
+        
+        //Assert
+        assertTrue(result);
      }
 
      function testClaimWithTldThatDoesNotExist() public {
+
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
+
+        bytes32 namehash = bytes32(uint256(0x02));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
+        //Act
+        manager.setMerkleRoot(validMerkleRoot);        
+        bool result = manager.canClaim(validWallet, namehash, validProofs);
+        
+        //Assert
+        assertFalse(result);
 
      }
 
      function testClaimWithMerkleRootNotSet() public {
 
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
+
+        bytes32 namehash = bytes32(uint256(0x01));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
+        //Act
+        // Don't set this on purpose.. Test should fail. manager.setMerkleRoot(validMerkleRoot);        
+        bool result = manager.canClaim(validWallet, namehash, validProofs);
+        assertFalse(result);
      }
 
      function testOwnerCanUpdateMerkleRoot() public {
+        bytes32 validMerkleRoot = bytes32(uint256(0x1337));
+        manager.setMerkleRoot(validMerkleRoot);
 
+        assertEq(manager.MerkleRoot(), validMerkleRoot);
      }
 
      function testUserCannotUpdateMerkleRoot() public {
-
+        bytes32 validMerkleRoot = bytes32(uint256(0x1337));
+        vm.startPrank(address(0x6666));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.setMerkleRoot(validMerkleRoot);
+        vm.stopPrank();
      }
 
      function testClaimWhenTldAlreadyClaimed() public {
+        //Assign
+        //we can use utils/merkle.js to generate proofs and merkle root for testing.
+        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
+        bytes32 namehash = bytes32(uint256(0x01));
+        bytes32[] memory validProofs = new bytes32[](3);
+        
+        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
+        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
+        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
+        //Act
+        manager.setMerkleRoot(validMerkleRoot); 
+        bool resultBefore = manager.canClaim(validWallet, namehash, validProofs);
+        manager.claimTld(validWallet, namehash, validProofs);    
+        bool resultAfter = manager.canClaim(validWallet, namehash, validProofs);
+        
+        //Assert
+        assertTrue(resultBefore);
+        assertFalse(resultAfter);
+
+        vm.expectRevert("not eligible to claim");
+        manager.claimTld(validWallet, namehash, validProofs); 
      }
 }

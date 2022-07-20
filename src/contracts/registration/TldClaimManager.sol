@@ -21,16 +21,17 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
 
     function canClaim(address _addr, bytes32 _namehash, bytes32[] memory _proofs) public view returns (bool) {
-
+        return MerkleProof.verify(_proofs, MerkleRoot, keccak256(abi.encodePacked(_addr, _namehash)))
+            && !IsNodeRegistered[_namehash];
     }
 
     function setMerkleRoot(bytes32 _root) external onlyOwner {
         MerkleRoot = _root;
     }
 
-    function _claimTld(address _addr, bytes32 _namehash, bytes32[] memory _proofs) private {
+    function claimTld(address _addr, bytes32 _namehash, bytes32[] memory _proofs) external {
         require(canClaim(_addr, _namehash, _proofs), "not eligible to claim");
-        require(MerkleProof.verify(_proofs, MerkleRoot, keccak256(abi.encodePacked(_addr))), "not authorised");
+        IsNodeRegistered[_namehash] = true;
     }
 
 
