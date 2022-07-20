@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
+import "src/contracts/assets/TldNft.sol";
+
 pragma solidity ^0.8.15;
 
 interface ITldClaimManager {
@@ -6,4 +8,5 @@ interface ITldClaimManager {
     function claimTld(address _addr, bytes32 _namehash, bytes32[] memory _proofs) external;
     function setMerkleRoot(bytes32 _root) external;
     function MerkleRoot() external returns (bytes32);
+    function setTldNftContract(TldNft _tld) external;
 }

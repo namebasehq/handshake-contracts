@@ -5,5 +5,10 @@ import "interfaces/data/IMetadataService.sol";
 
 contract NftMetadataService is IMetadataService {
 
+    string private baseUri = "";
+
+function tokenURI(bytes32) external view returns (string memory){
+    return baseUri;
+}
 
 }

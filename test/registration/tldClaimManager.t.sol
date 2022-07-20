@@ -113,7 +113,6 @@ contract TldClaimManagerTests is Test {
 
         //Assign
         //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
         address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
         bytes32 namehash = bytes32(uint256(0x01));
@@ -124,7 +123,7 @@ contract TldClaimManagerTests is Test {
         validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
 
         //Act
-        // Don't set this on purpose.. Test should fail. manager.setMerkleRoot(validMerkleRoot);        
+        // don't set this on purpose  >> manager.setMerkleRoot(validMerkleRoot);        
         bool result = manager.canClaim(validWallet, namehash, validProofs);
         assertFalse(result);
      }
@@ -160,13 +159,18 @@ contract TldClaimManagerTests is Test {
         //Act
         manager.setMerkleRoot(validMerkleRoot); 
         bool resultBefore = manager.canClaim(validWallet, namehash, validProofs);
+
+        TldNft tld = new TldNft();
+        tld.setTldClaimManager(manager);
+        manager.setTldNftContract(tld);
+
         manager.claimTld(validWallet, namehash, validProofs);    
         bool resultAfter = manager.canClaim(validWallet, namehash, validProofs);
         
         //Assert
         assertTrue(resultBefore);
         assertFalse(resultAfter);
-
+    
         vm.expectRevert("not eligible to claim");
         manager.claimTld(validWallet, namehash, validProofs); 
      }
