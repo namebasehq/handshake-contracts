@@ -4,10 +4,14 @@ pragma solidity ^0.8.0;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/assets/TldNft.sol";
+import "interfaces/registration/ITldClaimManager.sol";
+import "interfaces/data/IMetadataService.sol";
+import "interfaces/registration/ISldPriceStrategy.sol";
 
 
 contract TldClaimManagerTests is Test {
 
+    using stdStorage for StdStorage;
     TldNft Tld;
 
     function setUp() public {
@@ -18,8 +22,56 @@ contract TldClaimManagerTests is Test {
     function testMintFromUnauthorisedAddress() public {
 
         vm.expectRevert("not authorised");
-        Tld.mint(address(this), bytes32(uint256(0x1337)));
+        Tld.mint(address(0x1339), bytes32(uint256(0x1337)));
        
+    }
+
+    function testMintFromAuthoriseAddress() public {
+        //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("ClaimManager()")
+                .checked_write(address(this));
+       
+        Tld.mint(address(0x1339), bytes32(uint256(0x1337)));       
+    }
+
+    function testUpdateMetadataFromOwner() public {
+        Tld.setMetadataContract(IMetadataService(address(0x1337)));
+        assertEq(address(0x1337), address(Tld.Metadata()));
+    }
+
+
+    function testUpdateMetadataFromNoneOwner() public {
+        vm.startPrank(address(0x6666));
+        vm.expectRevert("Ownable: caller is not the owner");       
+        Tld.setMetadataContract(IMetadataService(address(0x1337)));
+        vm.stopPrank();
+    }
+
+    //not working currently. Need to check if accessing internal storage is 
+    //supported.. doesn't look like it currently
+    function testUpdateDefaultSldPriceStrategyFromTldOwner() public {
+
+        uint256 tldId = 666;
+        address tldOwnerAddr = address(0x6942);
+        address sldPriceStrategy = address(0x133737);
+        //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("_ownerOf(uint256)")
+                .with_key(tldId)
+                .checked_write(tldOwnerAddr);
+
+        Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
+        assertEq(address(Tld.SldDefaultPriceStrategy(bytes32(tldId))), address(Tld.SldDefaultPriceStrategy(bytes32(tldId))));
+
+    }
+
+    function testUpdateDefaultSldPriceStrategyFromNotTldOwner() public {
+
+    }
+
+    function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {
+
     }
 
 }

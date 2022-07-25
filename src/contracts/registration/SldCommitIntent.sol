@@ -21,9 +21,9 @@ contract SldCommitIntent is ICommitIntent, Ownable {
 
     }
 
-    function commitIntent(bytes32 _namehash) external {
+    function commitIntent(bytes32 _namehash) public {
         require(NodeIntentBlockNumber[_namehash].blockNumber < block.number, "already been committed");
-        CommitData memory data = CommitData(uint32(block.number + MaxBlockWaitForCommit), msg.sender);
+        CommitData memory data = CommitData(uint96(block.number + MaxBlockWaitForCommit), msg.sender);
          NodeIntentBlockNumber[_namehash] = data;
     }
 
@@ -34,5 +34,16 @@ contract SldCommitIntent is ICommitIntent, Ownable {
 
     function updateMaxBlockWaitForCommit(uint256 _maxBlockWait) external onlyOwner {
         MaxBlockWaitForCommit = _maxBlockWait;
+    }
+
+    function multiCommitIntent(bytes32[] calldata _namehashes) external {
+        uint256 hashLength = _namehashes.length;
+
+        for(uint256 i; i < hashLength;){
+
+            commitIntent(_namehashes[i]);
+
+            unchecked { ++i; }
+        }
     }
 }

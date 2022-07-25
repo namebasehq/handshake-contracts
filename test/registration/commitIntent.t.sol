@@ -82,8 +82,11 @@ contract SldCommitIntentTests is Test {
 
         //Act
         vm.roll(startBlock);
-        intent.commitIntent(node);
-        intent.commitIntent(node2);
+        bytes32[] memory arr = new bytes32[](2);
+        arr[0] = node;
+        arr[1] = node2;
+        intent.multiCommitIntent(arr);
+
         vm.roll(startBlock + maxBlocks - 1);
 
         //Assert

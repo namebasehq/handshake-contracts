@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 
-import "solmate/src/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
-import "interfaces/data/IMetadataService.sol";
+
+import "src/contracts/assets/HandshakeERC721.sol";
 import "interfaces/registration/ITldClaimManager.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "interfaces/registration/ISldPriceStrategy.sol";
+
 
 pragma solidity ^0.8.15;
 
-contract TldNft is ERC721, Ownable {
+contract TldNft is HandshakeERC721 {
 
-        IMetadataService public Metadata;
-        ITldClaimManager public ClaimManager;
 
-    constructor() ERC721("HTLD", "Handshake Top Level Domain"){
+    ITldClaimManager public ClaimManager;
+
+    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
+
+    constructor() HandshakeERC721("HTLD", "Handshake Top Level Domain"){
 
     }
 
@@ -25,9 +28,16 @@ contract TldNft is ERC721, Ownable {
         _safeMint(_addr, uint256(_namehash));
     }
 
-    function tokenURI(uint256 _id) public view override returns (string memory){
-        require(false, "not implemented");
-        return Metadata.tokenURI(bytes32(_id));
+    modifier tldOwner(bytes32 _namehash) {
+        require(msg.sender == ownerOf(uint256(_namehash)), "Caller is not owner of TLD");
+        _;
     }
+
+    function updateSldPricingStrategy(bytes32 _namehash, ISldPriceStrategy _strategy) public tldOwner(_namehash) {
+        SldDefaultPriceStrategy[_namehash] = _strategy;
+    }
+
+
+
 
 }
