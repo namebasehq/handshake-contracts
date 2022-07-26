@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 pragma solidity ^0.8.15;
 
+//this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {
 
     IMetadataService public Metadata;

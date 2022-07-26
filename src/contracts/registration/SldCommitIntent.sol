@@ -21,14 +21,15 @@ contract SldCommitIntent is ICommitIntent, Ownable {
 
     }
 
-    function commitIntent(bytes32 _namehash) public {
-        require(NodeIntentBlockNumber[_namehash].blockNumber < block.number, "already been committed");
+    function commitIntent(bytes32 _combinedHash) public {
+        require(NodeIntentBlockNumber[_combinedHash].blockNumber < block.number, "already been committed");
         CommitData memory data = CommitData(uint96(block.number + MaxBlockWaitForCommit), msg.sender);
-         NodeIntentBlockNumber[_namehash] = data;
+         NodeIntentBlockNumber[_combinedHash] = data;
     }
 
-    function allowedCommit(bytes32 _namehash, address _addr) external view returns (bool){
-        CommitData memory data = NodeIntentBlockNumber[_namehash];
+    function allowedCommit(bytes32 _namehash, bytes32 _secret, address _addr) external view returns (bool){
+        bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _addr, _secret));
+        CommitData memory data = NodeIntentBlockNumber[combinedHash];
         return data.blockNumber > block.number && data.user == _addr;
     }
 
@@ -36,13 +37,16 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         MaxBlockWaitForCommit = _maxBlockWait;
     }
 
-    function multiCommitIntent(bytes32[] calldata _namehashes) external {
-        uint256 hashLength = _namehashes.length;
+    function multiCommitIntent(bytes32[] calldata _combinedHashes) external {
+        
+        //cache length of array to reduce reads
+        uint256 hashLength = _combinedHashes.length;
 
         for(uint256 i; i < hashLength;){
 
-            commitIntent(_namehashes[i]);
-
+            commitIntent(_combinedHashes[i]);
+            
+            //most gas efficient way of looping
             unchecked { ++i; }
         }
     }

@@ -24,6 +24,7 @@ contract SldCommitIntentTests is Test {
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        bytes32 secret = bytes32(uint256(42424242));
 
         //Act
         vm.roll(startBlock);
@@ -31,7 +32,7 @@ contract SldCommitIntentTests is Test {
         vm.roll(startBlock + maxBlocks);
 
         //Assert
-        bool allowed = intent.allowedCommit(node, address(this));
+        bool allowed = intent.allowedCommit(node, secret, address(this));
         assertFalse(allowed);
     }
 
@@ -40,6 +41,8 @@ contract SldCommitIntentTests is Test {
         
         //Arrange
         bytes32 node = bytes32(uint256(667));
+        bytes32 secret = bytes32(uint256(2432423));
+
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
@@ -49,7 +52,7 @@ contract SldCommitIntentTests is Test {
         vm.roll(startBlock + maxBlocks - 1);
 
         //Assert
-        bool allowed = intent.allowedCommit(node, address(this));
+        bool allowed = intent.allowedCommit(node, secret, address(this));
         assertTrue(allowed);
     }
 
@@ -59,6 +62,7 @@ contract SldCommitIntentTests is Test {
         bytes32 node = bytes32(uint256(667));
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        bytes32 secret = bytes32(uint256(420420));
 
         //Act
         vm.roll(startBlock);
@@ -67,7 +71,7 @@ contract SldCommitIntentTests is Test {
 
         //Assert
 
-        bool allowed = intent.allowedCommit(node, address(0x1337));
+        bool allowed = intent.allowedCommit(node, secret, address(0x1337));
 
         assertFalse(allowed);
     }
@@ -77,6 +81,9 @@ contract SldCommitIntentTests is Test {
         //Arrange
         bytes32 node = bytes32(uint256(777));
         bytes32 node2 = bytes32(uint256(888));
+
+        bytes32 secret = bytes32(uint256(22222));
+
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
@@ -90,8 +97,8 @@ contract SldCommitIntentTests is Test {
         vm.roll(startBlock + maxBlocks - 1);
 
         //Assert
-        bool allowed = intent.allowedCommit(node, address(this));
-        bool allowed2 = intent.allowedCommit(node2, address(this));
+        bool allowed = intent.allowedCommit(node, secret, address(this));
+        bool allowed2 = intent.allowedCommit(node2, secret, address(this));
         assertTrue(allowed && allowed2);
     }
 
@@ -115,6 +122,8 @@ contract SldCommitIntentTests is Test {
     function testCommitIntentWhenExpiredCommitExists() public {
         //Arrange
         bytes32 node = bytes32(uint256(667));
+        bytes32 secret = bytes32(uint256(22222));
+
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
@@ -123,14 +132,14 @@ contract SldCommitIntentTests is Test {
         intent.commitIntent(node);
         
         vm.roll(startBlock + maxBlocks + 1);
-        bool allowed = intent.allowedCommit(node, address(this));
+        bool allowed = intent.allowedCommit(node, secret, address(this));
 
         //Assert
         assertFalse(allowed);
         address user = address(0x08);
         vm.prank(user);
         intent.commitIntent(node);
-        bool allowed2 = intent.allowedCommit(node, user);
+        bool allowed2 = intent.allowedCommit(node, secret, user);
         assertTrue(allowed2);       
     }
 
