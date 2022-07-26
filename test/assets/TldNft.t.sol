@@ -55,23 +55,61 @@ contract TldClaimManagerTests is Test {
         uint256 tldId = 666;
         address tldOwnerAddr = address(0x6942);
         address sldPriceStrategy = address(0x133737);
-        //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld))
-                .sig("_ownerOf(uint256)")
-                .with_key(tldId)
-                .checked_write(tldOwnerAddr);
 
+       //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("ClaimManager()")
+                .checked_write(address(this));
+       
+        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+
+        vm.startPrank(tldOwnerAddr);
         Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
         assertEq(address(Tld.SldDefaultPriceStrategy(bytes32(tldId))), address(Tld.SldDefaultPriceStrategy(bytes32(tldId))));
+        vm.stopPrank();
 
     }
 
     function testUpdateDefaultSldPriceStrategyFromNotTldOwner() public {
 
+        uint256 tldId = 666;
+        address tldOwnerAddr = address(0x6942);
+        address notTldOwnerAddr = address(0x004204);
+        address sldPriceStrategy = address(0x133737);
+
+       //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("ClaimManager()")
+                .checked_write(address(this));
+       
+        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+
+        vm.startPrank(notTldOwnerAddr);
+        vm.expectRevert("Caller is not owner of TLD");
+        Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
+        assertEq(address(Tld.SldDefaultPriceStrategy(bytes32(tldId))), address(Tld.SldDefaultPriceStrategy(bytes32(tldId))));
+        vm.stopPrank();
     }
 
     function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {
+        uint256 tldId = 666;
+        uint256 notTldId = 4444;
+        address tldOwnerAddr = address(0x6942);
+        address notTldOwnerAddr = address(0x004204);
+        address sldPriceStrategy = address(0x133737);
 
+       //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("ClaimManager()")
+                .checked_write(address(this));
+       
+        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+
+        vm.startPrank(tldOwnerAddr);
+        vm.expectRevert("NOT_MINTED");
+        Tld.updateSldPricingStrategy(bytes32(notTldId), ISldPriceStrategy(sldPriceStrategy));
+        assertEq(address(Tld.SldDefaultPriceStrategy(bytes32(tldId))), address(Tld.SldDefaultPriceStrategy(bytes32(tldId))));
+        vm.stopPrank();
     }
 
 }
