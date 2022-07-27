@@ -28,7 +28,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     }
 
     function allowedCommit(bytes32 _namehash, bytes32 _secret, address _addr) external view returns (bool){
-        bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _addr, _secret));
+        bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
         CommitData memory data = NodeIntentBlockNumber[combinedHash];
         return data.blockNumber > block.number && data.user == _addr;
     }

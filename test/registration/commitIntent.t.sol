@@ -47,8 +47,9 @@ contract SldCommitIntentTests is Test {
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
         //Act
+        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, address(this)));
         vm.roll(startBlock);
-        intent.commitIntent(node);
+        intent.commitIntent(combinedHash);
         vm.roll(startBlock + maxBlocks - 1);
 
         //Assert
@@ -65,6 +66,7 @@ contract SldCommitIntentTests is Test {
         bytes32 secret = bytes32(uint256(420420));
 
         //Act
+        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, address(this)));
         vm.roll(startBlock);
         intent.commitIntent(node);
         vm.roll(startBlock + maxBlocks - 1);
@@ -83,6 +85,7 @@ contract SldCommitIntentTests is Test {
         bytes32 node2 = bytes32(uint256(888));
 
         bytes32 secret = bytes32(uint256(22222));
+        bytes32 secret2 = bytes32(uint256(1212121212));
 
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
@@ -90,15 +93,15 @@ contract SldCommitIntentTests is Test {
         //Act
         vm.roll(startBlock);
         bytes32[] memory arr = new bytes32[](2);
-        arr[0] = node;
-        arr[1] = node2;
+        arr[0] = keccak256(abi.encodePacked(node, secret, address(this)));
+        arr[1] = keccak256(abi.encodePacked(node2, secret2, address(this)));
         intent.multiCommitIntent(arr);
 
         vm.roll(startBlock + maxBlocks - 1);
 
         //Assert
         bool allowed = intent.allowedCommit(node, secret, address(this));
-        bool allowed2 = intent.allowedCommit(node2, secret, address(this));
+        bool allowed2 = intent.allowedCommit(node2, secret2, address(this));
         assertTrue(allowed && allowed2);
     }
 
@@ -127,18 +130,23 @@ contract SldCommitIntentTests is Test {
         uint256 startBlock = 10;        
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
+        address user = address(0x08);
+
+        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, address(this)));
+        bytes32 combinedHash2 = keccak256(abi.encodePacked(node, secret, user));
+
         //Act
         vm.roll(startBlock);
-        intent.commitIntent(node);
+        intent.commitIntent(combinedHash);
         
         vm.roll(startBlock + maxBlocks + 1);
         bool allowed = intent.allowedCommit(node, secret, address(this));
 
         //Assert
         assertFalse(allowed);
-        address user = address(0x08);
+        
         vm.prank(user);
-        intent.commitIntent(node);
+        intent.commitIntent(combinedHash2);
         bool allowed2 = intent.allowedCommit(node, secret, user);
         assertTrue(allowed2);       
     }
