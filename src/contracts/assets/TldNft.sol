@@ -23,9 +23,11 @@ contract TldNft is HandshakeERC721 {
         ClaimManager = _manager;
     }
 
-    function mint(address _addr, bytes32 _namehash) external {
+    function mint(address _addr, string calldata _domain) external {
+        bytes32 namehash = keccak256(abi.encodePacked(_domain));
         require(address(ClaimManager) == msg.sender, "not authorised");
-        _safeMint(_addr, uint256(_namehash));
+        _safeMint(_addr, uint256(namehash));
+        NamehashToLabelMap[namehash] = _domain;
     }
 
     modifier tldOwner(bytes32 _namehash) {

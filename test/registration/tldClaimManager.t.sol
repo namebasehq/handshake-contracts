@@ -90,7 +90,7 @@ contract TldClaimManagerTests is Test {
 
         //Assign
         //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        bytes32 validMerkleRoot = 0x40d658df0b31d12c2c35fcb2cade7b31b4a38d0d4fe47a524caf9787f48e648b;
         address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
         bytes32 namehash = bytes32(uint256(0x02));
@@ -99,6 +99,7 @@ contract TldClaimManagerTests is Test {
         validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
         validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
         validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
 
         //Act
         manager.setMerkleRoot(validMerkleRoot);        
@@ -121,6 +122,7 @@ contract TldClaimManagerTests is Test {
         validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
         validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
         validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+
 
         //Act
         // don't set this on purpose  >> manager.setMerkleRoot(validMerkleRoot);        
@@ -146,11 +148,15 @@ contract TldClaimManagerTests is Test {
      function testClaimWhenTldAlreadyClaimed() public {
         //Assign
         //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
+        bytes32 validMerkleRoot = 0x40d658df0b31d12c2c35fcb2cade7b31b4a38d0d4fe47a524caf9787f48e648b;
         address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
 
-        bytes32 namehash = bytes32(uint256(0x01));
+        string memory domain = "test";
+        
+        bytes32 namehash = bytes32(keccak256(abi.encodePacked(domain)));
+        uint256 tldId = uint256(namehash);
         bytes32[] memory validProofs = new bytes32[](3);
+        
         
         validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
         validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
@@ -164,7 +170,7 @@ contract TldClaimManagerTests is Test {
         tld.setTldClaimManager(manager);
         manager.setTldNftContract(tld);
 
-        manager.claimTld(validWallet, namehash, validProofs);    
+        manager.claimTld(validWallet, domain, validProofs);    
         bool resultAfter = manager.canClaim(validWallet, namehash, validProofs);
         
         //Assert
@@ -172,6 +178,6 @@ contract TldClaimManagerTests is Test {
         assertFalse(resultAfter);
     
         vm.expectRevert("not eligible to claim");
-        manager.claimTld(validWallet, namehash, validProofs); 
+        manager.claimTld(validWallet, domain, validProofs); 
      }
 }

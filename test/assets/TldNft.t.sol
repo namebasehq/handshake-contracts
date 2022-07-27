@@ -20,19 +20,38 @@ contract TldClaimManagerTests is Test {
 
 
     function testMintFromUnauthorisedAddress() public {
-
+        string memory domain = "test";
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         vm.expectRevert("not authorised");
-        Tld.mint(address(0x1339), bytes32(uint256(0x1337)));
+        Tld.mint(address(0x1339), domain);
        
     }
 
     function testMintFromAuthoriseAddress() public {
+        string memory domain = "test";
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(Tld))
                 .sig("ClaimManager()")
                 .checked_write(address(this));
        
-        Tld.mint(address(0x1339), bytes32(uint256(0x1337)));       
+        Tld.mint(address(0x1339), domain);   
+        assertEq(address(0x1339), Tld.ownerOf(tldId));    
+    }
+
+    function testMintCheckLabelToHashMapUpdated() public {
+        string memory domain = "test";
+        bytes32 namehash = bytes32(keccak256(abi.encodePacked(domain)));
+        uint256 tldId = uint256(namehash);
+        //https://book.getfoundry.sh/reference/forge-std/std-storage
+        stdstore.target(address(Tld))
+                .sig("ClaimManager()")
+                .checked_write(address(this));
+       
+        Tld.mint(address(0x1339), domain);  
+
+        assertEq(domain, Tld.NamehashToLabelMap(namehash) ) ;
+
     }
 
     function testUpdateMetadataFromOwner() public {
@@ -52,7 +71,8 @@ contract TldClaimManagerTests is Test {
     //supported.. doesn't look like it currently
     function testUpdateDefaultSldPriceStrategyFromTldOwner() public {
 
-        uint256 tldId = 666;
+        string memory domain = "test";
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         address tldOwnerAddr = address(0x6942);
         address sldPriceStrategy = address(0x133737);
 
@@ -61,7 +81,7 @@ contract TldClaimManagerTests is Test {
                 .sig("ClaimManager()")
                 .checked_write(address(this));
        
-        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+        Tld.mint(tldOwnerAddr, domain);    
 
         vm.startPrank(tldOwnerAddr);
         Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
@@ -72,7 +92,8 @@ contract TldClaimManagerTests is Test {
 
     function testUpdateDefaultSldPriceStrategyFromNotTldOwner() public {
 
-        uint256 tldId = 666;
+        string memory domain = "test";
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
         address sldPriceStrategy = address(0x133737);
@@ -82,7 +103,7 @@ contract TldClaimManagerTests is Test {
                 .sig("ClaimManager()")
                 .checked_write(address(this));
        
-        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+        Tld.mint(tldOwnerAddr, domain);    
 
         vm.startPrank(notTldOwnerAddr);
         vm.expectRevert("Caller is not owner of TLD");
@@ -92,7 +113,9 @@ contract TldClaimManagerTests is Test {
     }
 
     function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {
-        uint256 tldId = 666;
+        
+        string memory domain = "test";
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         uint256 notTldId = 4444;
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
@@ -103,7 +126,7 @@ contract TldClaimManagerTests is Test {
                 .sig("ClaimManager()")
                 .checked_write(address(this));
        
-        Tld.mint(tldOwnerAddr, bytes32(tldId));    
+        Tld.mint(tldOwnerAddr, domain);    
 
         vm.startPrank(tldOwnerAddr);
         vm.expectRevert("NOT_MINTED");

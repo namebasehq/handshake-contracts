@@ -37,10 +37,11 @@ contract TldClaimManager is Ownable, ITldClaimManager {
        TldNftContract = _tld;
     }
 
-    function claimTld(address _addr, bytes32 _namehash, bytes32[] memory _proofs) external {
-        require(canClaim(_addr, _namehash, _proofs), "not eligible to claim");
-        IsNodeRegistered[_namehash] = true;
-        TldNftContract.mint(_addr, _namehash);
+    function claimTld(address _addr, string calldata _domain, bytes32[] memory _proofs) external {
+        bytes32 namehash = keccak256(abi.encodePacked(_domain));
+        require(canClaim(_addr, namehash, _proofs), "not eligible to claim");
+        IsNodeRegistered[namehash] = true;
+        TldNftContract.mint(_addr, _domain);
     }
 
 }

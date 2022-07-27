@@ -10,6 +10,10 @@ pragma solidity ^0.8.15;
 //this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {
 
+    
+    mapping(bytes32 => string) public NamehashToLabelMap;
+   
+
     IMetadataService public Metadata;
 
         constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name){
@@ -23,6 +27,13 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
 
     function setMetadataContract(IMetadataService _metadata) external onlyOwner {
         Metadata = _metadata;
+    }
+
+    function getNamehash(string calldata _label, bytes32 _parentHash) internal pure returns (bytes32){
+        bytes32 encoded_label = keccak256(abi.encodePacked(_label));
+        bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
+        
+        return big_hash;
     }
 
 }
