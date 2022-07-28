@@ -25,7 +25,7 @@ contract SldNft is HandshakeERC721 {
         CommitIntent.transferOwnership(msg.sender);       
     }
 
-    function purchaseSld(string calldata _label, bytes32 _secret, uint256 _registrationLength, uint256 _parentId) public {
+    function purchaseSld(string calldata _label, bytes32 _secret, uint256 _registrationLength, bytes32 _parentNamehash) public {
         bytes32 namehash;
         uint256 id;
         require(CommitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
