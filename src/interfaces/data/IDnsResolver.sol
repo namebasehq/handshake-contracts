@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 interface IDnsResolver {
 
     //just took this from impervious for now..
-    //need to understand what we do with dnssec public key
 
     event DnsRecordAdded(bytes32 indexed _namehash, bytes _name, uint16 _resource, bytes _record);
     event DnsRecordChanged(bytes32 indexed _namehash, bytes _name, uint16 _resource, bytes _record);
@@ -19,5 +18,8 @@ interface IDnsResolver {
      * @return _ the DNS record in wire format if present, otherwise empty
      */
     function dnsRecord(bytes32 _namehash, bytes32 _name, uint16 _resource) external view returns (bytes memory);
+
+    //need to understand what we do with dnssec public key
+    function publickey(bytes32 _namehash) external view returns(bytes32 x, bytes32 y);
 
 }

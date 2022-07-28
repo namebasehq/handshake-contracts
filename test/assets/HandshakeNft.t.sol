@@ -11,7 +11,7 @@ contract TestNft is HandshakeERC721 {
 
     }
 
-    function testAuthorised(uint256 _id) public isApprovedOrOwner(_id) {
+    function checkAuthorised(uint256 _id) public isApprovedOrOwner(_id) {
 
         //only need an empty method here to test the modifier.
     }
@@ -36,7 +36,7 @@ contract HandshakeNftTests is Test {
         uint256 id = 11235813;
 
         nft.mint(address(this), id);
-        nft.testAuthorised(id);
+        nft.checkAuthorised(id);
     }
 
     function testAuthorisedForAllAddressIsAuthorised() public {
@@ -48,7 +48,7 @@ contract HandshakeNftTests is Test {
         nft.setApprovalForAll(approved_address, true);
 
         vm.startPrank(approved_address);
-        nft.testAuthorised(id);
+        nft.checkAuthorised(id);
 
         vm.stopPrank();
     }
@@ -64,7 +64,7 @@ contract HandshakeNftTests is Test {
 
         vm.startPrank(approved_address);
         vm.expectRevert("Not approved or owner");
-        nft.testAuthorised(id);
+        nft.checkAuthorised(id);
 
         vm.stopPrank();
     }
@@ -78,7 +78,7 @@ contract HandshakeNftTests is Test {
         nft.approve(approved_address, id);
 
         vm.startPrank(approved_address);
-        nft.testAuthorised(id);
+        nft.checkAuthorised(id);
 
         vm.stopPrank();
     }
@@ -94,19 +94,18 @@ contract HandshakeNftTests is Test {
 
         vm.startPrank(approved_address);
         vm.expectRevert("Not approved or owner");
-        nft.testAuthorised(id);
+        nft.checkAuthorised(id);
 
         vm.stopPrank();
     }
 
     function testAuthorisedOnTokenThatDoesNotExist() public {
         uint256 id = 11235813;
-        address approved_address = address(0x12345678);
 
         nft.mint(address(this), id);
 
         vm.expectRevert("NOT_MINTED");
-        nft.testAuthorised(id + 1);
+        nft.checkAuthorised(id + 1);
     }
 
     //</end> tests for the isApprovedOrOwner modifier

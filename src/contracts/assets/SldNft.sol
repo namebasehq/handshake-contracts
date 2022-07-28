@@ -26,11 +26,14 @@ contract SldNft is HandshakeERC721 {
     }
 
     function purchaseSld(string calldata _label, bytes32 _secret, uint256 _registrationLength, bytes32 _parentNamehash) public {
-        bytes32 namehash;
-        uint256 id;
+        bytes32 namehash = getNamehash(_label, _parentNamehash);
+        uint256 id = uint256(namehash);
         require(CommitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
 
         _safeMint(msg.sender, id);
+
+        NamehashToLabelMap[namehash] = _label;
+        NamehashToParentMap[namehash] = _parentNamehash;
     }
 
 
