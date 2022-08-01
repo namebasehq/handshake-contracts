@@ -166,9 +166,9 @@ contract TldClaimManagerTests is Test {
         manager.setMerkleRoot(validMerkleRoot); 
         bool resultBefore = manager.canClaim(validWallet, namehash, validProofs);
 
-        TldNft tld = new TldNft();
+        HandshakeTld tld = new HandshakeTld();
         tld.setTldClaimManager(manager);
-        manager.setTldNftContract(tld);
+        manager.setHandshakeTldContract(tld);
 
         manager.claimTld(validWallet, domain, validProofs);    
         bool resultAfter = manager.canClaim(validWallet, namehash, validProofs);

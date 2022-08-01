@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
 
 import "src/contracts/HandshakeERC721.sol";
-import "src/contracts/TldNft.sol";
+import "src/contracts/HandshakeTld.sol";
 import "src/contracts/SldCommitIntent.sol";
 
 pragma solidity ^0.8.15;
 
-contract SldNft is HandshakeERC721 {
-    TldNft public TldNftContract;
+contract HandshakeSld is HandshakeERC721 {
+    HandshakeTld public HandshakeTldContract;
     SldCommitIntent public CommitIntent;
 
     mapping(bytes32 => bytes32) private NamehashToParentMap;
 
     constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
-        TldNftContract = new TldNft();
-        TldNftContract.transferOwnership(msg.sender);
+        HandshakeTldContract = new HandshakeTld();
+        HandshakeTldContract.transferOwnership(msg.sender);
 
         CommitIntent = new SldCommitIntent();
         CommitIntent.transferOwnership(msg.sender);

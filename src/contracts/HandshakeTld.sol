@@ -6,7 +6,7 @@ import "interfaces/ISldPriceStrategy.sol";
 
 pragma solidity ^0.8.15;
 
-contract TldNft is HandshakeERC721 {
+contract HandshakeTld is HandshakeERC721 {
     ITldClaimManager public ClaimManager;
 
     mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;

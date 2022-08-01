@@ -1,7 +1,7 @@
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/ITldClaimManager.sol";
-import "src/contracts/TldNft.sol";
+import "src/contracts/HandshakeTld.sol";
 
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
@@ -9,7 +9,7 @@ pragma solidity ^0.8.15;
 contract TldClaimManager is Ownable, ITldClaimManager {
     mapping(bytes32 => bool) public IsNodeRegistered;
 
-    TldNft public TldNftContract;
+    HandshakeTld public HandshakeTldContract;
 
     bytes32 public MerkleRoot;
 
@@ -32,8 +32,8 @@ contract TldClaimManager is Ownable, ITldClaimManager {
         MerkleRoot = _root;
     }
 
-    function setTldNftContract(TldNft _tld) external onlyOwner {
-        TldNftContract = _tld;
+    function setHandshakeTldContract(HandshakeTld _tld) external onlyOwner {
+        HandshakeTldContract = _tld;
     }
 
     function claimTld(
@@ -44,6 +44,6 @@ contract TldClaimManager is Ownable, ITldClaimManager {
         bytes32 namehash = keccak256(abi.encodePacked(_domain));
         require(canClaim(_addr, namehash, _proofs), "not eligible to claim");
         IsNodeRegistered[namehash] = true;
-        TldNftContract.mint(_addr, _domain);
+        HandshakeTldContract.mint(_addr, _domain);
     }
 }
