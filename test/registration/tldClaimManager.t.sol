@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
-import "interfaces/registration/ITldClaimManager.sol";
-import "src/contracts/registration/TldClaimManager.sol";
+import "interfaces/ITldClaimManager.sol";
+import "src/contracts/TldClaimManager.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 

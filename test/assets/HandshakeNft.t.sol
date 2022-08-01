@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/assets/HandshakeERC721.sol";
+import "src/contracts/HandshakeERC721.sol";
 
 contract TestNft is HandshakeERC721 {
 

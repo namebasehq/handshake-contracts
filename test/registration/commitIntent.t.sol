@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
-import "interfaces/registration/ICommitIntent.sol";
-import "src/contracts/registration/SldCommitIntent.sol";
+import "interfaces/ICommitIntent.sol";
+import "src/contracts/SldCommitIntent.sol";
 
 
 contract SldCommitIntentTests is Test {

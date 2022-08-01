@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: UNLICENSED
+
+import "src/contracts/HandshakeERC721.sol";
+import "src/contracts/TldNft.sol";
+import "src/contracts/SldCommitIntent.sol";
+
+pragma solidity ^0.8.15;
+
+contract SldNft is HandshakeERC721 {
+    TldNft public TldNftContract;
+    SldCommitIntent public CommitIntent;
+
+    mapping(bytes32 => bytes32) private NamehashToParentMap;
+
+    constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
+        TldNftContract = new TldNft();
+        TldNftContract.transferOwnership(msg.sender);
+
+        CommitIntent = new SldCommitIntent();
+        CommitIntent.transferOwnership(msg.sender);
+    }
+
+    function purchaseSld(
+        string calldata _label,
+        bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash
+    ) public {
+        bytes32 namehash = getNamehash(_label, _parentNamehash);
+        uint256 id = uint256(namehash);
+        require(
+            CommitIntent.allowedCommit(namehash, _secret, msg.sender),
+            "commit not allowed"
+        );
+
+        _safeMint(msg.sender, id);
+
+        NamehashToLabelMap[namehash] = _label;
+        NamehashToParentMap[namehash] = _parentNamehash;
+    }
+}

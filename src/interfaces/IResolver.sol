@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "interfaces/data/IAddressResolver.sol";
-import "interfaces/data/IContentHashResolver.sol";
-import "interfaces/data/ITextResolver.sol";
-import "interfaces/data/IDnsResolver.sol";
-import "interfaces/data/INameResolver.sol";
+import "interfaces/IAddressResolver.sol";
+import "interfaces/IContentHashResolver.sol";
+import "interfaces/ITextResolver.sol";
+import "interfaces/IDnsResolver.sol";
+import "interfaces/INameResolver.sol";
 
 
 interface IResolver is IAddressResolver, IContentHashResolver, ITextResolver, IDnsResolver, INameResolver {

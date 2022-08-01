@@ -3,10 +3,10 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/assets/TldNft.sol";
-import "interfaces/registration/ITldClaimManager.sol";
-import "interfaces/data/IMetadataService.sol";
-import "interfaces/registration/ISldPriceStrategy.sol";
+import "src/contracts/TldNft.sol";
+import "interfaces/ITldClaimManager.sol";
+import "interfaces/IMetadataService.sol";
+import "interfaces/ISldPriceStrategy.sol";
 
 
 contract TldClaimManagerTests is Test {

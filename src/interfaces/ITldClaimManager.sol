@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-import "src/contracts/assets/TldNft.sol";
+import "src/contracts/TldNft.sol";
 
 pragma solidity ^0.8.15;
 
