@@ -6,178 +6,140 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ITldClaimManager.sol";
 import "src/contracts/TldClaimManager.sol";
+import "src/contracts/HandshakeTld.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 
 contract TldClaimManagerTests is Test {
 
     ITldClaimManager internal manager;
-
+    HandshakeTld internal nft;
 
 
 
     function setUp() public {
         manager = new TldClaimManager();
+        nft = new HandshakeTld();
+        nft.setTldClaimManager(manager);
 
     }
 
-     function testClaimWithInvalidProofs() public {
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
-        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
+     function testAddTldManagerWallet() public {
 
-        bytes32 namehash = bytes32(uint256(0x01));
-        bytes32[] memory validProofs = new bytes32[](3);
-        
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        //validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
-        validProofs[2] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
 
-        //Act
-        manager.setMerkleRoot(validMerkleRoot);        
-        bool result = manager.canClaim(validWallet, namehash, validProofs);
-        
-        //Assert
-        assertFalse(result);
+         assertTrue(manager.AllowedTldManager(allowed_address));
      }
 
-     function testClaimWithInvalidWallet() public {
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
-        address invalidWallet = address(0x69420);
+      function testAddTldManagerWalletFromNotContractOwner() public {
 
-        bytes32 namehash = bytes32(uint256(0x01));
-        bytes32[] memory validProofs = new bytes32[](3);
-        
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+         address allowed_address = address(0x134567);
 
-        //Act
-        manager.setMerkleRoot(validMerkleRoot);        
-        bool result = manager.canClaim(invalidWallet, namehash, validProofs);
-        
-        //Assert
-        assertFalse(result);
+         vm.startPrank(address(0x12345678));
+         vm.expectRevert("Ownable: caller is not the owner");
+         manager.updateAllowedTldManager(allowed_address, true);
+         vm.stopPrank();
+         
      }
 
-     function testClaimWithCorrectProofs() public {
-        
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x205212ad33543bbb5be9e371d2036c9422fb8a188f86f8a9e947f1af1890d8bb;
-        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
+     function testAddWalletAndClaimTld() public {
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
 
-        bytes32 namehash = bytes32(uint256(0x01));
-        bytes32[] memory validProofs = new bytes32[](3);
-        
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
-
-        //Act
-        manager.setMerkleRoot(validMerkleRoot);        
-        bool result = manager.canClaim(validWallet, namehash, validProofs);
-        
-        //Assert
-        assertTrue(result);
+         string[] memory domains = new string[](1);
+         address[] memory addresses = new address[](1);
+         domains[0] = "badass";
+         addresses[0] = allowed_address;
+         vm.startPrank(allowed_address);
+         manager.addTldAndClaimant(addresses, domains);
+         manager.canClaim(allowed_address, "badass");
+         vm.stopPrank();
      }
 
-     function testClaimWithTldThatDoesNotExist() public {
+     function testAddWalletAndClaimTldDuplicateClaim() public {
 
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x40d658df0b31d12c2c35fcb2cade7b31b4a38d0d4fe47a524caf9787f48e648b;
-        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
-
-        bytes32 namehash = bytes32(uint256(0x02));
-        bytes32[] memory validProofs = new bytes32[](3);
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
+         manager.setHandshakeTldContract(nft);
+         string[] memory domains = new string[](1);
+         address[] memory addresses = new address[](1);
+         domains[0] = "badass";
+         addresses[0] = allowed_address;
+         vm.startPrank(allowed_address);
+         manager.addTldAndClaimant(addresses, domains);
+         manager.claimTld("badass");
+         
+         vm.stopPrank();
         
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
+         
+     }
 
+     function testAddWalletAndClaimIncorrectTld() public {
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
 
-        //Act
-        manager.setMerkleRoot(validMerkleRoot);        
-        bool result = manager.canClaim(validWallet, namehash, validProofs);
-        
-        //Assert
-        assertFalse(result);
+         string[] memory domains = new string[](2);
+         address[] memory addresses = new address[](2);
+         domains[0] = "badass";
+         domains[1] = "notbadass";
+         addresses[0] = allowed_address;
+         addresses[1] = address(0x1234);
+         vm.startPrank(allowed_address);
+         manager.addTldAndClaimant(addresses, domains);
+         assertFalse(manager.canClaim(allowed_address, "notbadass"));
+         vm.expectRevert("not eligible to claim");
+         manager.claimTld("notbadass");
+         vm.stopPrank();
+     }
+
+     function testAddWalletAndClaimTldWithDifferentWallet() public {
+         address allowed_address = address(0x134567);
+         address other_address = address(0x131313);
+         manager.updateAllowedTldManager(allowed_address, true);
+
+         string[] memory domains = new string[](2);
+         address[] memory addresses = new address[](2);
+         domains[0] = "badass";
+         domains[1] = "notbadass";
+         addresses[0] = allowed_address;
+         addresses[1] = other_address;
+         vm.startPrank(allowed_address);
+         manager.addTldAndClaimant(addresses, domains);
+         vm.stopPrank();
+         vm.startPrank(address(0x131313)); //wallet should only be allowed to claim "notbadass"
+         assertFalse(manager.canClaim(other_address, "badass"));
+         vm.expectRevert("not eligible to claim");
+         manager.claimTld("badass");
+         vm.stopPrank();
 
      }
 
-     function testClaimWithMerkleRootNotSet() public {
-
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
-
-        bytes32 namehash = bytes32(uint256(0x01));
-        bytes32[] memory validProofs = new bytes32[](3);
-        
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
-
-
-        //Act
-        // don't set this on purpose  >> manager.setMerkleRoot(validMerkleRoot);        
-        bool result = manager.canClaim(validWallet, namehash, validProofs);
-        assertFalse(result);
+     function testAddTldWithDeactivatedTldAllowedWallet() public {
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
+         manager.updateAllowedTldManager(allowed_address, false);
+         string[] memory domains = new string[](1);
+         address[] memory addresses = new address[](1);
+         domains[0] = "badass";
+         addresses[0] = allowed_address;
+         vm.startPrank(allowed_address);
+         vm.expectRevert("not authorised to add TLD");
+         manager.addTldAndClaimant(addresses, domains);
+         vm.stopPrank();
      }
 
-     function testOwnerCanUpdateMerkleRoot() public {
-        bytes32 validMerkleRoot = bytes32(uint256(0x1337));
-        manager.setMerkleRoot(validMerkleRoot);
-
-        assertEq(manager.MerkleRoot(), validMerkleRoot);
-     }
-
-     function testUserCannotUpdateMerkleRoot() public {
-        bytes32 validMerkleRoot = bytes32(uint256(0x1337));
-        vm.startPrank(address(0x6666));
-        vm.expectRevert("Ownable: caller is not the owner");
-        manager.setMerkleRoot(validMerkleRoot);
-        vm.stopPrank();
-     }
-
-     function testClaimWhenTldAlreadyClaimed() public {
-        //Assign
-        //we can use utils/merkle.js to generate proofs and merkle root for testing.
-        bytes32 validMerkleRoot = 0x40d658df0b31d12c2c35fcb2cade7b31b4a38d0d4fe47a524caf9787f48e648b;
-        address validWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
-
-        string memory domain = "test";
-        
-        bytes32 namehash = bytes32(keccak256(abi.encodePacked(domain)));
-        uint256 tldId = uint256(namehash);
-        bytes32[] memory validProofs = new bytes32[](3);
-        
-        
-        validProofs[0] = 0x1e82fbae58d7ed9c05f505cc96c65e5a0c3c47470ef39959baccc90495344416;
-        validProofs[1] = 0x653fc0e2eddd57a28e95b5cd17fc5167708d1800742234b83624cd9b3fc2f72e;
-        validProofs[2] = 0x376a026a4bf5ac47d4b25340041249ce790843ee4257be1ac7b0e52c8899162f;
-
-        //Act
-        manager.setMerkleRoot(validMerkleRoot); 
-        bool resultBefore = manager.canClaim(validWallet, namehash, validProofs);
-
-        HandshakeTld tld = new HandshakeTld();
-        tld.setTldClaimManager(manager);
-        manager.setHandshakeTldContract(tld);
-
-        manager.claimTld(validWallet, domain, validProofs);    
-        bool resultAfter = manager.canClaim(validWallet, namehash, validProofs);
-        
-        //Assert
-        assertTrue(resultBefore);
-        assertFalse(resultAfter);
-    
-        vm.expectRevert("not eligible to claim");
-        manager.claimTld(validWallet, domain, validProofs); 
+     function testAddTldClaimantAndDomainsIncorrectlySizedLists() public {
+         address allowed_address = address(0x134567);
+         manager.updateAllowedTldManager(allowed_address, true);
+         string[] memory domains = new string[](1);
+         address[] memory addresses = new address[](2);
+         domains[0] = "badass";
+         addresses[0] = allowed_address;
+         addresses[1] = address(0x99);
+         vm.startPrank(allowed_address);
+         vm.expectRevert("address and domain list should be the same length");
+         manager.addTldAndClaimant(addresses, domains);
+         vm.stopPrank();
      }
 }

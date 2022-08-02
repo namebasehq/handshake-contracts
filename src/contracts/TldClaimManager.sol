@@ -8,42 +8,67 @@ pragma solidity ^0.8.15;
 
 contract TldClaimManager is Ownable, ITldClaimManager {
     mapping(bytes32 => bool) public IsNodeRegistered;
+    mapping(address => bool) public AllowedTldManager;
+    mapping(bytes32 => address) public AllowedTldClaimant;
 
     HandshakeTld public HandshakeTldContract;
+
+    event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
     bytes32 public MerkleRoot;
 
     constructor() {}
 
-    function canClaim(
-        address _addr,
-        bytes32 _namehash,
-        bytes32[] memory _proofs
-    ) public view returns (bool) {
+    function canClaim(address _addr, bytes32 _namehash)
+        public
+        view
+        returns (bool)
+    {
         return
-            MerkleProof.verify(
-                _proofs,
-                MerkleRoot,
-                keccak256(abi.encodePacked(_addr, _namehash))
-            ) && !IsNodeRegistered[_namehash];
-    }
-
-    function setMerkleRoot(bytes32 _root) external onlyOwner {
-        MerkleRoot = _root;
+            AllowedTldClaimant[_namehash] == _addr &&
+            !IsNodeRegistered[_namehash];
     }
 
     function setHandshakeTldContract(HandshakeTld _tld) external onlyOwner {
         HandshakeTldContract = _tld;
     }
 
-    function claimTld(
-        address _addr,
-        string calldata _domain,
-        bytes32[] memory _proofs
-    ) external {
+    function claimTld(string calldata _domain) external {
         bytes32 namehash = keccak256(abi.encodePacked(_domain));
-        require(canClaim(_addr, namehash, _proofs), "not eligible to claim");
+        require(canClaim(msg.sender, namehash), "not eligible to claim");
         IsNodeRegistered[namehash] = true;
-        HandshakeTldContract.mint(_addr, _domain);
+        HandshakeTldContract.mint(msg.sender, _domain);
+    }
+
+    //can also be removed by setting address to 0x0
+    function addTldAndClaimant(
+        address[] calldata _addr,
+        string[] calldata _domain
+    ) external onlyAuthorised {
+        require(
+            _addr.length == _domain.length,
+            "address and domain list should be the same length"
+        );
+        for (uint256 i; i < _addr.length; ) {
+            AllowedTldClaimant[keccak256(abi.encodePacked(_domain[i]))] = _addr[
+                i
+            ];
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function updateAllowedTldManager(address _addr, bool _allowed)
+        external
+        onlyOwner
+    {
+        AllowedTldManager[_addr] = _allowed;
+        emit UpdateAllowedTldManager(_addr, _allowed);
+    }
+
+    modifier onlyAuthorised() {
+        require(AllowedTldManager[msg.sender], "not authorised to add TLD");
+        _;
     }
 }

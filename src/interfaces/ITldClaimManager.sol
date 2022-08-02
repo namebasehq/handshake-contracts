@@ -4,9 +4,10 @@ import "src/contracts/HandshakeTld.sol";
 pragma solidity ^0.8.15;
 
 interface ITldClaimManager {
-    function canClaim(address _addr, bytes32 _namehash, bytes32[] memory _proofs) external view returns (bool);
-    function claimTld(address _addr, string calldata _domain, bytes32[] memory _proofs) external;
-    function setMerkleRoot(bytes32 _root) external;
-    function MerkleRoot() external returns (bytes32);
+    function canClaim(address _addr, bytes32 _namehash) external view returns (bool);
+    function claimTld(string calldata _domain) external;
     function setHandshakeTldContract(HandshakeTld _tld) external;
+    function updateAllowedTldManager(address _addr, bool _allowed) external ;
+    function AllowedTldManager(address _addr) external view returns (bool);
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external; 
 }
