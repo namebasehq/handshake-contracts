@@ -69,7 +69,8 @@ contract TldClaimManagerTests is Test {
          vm.startPrank(allowed_address);
          manager.addTldAndClaimant(addresses, domains);
          manager.claimTld("badass");
-         
+         vm.expectRevert("not eligible to claim");
+         manager.claimTld("badass");
          vm.stopPrank();
         
          
