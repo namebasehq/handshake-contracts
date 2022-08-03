@@ -15,7 +15,7 @@ contract SldCommitIntentTests is Test {
 
     function setUp() public {
      
-        intent = new SldCommitIntent();
+        intent = new SldCommitIntent(address(this));
     }
 
     function testMissedCommitDeadline() public {

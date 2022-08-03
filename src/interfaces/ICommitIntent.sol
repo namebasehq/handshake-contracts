@@ -37,4 +37,6 @@ interface ICommitIntent {
      * @return _ uint256 number of blocks, probably set to 5760 or something like that << approx 24 hours
      */
     function MaxBlockWaitForCommit() external view returns (uint256);    
+
+
 }

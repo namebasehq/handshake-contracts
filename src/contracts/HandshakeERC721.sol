@@ -12,24 +12,17 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
 
     IMetadataService public Metadata;
 
-    constructor(string memory _symbol, string memory _name)
-        ERC721(_symbol, _name)
-    {}
+    constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {
 
-    function tokenURI(uint256 _id)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        require(false, "not implemented");
-        return Metadata.tokenURI(bytes32(_id));
     }
 
-    function setMetadataContract(IMetadataService _metadata)
-        external
-        onlyOwner
-    {
+    function tokenURI(uint256 _id) public view override returns (string memory) {
+        require(false, "not implemented");
+        return Metadata.tokenURI(bytes32(_id));
+        
+    }
+
+    function setMetadataContract(IMetadataService _metadata) external onlyOwner {
         Metadata = _metadata;
     }
 
@@ -39,9 +32,7 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
         returns (bytes32)
     {
         bytes32 encoded_label = keccak256(abi.encodePacked(_label));
-        bytes32 big_hash = keccak256(
-            abi.encodePacked(_parentHash, encoded_label)
-        );
+        bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
 
         return big_hash;
     }

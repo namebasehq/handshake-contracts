@@ -14,11 +14,7 @@ contract Resolver is IResolver {
 
     function addr(bytes32 _namehash) external view returns (address payable) {}
 
-    function contenthash(bytes32 _namehash)
-        external
-        view
-        returns (bytes memory)
-    {}
+    function contenthash(bytes32 _namehash) external view returns (bytes memory) {}
 
     function dnsRecord(
         bytes32 _namehash,
@@ -28,11 +24,7 @@ contract Resolver is IResolver {
 
     function name(bytes32 _namehash) external view returns (string memory) {}
 
-    function publickey(bytes32 _namehash)
-        external
-        view
-        returns (bytes32 x, bytes32 y)
-    {}
+    function publickey(bytes32 _namehash) external view returns (bytes32 x, bytes32 y) {}
 
     function text(bytes32 _namehash, string calldata _key)
         external
@@ -46,10 +38,7 @@ contract Resolver is IResolver {
         uint16 _resource
     ) external isDomainContract returns (bytes memory) {}
 
-    function setAddr(bytes32 _namehash, address addr)
-        external
-        isDomainContract
-    {}
+    function setAddr(bytes32 _namehash, address addr) external isDomainContract {}
 
     function setContentHash(bytes32 _namehash, bytes calldata hash)
         external
@@ -74,10 +63,7 @@ contract Resolver is IResolver {
     ) external isDomainContract {}
 
     modifier isDomainContract() {
-        require(
-            msg.sender == SldAddress || msg.sender == TldAddress,
-            "NOT AUTHORISED"
-        );
+        require(msg.sender == SldAddress || msg.sender == TldAddress, "NOT AUTHORISED");
         _;
     }
 }

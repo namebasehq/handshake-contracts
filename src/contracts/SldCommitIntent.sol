@@ -2,6 +2,8 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ICommitIntent.sol";
+import "interfaces/IDomainValidator.sol";
+import "src/contracts/DomainLabelValidator.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SldCommitIntent is ICommitIntent, Ownable {
@@ -12,10 +14,14 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     }
 
     mapping(bytes32 => CommitData) private NodeIntentBlockNumber;
+    
 
     uint256 public MaxBlockWaitForCommit = 30;
 
-    constructor() {}
+    constructor(address _owner) {
+        transferOwnership(_owner);
+
+    }
 
     function commitIntent(bytes32 _combinedHash) public {
         require(
@@ -34,17 +40,12 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         bytes32 _secret,
         address _addr
     ) external view returns (bool) {
-        bytes32 combinedHash = keccak256(
-            abi.encodePacked(_namehash, _secret, _addr)
-        );
+        bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
         CommitData memory data = NodeIntentBlockNumber[combinedHash];
         return data.blockNumber > block.number && data.user == _addr;
     }
 
-    function updateMaxBlockWaitForCommit(uint256 _maxBlockWait)
-        external
-        onlyOwner
-    {
+    function updateMaxBlockWaitForCommit(uint256 _maxBlockWait) external onlyOwner {
         MaxBlockWaitForCommit = _maxBlockWait;
     }
 

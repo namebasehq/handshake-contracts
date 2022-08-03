@@ -25,17 +25,14 @@ contract HandshakeTld is HandshakeERC721 {
     }
 
     modifier tldOwner(bytes32 _namehash) {
-        require(
-            msg.sender == ownerOf(uint256(_namehash)),
-            "Caller is not owner of TLD"
-        );
+        require(msg.sender == ownerOf(uint256(_namehash)), "Caller is not owner of TLD");
         _;
     }
 
-    function updateSldPricingStrategy(
-        bytes32 _namehash,
-        ISldPriceStrategy _strategy
-    ) public tldOwner(_namehash) {
+    function updateSldPricingStrategy(bytes32 _namehash, ISldPriceStrategy _strategy)
+        public
+        tldOwner(_namehash)
+    {
         SldDefaultPriceStrategy[_namehash] = _strategy;
     }
 }
