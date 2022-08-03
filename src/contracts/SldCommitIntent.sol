@@ -14,13 +14,11 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     }
 
     mapping(bytes32 => CommitData) private NodeIntentBlockNumber;
-    
 
     uint256 public MaxBlockWaitForCommit = 30;
 
     constructor(address _owner) {
         transferOwnership(_owner);
-
     }
 
     function commitIntent(bytes32 _combinedHash) public {

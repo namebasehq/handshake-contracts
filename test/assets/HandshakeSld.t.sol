@@ -27,6 +27,32 @@ contract HandshakeSldTests is Test {
                 .checked_write(address(validator));
     }
 
+    function testUpdateLabelValidatorWithOwnerWalletExpectSuccess() public {
+        MockLabelValidator validator = new MockLabelValidator(false);
+        Sld.updateLabelValidator(validator);
+
+        assertEq(address(Sld.LabelValidator()), address(validator));
+
+    }
+
+    function testUpdateLabelValidatorWithNotOwnerWalletExpectFail() public {
+        
+        //assign
+        MockLabelValidator validator = new MockLabelValidator(false);
+        address currentValidatorAddress = address(Sld.LabelValidator());
+        address otherWallet = address(0x224466);
+
+        //act
+        vm.startPrank(otherWallet);
+        vm.expectRevert("Ownable: caller is not the owner");
+        Sld.updateLabelValidator(validator);
+
+        //assert
+        //should not have changed
+        assertEq(currentValidatorAddress, address(Sld.LabelValidator()));
+        vm.stopPrank();
+    }
+
 
     function testOwnerOfTldContractSetCorrectly() public {
 

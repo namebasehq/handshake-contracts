@@ -14,11 +14,10 @@ contract HandshakeSld is HandshakeERC721 {
 
     mapping(bytes32 => bytes32) public NamehashToParentMap;
 
-
     constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
         HandshakeTldContract = new HandshakeTld();
         HandshakeTldContract.transferOwnership(msg.sender);
-        
+
         CommitIntent = new SldCommitIntent(msg.sender);
         LabelValidator = new DomainLabelValidator();
     }
@@ -41,5 +40,9 @@ contract HandshakeSld is HandshakeERC721 {
 
         NamehashToLabelMap[namehash] = _label;
         NamehashToParentMap[namehash] = _parentNamehash;
+    }
+
+    function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
+        LabelValidator = _validator;
     }
 }

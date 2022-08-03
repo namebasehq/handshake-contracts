@@ -7,7 +7,6 @@ import "src/contracts/HandshakeTld.sol";
 pragma solidity ^0.8.15;
 
 contract TldClaimManager is Ownable, ITldClaimManager {
-
     mapping(bytes32 => bool) public IsNodeRegistered;
     mapping(address => bool) public AllowedTldManager;
     mapping(bytes32 => address) public TldClaimantMap;

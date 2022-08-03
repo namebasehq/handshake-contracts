@@ -16,7 +16,7 @@ contract LabelValidatorTests is Test {
     }
      
     function testLowercaseLettersOnlyIsValid() public {
-
+        
     }
 
     function testLowercaseLettersAndNumbersIsValid() public {

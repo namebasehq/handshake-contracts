@@ -3,9 +3,7 @@ pragma solidity 0.8.15;
 
 import {DSTestPlus} from "solmate/src/test/utils/DSTestPlus.sol";
 import {DSInvariantTest} from "solmate/src/test/utils/DSInvariantTest.sol";
-
 import {MockERC721} from "solmate/src/test/utils/mocks/MockERC721.sol";
-
 import {ERC721TokenReceiver} from "solmate/src/tokens/ERC721.sol";
 
 //these are just the standard tests for the solmate implementation of the ERC-721 NFT
