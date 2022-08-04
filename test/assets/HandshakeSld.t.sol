@@ -6,6 +6,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/HandshakeSld.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
+import "test/mocks/mockPriceStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -25,6 +26,24 @@ contract HandshakeSldTests is Test {
         stdstore.target(address(Sld))
                 .sig("LabelValidator()")
                 .checked_write(address(validator));
+    }
+
+    function addMockPriceStrategyToTld(bytes32 _tldNamehash) private {
+        MockPriceStrategy strategy = new MockPriceStrategy();
+
+            stdstore.target(address(Sld))
+            .sig("SldDefaultPriceStrategy(bytes32)")
+            .with_key(_tldNamehash)
+            .checked_write(address(strategy));
+    }
+
+    function addMockCommitIntent(bool _returnValue) private {
+        MockCommitIntent intent = new MockCommitIntent(_returnValue);
+
+        //update commit intent with mock object
+        stdstore.target(address(Sld))
+                .sig("CommitIntent()")
+                .checked_write(address(intent));
     }
 
     function testUpdateLabelValidatorWithOwnerWalletExpectSuccess() public {
@@ -69,17 +88,15 @@ contract HandshakeSldTests is Test {
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;
         bytes32 parentNamehash = bytes32(0x0);
-        MockCommitIntent intent = new MockCommitIntent(true);
+        
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
 
-        //update commit intent with mock object
-        stdstore.target(address(Sld))
-                .sig("CommitIntent()")
-                .checked_write(address(intent));
-
+        bytes32[] memory empty_array;
         address claimant = address(0x6666);
         
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
@@ -90,19 +107,17 @@ contract HandshakeSldTests is Test {
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;
         bytes32 parentNamehash = bytes32(0x0);
-        MockCommitIntent intent = new MockCommitIntent(true);
 
-        //update commit intent with mock object
-        stdstore.target(address(Sld))
-                .sig("CommitIntent()")
-                .checked_write(address(intent));
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
 
         address claimant = address(0x6666);
-        
+        bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
         vm.expectRevert("ALREADY_MINTED");
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
@@ -113,17 +128,15 @@ contract HandshakeSldTests is Test {
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
-        MockCommitIntent intent = new MockCommitIntent(true);
 
-        //update commit intent with mock object
-        stdstore.target(address(Sld))
-                .sig("CommitIntent()")
-                .checked_write(address(intent));
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
 
         address claimant = address(0x6666);
         
+        bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
 
         bytes32 full_hash = keccak256(abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label))));
 
@@ -136,17 +149,14 @@ contract HandshakeSldTests is Test {
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
-        MockCommitIntent intent = new MockCommitIntent(true);
 
-        //update commit intent with mock object
-        stdstore.target(address(Sld))
-                .sig("CommitIntent()")
-                .checked_write(address(intent));
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
 
         address claimant = address(0x6666);
-        
+        bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
 
         bytes32 full_hash = keccak256(abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label))));
 

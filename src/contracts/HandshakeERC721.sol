@@ -2,6 +2,7 @@
 
 import "solmate/src/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
 import "interfaces/IMetadataService.sol";
+import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 pragma solidity ^0.8.15;
@@ -9,6 +10,9 @@ pragma solidity ^0.8.15;
 //this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {
     mapping(bytes32 => string) public NamehashToLabelMap;
+
+    //moved this from tld contract so we can have subdomains of subdomains.
+    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
 
     IMetadataService public Metadata;
 

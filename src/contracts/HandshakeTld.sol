@@ -2,14 +2,11 @@
 
 import "src/contracts/HandshakeERC721.sol";
 import "interfaces/ITldClaimManager.sol";
-import "interfaces/ISldPriceStrategy.sol";
 
 pragma solidity ^0.8.15;
 
 contract HandshakeTld is HandshakeERC721 {
     ITldClaimManager public ClaimManager;
-
-    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
 
     constructor() HandshakeERC721("HTLD", "Handshake Top Level Domain") {}
 

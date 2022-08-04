@@ -2,5 +2,23 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ISldPriceStrategy.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract SldPriceStrategy is ISldPriceStrategy {}
+contract SldPriceStrategy is ISldPriceStrategy {
+    function getPriceInWei(
+        address _buyingAddress,
+        bytes32 _parentNamehash,
+        string memory _label,
+        uint256 _registrationLength,
+        bytes32[] calldata _proofs
+    ) external view returns (uint256) {
+        return 0;
+    }
+
+    function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
+        return
+            interfaceID == this.supportsInterface.selector || // ERC165
+            interfaceID == this.getPriceInWei.selector;
+    }
+}
