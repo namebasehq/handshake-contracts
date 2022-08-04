@@ -4,6 +4,8 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/HandshakeERC721.sol";
+import "test/mocks/mockMetadataService.sol";
+import "test/mocks/mockCommitIntent.sol";
 
 contract TestNft is HandshakeERC721 {
 
@@ -106,6 +108,34 @@ contract HandshakeNftTests is Test {
 
         vm.expectRevert("NOT_MINTED");
         nft.checkAuthorised(id + 1);
+    }
+
+    function testUpdateMetadataWithCorrectServiceFromOwnerWallet() public {
+       
+        string memory value = "return value";
+        MockMetadataService metadata = new MockMetadataService(value);
+        nft.setMetadataContract(metadata);
+        assertEq(value, nft.tokenURI(0));
+    }
+
+    function testUpdateMetadataWithCorrectServiceFromNotOwnerWalletExpectFail() public {
+
+        string memory value = "return value";
+        MockMetadataService metadata = new MockMetadataService("");
+
+        vm.startPrank(address(0x1337));
+        vm.expectRevert("Ownable: caller is not the owner");
+        nft.setMetadataContract(metadata);
+        vm.stopPrank();
+    }
+
+    function testUpdateMetadataWithWrongInterfaceFromOwnerWalletExpectFail() public {
+
+        MockCommitIntent notMetadata = new MockCommitIntent(true);
+
+        
+        vm.expectRevert("does not implement tokenUri method");
+        nft.setMetadataContract(IMetadataService(address(notMetadata)));
     }
 
     //</end> tests for the isApprovedOrOwner modifier

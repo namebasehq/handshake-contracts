@@ -42,16 +42,16 @@ contract HandshakeSld is HandshakeERC721 {
             ),
             "does not implement price strategy"
         );
-        require(
-            SldDefaultPriceStrategy[_parentNamehash].getPriceInWei(
-                msg.sender,
-                _parentNamehash,
-                _label,
-                _registrationLength,
-                _proofs
-            ) <= msg.value,
-            "invalid price"
+
+        uint256 priceInWei = SldDefaultPriceStrategy[_parentNamehash].getPriceInWei(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength,
+            _proofs
         );
+
+        require(priceInWei <= msg.value, "invalid price");
         bytes32 namehash = getNamehash(_label, _parentNamehash);
         uint256 id = uint256(namehash);
         require(

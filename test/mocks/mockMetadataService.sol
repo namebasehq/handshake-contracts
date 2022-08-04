@@ -3,15 +3,16 @@ pragma solidity ^0.8.15;
 
 import "interfaces/IMetadataService.sol";
 
-contract NftMetadataService is IMetadataService {
-    string private baseUri;
+contract MockMetadataService is IMetadataService {
 
-    constructor(string memory _baseUri) public {
-        baseUri = _baseUri;
+    string public ReturnValue ;
+
+    constructor(string memory _returnValue){
+        ReturnValue = _returnValue;
     }
 
-    function tokenURI(bytes32 _namehash) external view returns (string memory) {
-        return string(abi.encodePacked(baseUri, uint256(_namehash)));
+    function tokenURI(bytes32) external view returns (string memory) {
+        return ReturnValue;
     }
 
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
@@ -19,4 +20,5 @@ contract NftMetadataService is IMetadataService {
             interfaceID == this.supportsInterface.selector || // ERC165
             interfaceID == this.tokenURI.selector;
     }
+
 }

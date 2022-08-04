@@ -54,19 +54,6 @@ contract TldClaimManagerTests is Test {
 
     }
 
-    function testUpdateMetadataFromOwner() public {
-        Tld.setMetadataContract(IMetadataService(address(0x1337)));
-        assertEq(address(0x1337), address(Tld.Metadata()));
-    }
-
-
-    function testUpdateMetadataFromNoneOwner() public {
-        vm.startPrank(address(0x6666));
-        vm.expectRevert("Ownable: caller is not the owner");       
-        Tld.setMetadataContract(IMetadataService(address(0x1337)));
-        vm.stopPrank();
-    }
-
     //not working currently. Need to check if accessing internal storage is 
     //supported.. doesn't look like it currently
     function testUpdateDefaultSldPriceStrategyFromTldOwner() public {

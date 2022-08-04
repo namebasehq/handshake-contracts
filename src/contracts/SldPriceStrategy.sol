@@ -2,8 +2,6 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ISldPriceStrategy.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 contract SldPriceStrategy is ISldPriceStrategy {
     function getPriceInWei(
