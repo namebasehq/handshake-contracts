@@ -164,7 +164,25 @@ contract HandshakeSldTests is Test {
     }
 
     function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address payoutAddress = address(0x22886644);
 
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, tldName);
+
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+
+        assertEq(tld.ownerOf(tldId), tldOwner);
+
+        Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        (address _addr,) = Sld.royaltyInfo(0, 100);
+        assertEq(_addr, payoutAddress);
+        vm.stopPrank();
     }
 
     function testSetRoyaltyPaymentAddressForTldNotSet_ShouldReturnTldOwner() public {

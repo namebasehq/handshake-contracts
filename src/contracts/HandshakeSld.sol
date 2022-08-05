@@ -98,14 +98,13 @@ contract HandshakeSld is HandshakeERC721 {
     }
 
     function getOwnerOfParent(uint256 _id) private returns (address) {
-        return
-            address(uint160(HandshakeTldContract.ownerOf(_id)) & uint160(ownerOf(_id)));
+        return HandshakeTldContract.ownerOf(_id);
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
         require(
-            HandshakeTldContract.isApproved(uint256(NamehashToParentMap[_id])) ||
-                isApproved(uint256(NamehashToParentMap[_id])),
+            HandshakeTldContract.isApproved(_id, msg.sender) ||
+                isApproved(_id, msg.sender),
             "not approved or owner of parent domain"
         );
         _;
