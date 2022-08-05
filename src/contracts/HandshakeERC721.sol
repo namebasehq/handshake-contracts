@@ -5,14 +5,16 @@ import "interfaces/IMetadataService.sol";
 import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 pragma solidity ^0.8.15;
 
 //this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {
     using ERC165Checker for address;
+    using SafeMath for uint256;
 
+    //token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
 
     mapping(bytes32 => string) public NamehashToLabelMap;
@@ -46,6 +48,19 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
         bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
 
         return big_hash;
+    }
+
+    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+        external
+        view
+        virtual
+        returns (address receiver, uint256 royaltyAmount)
+    {}
+
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return
+            super.supportsInterface(interfaceId) ||
+            interfaceId == this.royaltyInfo.selector ^ this.tokenURI.selector;
     }
 
     modifier isApprovedOrOwner(uint256 _id) {

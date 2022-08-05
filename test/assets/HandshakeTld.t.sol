@@ -122,4 +122,74 @@ contract TldClaimManagerTests is Test {
         vm.stopPrank();
     }
 
+    function testUpdateRoyaltyPercentageFromOwnerWallet() public {
+        //10 percent is the max royalty
+        uint256 tenPercentRoyalty = 100;
+
+        Tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
+        (, uint256 amount)  = Tld.royaltyInfo(0, 100);
+        assertEq(amount, 10);
+    }
+
+    function testUpdateRoyaltyPercentageFromNotOwnerWalletExpectFail() public {
+
+        uint256 fivePercentRoyalty = 50;
+        vm.startPrank(address(0x3333));
+        vm.expectRevert("Ownable: caller is not the owner");
+        Tld.setRoyaltyPayoutAmount(fivePercentRoyalty);
+        vm.stopPrank();
+    }
+
+    function testUpdateRoyaltyPayoutAddressFromOwnerWallet() public {
+
+        address payoutAddress = address(0x66991122);
+
+        Tld.setRoyaltyPayoutAddress(payoutAddress);
+        (address addr,)  = Tld.royaltyInfo(0, 100);
+        assertEq(payoutAddress, addr);
+
+    }
+
+    function testUpdateRoyaltyToZeroAddressExpectFail() public {
+
+        address zeroAddress = address(0);
+        vm.expectRevert("cannot set to zero address");
+        Tld.setRoyaltyPayoutAddress(zeroAddress);
+
+    }
+
+    function testUpdateRoyaltyPayoutAddressFromNotOwnerWalletExpectFail() public {
+        address payoutAddress = address(0x66991122);
+        vm.startPrank(address(0x998877));
+        vm.expectRevert("Ownable: caller is not the owner");
+        Tld.setRoyaltyPayoutAddress(payoutAddress);
+        vm.stopPrank();
+    }
+
+    function testUpdateRoyaltyAbove100_which_is_10_percent_ExpectFail() public {
+        uint256 tenPointOnePercentRoyalty = 101;
+        
+        vm.expectRevert("10% maximum royalty on TLD");
+        Tld.setRoyaltyPayoutAmount(tenPointOnePercentRoyalty);
+    }
+
+    function testUpdateRoyaltyPercentageToSmallestNumberExpectZeroReturned() public {
+        //this is 0.1%
+        uint256 zeroPointOnePercent = 1;
+
+        Tld.setRoyaltyPayoutAmount(zeroPointOnePercent);
+        (, uint256 amount)  = Tld.royaltyInfo(0, 100);
+        assertEq(amount, 0);
+    }
+
+    function testUpdateRoyaltyPercentageToLargestNumberSaleAmountToSmallestNumbertenPercentRoyalty() public {
+        //10 percent is the max royalty
+        uint256 tenPercentRoyalty = 100;
+        uint256 smallestSaleAmount = 1;
+
+        Tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
+        (, uint256 amount)  = Tld.royaltyInfo(0, smallestSaleAmount);
+        assertEq(amount, 0);
+    }
+
 }

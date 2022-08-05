@@ -138,6 +138,9 @@ contract HandshakeNftTests is Test {
         nft.setMetadataContract(IMetadataService(address(notMetadata)));
     }
 
+ 
+
+
     //</end> tests for the isApprovedOrOwner modifier
 
 

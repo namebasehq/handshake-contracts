@@ -65,6 +65,15 @@ contract HandshakeSld is HandshakeERC721 {
         NamehashToParentMap[namehash] = _parentNamehash;
     }
 
+    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+        external
+        view
+        override
+        returns (address receiver, uint256 royaltyAmount)
+    {
+        require(false, "not implemented");
+    }
+
     function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
         LabelValidator = _validator;
     }
