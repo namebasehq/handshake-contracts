@@ -18,7 +18,10 @@ contract HandshakeSld is HandshakeERC721 {
     bytes4 private constant PRICE_IN_WEI_SELECTOR =
         bytes4(keccak256("getPriceInWei(address,bytes32,string,uint256,bytes32[])"));
 
-    mapping(bytes32 => bytes32) public NamehashToParentMap;
+    mapping(uint256 => bytes32) public NamehashToParentMap;
+
+    mapping(uint256 => uint256) public RoyaltyPayoutAmountMap;
+    mapping(uint256 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
         HandshakeTldContract = new HandshakeTld();
@@ -62,7 +65,7 @@ contract HandshakeSld is HandshakeERC721 {
         _safeMint(msg.sender, id);
 
         NamehashToLabelMap[namehash] = _label;
-        NamehashToParentMap[namehash] = _parentNamehash;
+        NamehashToParentMap[id] = _parentNamehash;
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
@@ -76,5 +79,35 @@ contract HandshakeSld is HandshakeERC721 {
 
     function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
         LabelValidator = _validator;
+    }
+
+    function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
+        public
+        onlyParentApprovedOrOwner(_id)
+    {
+        require(_amount < 101, "10% maximum royalty on SLD");
+        RoyaltyPayoutAmountMap[_id] = _amount;
+    }
+
+    function setRoyaltyPayoutAddress(uint256 _id, address _addr)
+        public
+        onlyParentApprovedOrOwner(_id)
+    {
+        require(_addr != address(0), "cannot set to zero address");
+        RoyaltyPayoutAddressMap[_id][getOwnerOfParent(_id)] = _addr;
+    }
+
+    function getOwnerOfParent(uint256 _id) private returns (address) {
+        return
+            address(uint160(HandshakeTldContract.ownerOf(_id)) & uint160(ownerOf(_id)));
+    }
+
+    modifier onlyParentApprovedOrOwner(uint256 _id) {
+        require(
+            HandshakeTldContract.isApproved(uint256(NamehashToParentMap[_id])) ||
+                isApproved(uint256(NamehashToParentMap[_id])),
+            "not approved or owner of parent domain"
+        );
+        _;
     }
 }

@@ -106,7 +106,7 @@ contract HandshakeNftTests is Test {
 
         nft.mint(address(this), id);
 
-        vm.expectRevert("NOT_MINTED");
+        vm.expectRevert("Not approved or owner");
         nft.checkAuthorised(id + 1);
     }
 

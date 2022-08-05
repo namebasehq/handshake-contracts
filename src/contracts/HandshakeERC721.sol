@@ -5,14 +5,12 @@ import "interfaces/IMetadataService.sol";
 import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 pragma solidity ^0.8.15;
 
 //this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {
     using ERC165Checker for address;
-    using SafeMath for uint256;
 
     //token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
@@ -63,15 +61,17 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
             interfaceId == this.royaltyInfo.selector ^ this.tokenURI.selector;
     }
 
-    modifier isApprovedOrOwner(uint256 _id) {
+    function isApproved(uint256 _id) public view returns (bool) {
+        if (_ownerOf[_id] == address(0)) return false;
         address owner = ownerOf(_id);
-        require(
+        return
             owner == msg.sender ||
-                isApprovedForAll[owner][msg.sender] ||
-                getApproved[_id] == msg.sender,
-            "Not approved or owner"
-        );
+            isApprovedForAll[owner][msg.sender] ||
+            getApproved[_id] == msg.sender;
+    }
 
+    modifier isApprovedOrOwner(uint256 _id) {
+        require(isApproved(_id), "Not approved or owner");
         _;
     }
 }

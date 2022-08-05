@@ -140,7 +140,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 full_hash = keccak256(abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label))));
 
-        assertEq(parentNamehash, Sld.NamehashToParentMap(full_hash));
+        assertEq(parentNamehash, Sld.NamehashToParentMap(uint256(full_hash)));
     }
 
 
@@ -163,7 +163,68 @@ contract HandshakeSldTests is Test {
         assertEq(label, Sld.NamehashToLabelMap(full_hash));
     }
 
+    function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {
 
+    }
 
+    function testSetRoyaltyPaymentAddressForTldNotSet_ShouldReturnTldOwner() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressThenTransferTld_AddressShouldResetToNewOwner() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressForTldFromTldOwnerApprovedAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressForTldFromNotTldOwnerAddress_ExpectFail() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerApprovedAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressForSldParentFromSldParentOwnerAddress() public {
+        
+    }
+
+    function testSetRoyaltyPaymentAddressForSldParentNotSet_ShouldReturnSldParentOwner() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressThenTransferSldParentNft_AddressShouldResetToNewOwner() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressForSldParentFromSldParentOwnerApprovedAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAddressForSldParentFromNotSldParentOwnerAddress_ExpectFail() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerApprovedAddress() public {
+
+    }
+
+    function testSetRoyaltyPaymentAmountForSldParentFromNotSldParentOwnerAddress_ExpectFail() public {
+
+    }
 
 }
