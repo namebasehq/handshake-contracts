@@ -4,10 +4,9 @@ pragma solidity ^0.8.15;
 import "interfaces/IMetadataService.sol";
 
 contract MockMetadataService is IMetadataService {
+    string public ReturnValue;
 
-    string public ReturnValue ;
-
-    constructor(string memory _returnValue){
+    constructor(string memory _returnValue) {
         ReturnValue = _returnValue;
     }
 
@@ -20,5 +19,4 @@ contract MockMetadataService is IMetadataService {
             interfaceID == this.supportsInterface.selector || // ERC165
             interfaceID == this.tokenURI.selector;
     }
-
 }

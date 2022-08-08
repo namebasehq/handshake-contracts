@@ -8,13 +8,9 @@ import "test/mocks/mockMetadataService.sol";
 import "test/mocks/mockCommitIntent.sol";
 
 contract TestNft is HandshakeERC721 {
-
-    constructor() HandshakeERC721("TEST", "TEST"){
-
-    }
+    constructor() HandshakeERC721("TEST", "TEST") {}
 
     function checkAuthorised(uint256 _id) public isApprovedOrOwner(_id) {
-
         //only need an empty method here to test the modifier.
     }
 
@@ -24,14 +20,12 @@ contract TestNft is HandshakeERC721 {
 }
 
 contract HandshakeNftTests is Test {
-
     using stdStorage for StdStorage;
     TestNft nft;
 
     function setUp() public {
         nft = new TestNft();
     }
-
 
     //tests for the isApprovedOrOwner modifier
     function testOwnerIsAuthorised() public {
@@ -111,7 +105,6 @@ contract HandshakeNftTests is Test {
     }
 
     function testUpdateMetadataWithCorrectServiceFromOwnerWallet() public {
-       
         string memory value = "return value";
         MockMetadataService metadata = new MockMetadataService(value);
         nft.setMetadataContract(metadata);
@@ -119,7 +112,6 @@ contract HandshakeNftTests is Test {
     }
 
     function testUpdateMetadataWithCorrectServiceFromNotOwnerWalletExpectFail() public {
-
         string memory value = "return value";
         MockMetadataService metadata = new MockMetadataService("");
 
@@ -130,18 +122,11 @@ contract HandshakeNftTests is Test {
     }
 
     function testUpdateMetadataWithWrongInterfaceFromOwnerWalletExpectFail() public {
-
         MockCommitIntent notMetadata = new MockCommitIntent(true);
 
-        
         vm.expectRevert("does not implement tokenUri method");
         nft.setMetadataContract(IMetadataService(address(notMetadata)));
     }
 
- 
-
-
     //</end> tests for the isApprovedOrOwner modifier
-
-
 }

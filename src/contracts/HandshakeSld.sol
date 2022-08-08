@@ -39,6 +39,7 @@ contract HandshakeSld is HandshakeERC721 {
         bytes32[] calldata _proofs
     ) public payable {
         require(LabelValidator.isValidLabel(_label), "invalid label");
+
         require(
             address(SldDefaultPriceStrategy[_parentNamehash]).supportsInterface(
                 PRICE_IN_WEI_SELECTOR
@@ -74,7 +75,18 @@ contract HandshakeSld is HandshakeERC721 {
         override
         returns (address receiver, uint256 royaltyAmount)
     {
-        require(false, "not implemented");
+        bytes32 parentNamehash = NamehashToParentMap[tokenId];
+        uint256 parentId = uint256(parentNamehash);
+
+        address owner = HandshakeTldContract.ownerOf(parentId);
+        address payoutAddress = RoyaltyPayoutAddressMap[parentId][owner] == address(0)
+            ? owner
+            : RoyaltyPayoutAddressMap[parentId][owner];
+        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentId] == 0
+            ? 0
+            : salePrice / RoyaltyPayoutAmountMap[parentId] / 10;
+
+        return (payoutAddress, royaltyAmount);
     }
 
     function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
@@ -94,17 +106,18 @@ contract HandshakeSld is HandshakeERC721 {
         onlyParentApprovedOrOwner(_id)
     {
         require(_addr != address(0), "cannot set to zero address");
-        RoyaltyPayoutAddressMap[_id][getOwnerOfParent(_id)] = _addr;
-    }
-
-    function getOwnerOfParent(uint256 _id) private returns (address) {
-        return HandshakeTldContract.ownerOf(_id);
+        address parentOwner = HandshakeTldContract.ownerOf(_id);
+        RoyaltyPayoutAddressMap[_id][parentOwner] = _addr;
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
         require(
             HandshakeTldContract.isApproved(_id, msg.sender) ||
-                isApproved(_id, msg.sender),
+                isApproved(_id, msg.sender) ||
+                HandshakeTldContract.isApprovedForAll(
+                    HandshakeTldContract.ownerOf(_id),
+                    msg.sender
+                ),
             "not approved or owner of parent domain"
         );
         _;

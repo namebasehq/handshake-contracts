@@ -7,22 +7,17 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "interfaces/ICommitIntent.sol";
 import "src/contracts/SldCommitIntent.sol";
 
-
 contract SldCommitIntentTests is Test {
-
-
     ICommitIntent internal intent;
 
     function setUp() public {
-     
         intent = new SldCommitIntent(address(this));
     }
 
     function testMissedCommitDeadline() public {
-
         //Arrange
         bytes32 node = bytes32(uint256(666));
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
         bytes32 secret = bytes32(uint256(42424242));
 
@@ -36,14 +31,12 @@ contract SldCommitIntentTests is Test {
         assertFalse(allowed);
     }
 
-
     function testBeatCommitDeadline() public {
-        
         //Arrange
         bytes32 node = bytes32(uint256(667));
         bytes32 secret = bytes32(uint256(2432423));
 
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
         //Act
@@ -58,10 +51,9 @@ contract SldCommitIntentTests is Test {
     }
 
     function testBeatCommitDeadlineCheckWithOtherAccount() public {
-        
         //Arrange
         bytes32 node = bytes32(uint256(667));
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
         bytes32 secret = bytes32(uint256(420420));
 
@@ -79,7 +71,6 @@ contract SldCommitIntentTests is Test {
     }
 
     function testBeatCommitDeadlineWithTwoNodes() public {
-        
         //Arrange
         bytes32 node = bytes32(uint256(777));
         bytes32 node2 = bytes32(uint256(888));
@@ -87,7 +78,7 @@ contract SldCommitIntentTests is Test {
         bytes32 secret = bytes32(uint256(22222));
         bytes32 secret2 = bytes32(uint256(1212121212));
 
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
         //Act
@@ -108,18 +99,17 @@ contract SldCommitIntentTests is Test {
     function testCommitIntentWhenActiveCommitExists() public {
         //Arrange
         bytes32 node = bytes32(uint256(667));
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
 
         //Act
         vm.roll(startBlock);
         intent.commitIntent(node);
-        
+
         vm.roll(startBlock + 2);
 
         //Assert
         vm.expectRevert("already been committed");
         intent.commitIntent(node);
-        
     }
 
     function testCommitIntentWhenExpiredCommitExists() public {
@@ -127,7 +117,7 @@ contract SldCommitIntentTests is Test {
         bytes32 node = bytes32(uint256(667));
         bytes32 secret = bytes32(uint256(22222));
 
-        uint256 startBlock = 10;        
+        uint256 startBlock = 10;
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
         address user = address(0x08);
@@ -138,22 +128,21 @@ contract SldCommitIntentTests is Test {
         //Act
         vm.roll(startBlock);
         intent.commitIntent(combinedHash);
-        
+
         vm.roll(startBlock + maxBlocks + 1);
         bool allowed = intent.allowedCommit(node, secret, address(this));
 
         //Assert
         assertFalse(allowed);
-        
+
         vm.prank(user);
         intent.commitIntent(combinedHash2);
         bool allowed2 = intent.allowedCommit(node, secret, user);
-        assertTrue(allowed2);       
+        assertTrue(allowed2);
     }
 
     function testChangeCommitDeadlineByOwner() public {
-        
-        //Arrange    
+        //Arrange
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
         //Act
@@ -165,7 +154,6 @@ contract SldCommitIntentTests is Test {
     }
 
     function testChangeCommitDeadlineByNotOwner() public {
-        
         //Arrange
         uint256 maxBlocks = intent.MaxBlockWaitForCommit();
 
@@ -177,6 +165,4 @@ contract SldCommitIntentTests is Test {
         intent.updateMaxBlockWaitForCommit(maxBlocks + 20);
         vm.stopPrank();
     }
-
 }
-

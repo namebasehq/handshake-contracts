@@ -6,9 +6,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "src/contracts/Resolver.sol";
 
-
 contract ResolverTests is Test {
-
     address constant SldContract = address(0x336699);
     address constant TldContract = address(0x996633);
 
@@ -17,7 +15,7 @@ contract ResolverTests is Test {
     function setUp() public {
         resolver = new Resolver(SldContract, TldContract);
     }
-    
+
     function testUpdateTextFromAuthorisedAddress() public {
         bytes32 namehash = bytes32(uint256(0x1337));
         string memory key = "key1";
@@ -37,7 +35,7 @@ contract ResolverTests is Test {
         vm.stopPrank();
     }
 
-        function testUpdateContentHashFromAuthorisedAddress() public {
+    function testUpdateContentHashFromAuthorisedAddress() public {
         bytes32 namehash = bytes32(uint256(0x1337));
 
         bytes memory value = bytes("value123");
@@ -57,12 +55,10 @@ contract ResolverTests is Test {
     }
 
     function testUpdateDnsRecordFromAuthorisedAddress() public {
-
         assertTrue(false, "not implemented");
-
     }
 
-        function testUpdateNameFromAuthorisedAddress() public {
+    function testUpdateNameFromAuthorisedAddress() public {
         bytes32 namehash = bytes32(uint256(0x1337));
 
         string memory value = "name1";
@@ -86,12 +82,9 @@ contract ResolverTests is Test {
         assertTrue(false, "not implemented");
     }
 
-    function testUpdateAddressFromAuthorisedAddress () public {
+    function testUpdateAddressFromAuthorisedAddress() public {
         //need to understand what addreses we storing here.. do we do something like ENS where we can
         //store multi-chain, or just ETH address(s)
         assertTrue(false, "not implemented");
     }
-
-
-
 }
