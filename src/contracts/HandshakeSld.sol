@@ -113,11 +113,7 @@ contract HandshakeSld is HandshakeERC721 {
     modifier onlyParentApprovedOrOwner(uint256 _id) {
         require(
             HandshakeTldContract.isApproved(_id, msg.sender) ||
-                isApproved(_id, msg.sender) ||
-                HandshakeTldContract.isApprovedForAll(
-                    HandshakeTldContract.ownerOf(_id),
-                    msg.sender
-                ),
+                isApproved(_id, msg.sender),
             "not approved or owner of parent domain"
         );
         _;

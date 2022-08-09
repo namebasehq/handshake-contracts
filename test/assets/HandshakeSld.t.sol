@@ -15,7 +15,11 @@ contract HandshakeSldTests is Test {
 
     function setUp() public {
         Sld = new HandshakeSld();
+        addMockValidatorToSld();
 
+    }
+
+    function addMockValidatorToSld() private {
         //this mock validator will always pass true
         MockLabelValidator validator = new MockLabelValidator(true);
 

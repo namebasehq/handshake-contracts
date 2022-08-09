@@ -8,7 +8,7 @@ import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldPriceStrategy.sol";
 
-contract TldClaimManagerTests is Test {
+contract HandshakeTldTests is Test {
     using stdStorage for StdStorage;
     HandshakeTld Tld;
 
