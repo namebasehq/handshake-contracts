@@ -4,15 +4,19 @@ import "src/contracts/HandshakeERC721.sol";
 import "src/contracts/HandshakeTld.sol";
 import "src/contracts/SldCommitIntent.sol";
 import "interfaces/ICommitIntent.sol";
+import "interfaces/IHandshakeSld.sol";
+import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 pragma solidity ^0.8.15;
 
-contract HandshakeSld is HandshakeERC721 {
+contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     using ERC165Checker for address;
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
+
+    error MissingPriceStrategy();
 
     //interface method for price strategy
     bytes4 private constant PRICE_IN_WEI_SELECTOR =
@@ -24,11 +28,31 @@ contract HandshakeSld is HandshakeERC721 {
     mapping(uint256 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
-        HandshakeTldContract = new HandshakeTld();
+        HandshakeTldContract = new HandshakeTld(msg.sender);
         HandshakeTldContract.transferOwnership(msg.sender);
 
         CommitIntent = new SldCommitIntent(msg.sender);
         LabelValidator = new DomainLabelValidator();
+    }
+
+    function getPricingStrategy(bytes32 _parentNamehash)
+        private
+        returns (ISldPriceStrategy)
+    {
+        if (
+            address(SldDefaultPriceStrategy[_parentNamehash]).supportsInterface(
+                PRICE_IN_WEI_SELECTOR
+            )
+        ) {
+            return SldDefaultPriceStrategy[_parentNamehash];
+        } else if (
+            address(HandshakeTldContract.SldDefaultPriceStrategy(_parentNamehash))
+                .supportsInterface(PRICE_IN_WEI_SELECTOR)
+        ) {
+            return HandshakeTldContract.SldDefaultPriceStrategy(_parentNamehash);
+        } else {
+            revert MissingPriceStrategy();
+        }
     }
 
     function purchaseSld(
@@ -40,14 +64,10 @@ contract HandshakeSld is HandshakeERC721 {
     ) public payable {
         require(LabelValidator.isValidLabel(_label), "invalid label");
 
-        require(
-            address(SldDefaultPriceStrategy[_parentNamehash]).supportsInterface(
-                PRICE_IN_WEI_SELECTOR
-            ),
-            "does not implement price strategy"
-        );
+        //will revert if pricing strategy does not exist.
+        ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash);
 
-        uint256 priceInWei = SldDefaultPriceStrategy[_parentNamehash].getPriceInWei(
+        uint256 priceInWei = priceStrat.getPriceInWei(
             msg.sender,
             _parentNamehash,
             _label,
@@ -110,10 +130,15 @@ contract HandshakeSld is HandshakeERC721 {
         RoyaltyPayoutAddressMap[_id][parentOwner] = _addr;
     }
 
+    function isApprovedOrOwnerOfChildOrParent(uint256 _id) public returns (bool) {
+        return
+            HandshakeTldContract.isApproved(_id, msg.sender) ||
+            isApproved(_id, msg.sender);
+    }
+
     modifier onlyParentApprovedOrOwner(uint256 _id) {
         require(
-            HandshakeTldContract.isApproved(_id, msg.sender) ||
-                isApproved(_id, msg.sender),
+            isApprovedOrOwnerOfChildOrParent(_id),
             "not approved or owner of parent domain"
         );
         _;

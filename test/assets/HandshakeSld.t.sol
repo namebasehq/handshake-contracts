@@ -16,7 +16,6 @@ contract HandshakeSldTests is Test {
     function setUp() public {
         Sld = new HandshakeSld();
         addMockValidatorToSld();
-
     }
 
     function addMockValidatorToSld() private {
@@ -78,6 +77,20 @@ contract HandshakeSldTests is Test {
 
     function testOwnerOfCommitIntentSetCorrectly() public {
         assertEq(address(this), Ownable(address(Sld.CommitIntent())).owner());
+    }
+
+    function testOwnerOfChildContractsSetCorrectly() public {
+        //this is the deployer of the contract!!
+        address myAddress = address(0xbeef);
+
+        vm.prank(myAddress);
+        HandshakeSld tempSld = new HandshakeSld();
+
+        assertEq(Ownable(tempSld.HandshakeTldContract()).owner(), myAddress);
+        assertEq(
+            Ownable(address(tempSld.HandshakeTldContract().ClaimManager())).owner(),
+            myAddress
+        );
     }
 
     function testMintSldFromAuthorisedWallet() public {

@@ -8,14 +8,13 @@ import "interfaces/ITldClaimManager.sol";
 import "src/contracts/TldClaimManager.sol";
 import "src/contracts/HandshakeTld.sol";
 
-
 contract TldClaimManagerTests is Test {
     ITldClaimManager internal manager;
     HandshakeTld internal nft;
 
     function setUp() public {
         manager = new TldClaimManager();
-        nft = new HandshakeTld();
+        nft = new HandshakeTld(address(this));
         nft.setTldClaimManager(manager);
     }
 

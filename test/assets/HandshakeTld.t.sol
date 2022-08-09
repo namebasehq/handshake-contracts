@@ -13,7 +13,7 @@ contract HandshakeTldTests is Test {
     HandshakeTld Tld;
 
     function setUp() public {
-        Tld = new HandshakeTld();
+        Tld = new HandshakeTld(address(this));
     }
 
     function testMintFromUnauthorisedAddress() public {
