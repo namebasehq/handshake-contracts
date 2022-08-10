@@ -153,7 +153,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32 parentNamehash = NamehashToParentMap[tokenId];
         uint256 parentId = uint256(parentNamehash);
 
-        address owner = HandshakeTldContract.ownerOf(parentId);
+        address owner = exists(parentId)
+            ? ownerOf(parentId)
+            : HandshakeTldContract.ownerOf(parentId);
+
         address payoutAddress = RoyaltyPayoutAddressMap[parentId][owner] == address(0)
             ? owner
             : RoyaltyPayoutAddressMap[parentId][owner];
@@ -181,7 +184,9 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         onlyParentApprovedOrOwner(_id)
     {
         require(_addr != address(0), "cannot set to zero address");
-        address parentOwner = HandshakeTldContract.ownerOf(_id);
+        address parentOwner = exists(_id)
+            ? ownerOf(_id)
+            : HandshakeTldContract.ownerOf(_id);
         RoyaltyPayoutAddressMap[_id][parentOwner] = _addr;
     }
 

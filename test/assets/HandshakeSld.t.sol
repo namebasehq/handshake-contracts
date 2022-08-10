@@ -20,6 +20,17 @@ contract HandshakeSldTests is Test {
         addMockValidatorToSld();
     }
 
+    function getNamehash(string memory _label, bytes32 _parentHash)
+        private
+        pure
+        returns (bytes32)
+    {
+        bytes32 encoded_label = keccak256(abi.encodePacked(_label));
+        bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
+
+        return big_hash;
+    }
+
     function addMockValidatorToSld() private {
         //this mock validator will always pass true
         MockLabelValidator validator = new MockLabelValidator(true);
@@ -872,11 +883,233 @@ contract HandshakeSldTests is Test {
         Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
     }
 
-    function testSetRoyaltyPaymentAddressForSldParentFromSldParentOwnerAddress() public {}
+    function testSetRoyaltyPaymentAddressForSldChildFromSldOwnerAddress() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address sldOwner = address(0x232323);
+        address sldSldOwner = address(0xababab);
+        address payoutAddress = address(0x22886644);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        bytes32[] memory emptyArr;
+
+        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+
+        addMockPriceStrategyToTld(parent_hash);
+        addMockCommitIntent(true);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, tldName);
+
+        vm.prank(sldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+
+        bytes32 sldHash = keccak256(
+            abi.encodePacked(
+                keccak256(abi.encodePacked("test")),
+                keccak256(abi.encodePacked("test"))
+            )
+        );
+
+        uint256 sldId = uint256(sldHash);
+
+        //test.test.test
+        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+
+        addMockPriceStrategyToTld(sldHash);
+
+        vm.prank(sldSldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+
+        assertEq(
+            Sld.ownerOf(
+                88982020594716641930034915809615336174528308807841887087431718240342441944320
+            ),
+            sldSldOwner,
+            "no owner of child of SLD"
+        );
+
+        assertEq(
+            expectedSldChildId,
+            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            "id for child of sld does not return correctly."
+        );
+
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+
+        assertEq(tldId, uint256(parent_hash));
+
+        address notApprovedAddress = address(0x2299);
+
+        uint256 expectedRoyaltyAmount = 1;
+        uint256 setRoyaltyNumber = 10;
+
+        vm.prank(sldOwner);
+        Sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
+
+        (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldChildId, 100);
+        assertEq(royaltyAmount, expectedRoyaltyAmount);
+    }
+
+    function testSetSldRoyaltyPaymentAddressForSldChildFromTldOwnerAddress_expectFail()
+        public
+    {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address sldOwner = address(0x232323);
+        address sldSldOwner = address(0xababab);
+        address payoutAddress = address(0x22886644);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        bytes32[] memory emptyArr;
+
+        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+
+        addMockPriceStrategyToTld(parent_hash);
+        addMockCommitIntent(true);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, tldName);
+
+        vm.prank(sldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+
+        bytes32 sldHash = keccak256(
+            abi.encodePacked(
+                keccak256(abi.encodePacked("test")),
+                keccak256(abi.encodePacked("test"))
+            )
+        );
+
+        uint256 sldId = uint256(sldHash);
+
+        //test.test.test
+        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+
+        addMockPriceStrategyToTld(sldHash);
+
+        vm.prank(sldSldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+
+        assertEq(
+            Sld.ownerOf(
+                88982020594716641930034915809615336174528308807841887087431718240342441944320
+            ),
+            sldSldOwner,
+            "no owner of child of SLD"
+        );
+
+        assertEq(
+            expectedSldChildId,
+            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            "id for child of sld does not return correctly."
+        );
+
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+
+        assertEq(tldId, uint256(parent_hash));
+
+        uint256 expectedRoyaltyAmount = 1;
+        uint256 setRoyaltyNumber = 10;
+
+        vm.prank(tldOwner);
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
+    }
 
     function testSetRoyaltyPaymentAddressForSldParentNotSet_ShouldReturnSldParentOwner()
         public
     {}
+
+    function testSetRoyaltyPaymentAddressForSldChildrenFromSldOwner() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address sldOwner = address(0x232323);
+        address sldSldOwner = address(0xababab);
+        address payoutAddress = address(0x22886644);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        bytes32[] memory emptyArr;
+
+        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+
+        addMockPriceStrategyToTld(parent_hash);
+        addMockCommitIntent(true);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, tldName);
+
+        vm.prank(sldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+
+        assertEq(
+            Sld.ownerOf(
+                37174255505552296075550689388107631271928910089020902890185083882243638892035
+            ),
+            sldOwner,
+            "SLD owner not correct"
+        );
+
+        bytes32 sldHash = keccak256(
+            abi.encodePacked(
+                keccak256(abi.encodePacked("test")),
+                keccak256(abi.encodePacked("test"))
+            )
+        );
+
+        uint256 sldId = uint256(sldHash);
+
+        //test.test.test
+        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+
+        addMockPriceStrategyToTld(sldHash);
+
+        vm.prank(sldSldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+
+        assertEq(
+            Sld.ownerOf(
+                88982020594716641930034915809615336174528308807841887087431718240342441944320
+            ),
+            sldSldOwner,
+            "no owner of child of SLD"
+        );
+
+        assertEq(
+            expectedSldChildId,
+            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            "id for child of sld does not return correctly."
+        );
+
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+
+        assertEq(tldId, uint256(parent_hash));
+
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        uint256 parentId = uint256(parentNamehash);
+
+        emit log_named_uint("parent id is :", parentId);
+        emit log_named_uint("expected parent id is :", tldId);
+
+        vm.startPrank(sldOwner);
+        Sld.setRoyaltyPayoutAddress(sldId, payoutAddress);
+
+        (address _addr, ) = Sld.royaltyInfo(expectedSldChildId, 100);
+        assertEq(_addr, payoutAddress);
+        vm.stopPrank();
+    }
 
     function testSetRoyaltyPaymentAddressThenTransferSldParentNft_AddressShouldResetToNewOwner()
         public

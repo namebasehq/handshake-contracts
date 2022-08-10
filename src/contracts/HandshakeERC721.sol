@@ -71,6 +71,10 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
             getApproved[_id] == _operator;
     }
 
+    function exists(uint256 _id) public view returns (bool) {
+        return _ownerOf[_id] != address(0);
+    }
+
     modifier isApprovedOrOwner(uint256 _id) {
         require(isApproved(_id, msg.sender), "Not approved or owner");
         _;
