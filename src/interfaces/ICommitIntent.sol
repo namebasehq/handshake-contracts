@@ -4,11 +4,18 @@ pragma solidity ^0.8.15;
 interface ICommitIntent {
     /**
      * Allows the owner of the contract to set the max wait in blocks
-     * for registration of an SLD. While this is active no other wallet
+     * for registration of an SLD. While this is active other wallets
      * can commit intent to register the SLD.
      * @param _maxBlockWait The maximum number of blocks to wait.
      */
     function updateMaxBlockWaitForCommit(uint256 _maxBlockWait) external;
+
+    /**
+     * Allows the owner of the contract to set the min wait in blocks
+     * for registration of an SLD. Required for reorg circumstances
+     * @param _minBlockWait The minimum number of blocks to wait.
+     */
+    function updateMinBlockWaitForCommit(uint256 _minBlockWait) external;
 
     /**
      * Allows a user to commit intent to register an SLD
@@ -37,7 +44,14 @@ interface ICommitIntent {
 
     /**
      * Max time in blocks that an SLD is held for.
-     * @return _ uint256 number of blocks, probably set to 5760 or something like that << approx 24 hours
+     * @return _ uint256 number of blocks
      */
     function MaxBlockWaitForCommit() external view returns (uint256);
+
+    /**
+     * Min time in blocks that an account needs to wait before registering their SLD
+     * we do this becauses of potential reorgs
+     * @return _ uint256 number of blocks, probably set to 3 or something like that
+     */
+    function MinBlockWaitForCommit() external view returns (uint256);
 }

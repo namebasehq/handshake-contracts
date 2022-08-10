@@ -114,7 +114,7 @@ contract HandshakeSldTests is Test {
         assertEq(Sld.balanceOf(claimant), 1);
     }
 
-        function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
+    function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;

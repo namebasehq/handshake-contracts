@@ -16,6 +16,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     mapping(bytes32 => CommitData) private NodeIntentBlockNumber;
 
     uint256 public MaxBlockWaitForCommit = 30;
+    uint256 public MinBlockWaitForCommit = 3;
 
     constructor(address _owner) {
         transferOwnership(_owner);
@@ -40,11 +41,21 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     ) external view returns (bool) {
         bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
         CommitData memory data = NodeIntentBlockNumber[combinedHash];
-        return data.blockNumber > block.number && data.user == _addr;
+
+        return
+            data.blockNumber > 0 && //if the combined hash has not been registered then quick exit
+            data.blockNumber > block.number &&
+            (data.blockNumber - MaxBlockWaitForCommit + MinBlockWaitForCommit) <= //min time to wait
+            block.number &&
+            data.user == _addr;
     }
 
     function updateMaxBlockWaitForCommit(uint256 _maxBlockWait) external onlyOwner {
         MaxBlockWaitForCommit = _maxBlockWait;
+    }
+
+    function updateMinBlockWaitForCommit(uint256 _minBlockWait) external onlyOwner {
+        MinBlockWaitForCommit = _minBlockWait;
     }
 
     function multiCommitIntent(bytes32[] calldata _combinedHashes) external {
