@@ -16,8 +16,6 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-    bytes32 public MerkleRoot;
-
     constructor() {}
 
     //provide this as a public function in case we want to query it from the UI

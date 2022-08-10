@@ -55,6 +55,41 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         }
     }
 
+    function purchaseMultipleSld(
+        string[] calldata _label,
+        bytes32[] calldata _secret,
+        uint256[] calldata _registrationLength,
+        bytes32[] calldata _parentNamehash,
+        bytes32[][] calldata _proofs,
+        address[] calldata _recipient
+    ) public payable {
+        uint256 expectedLength = _label.length;
+        require(
+            _secret.length == expectedLength &&
+                _registrationLength.length == expectedLength &&
+                _parentNamehash.length == expectedLength &&
+                _proofs.length == expectedLength &&
+                _recipient.length == expectedLength,
+            "all arrays should be the same length"
+        );
+
+        for (uint256 i; i < expectedLength; ) {
+            address to = _recipient[i] == address(0) ? msg.sender : _recipient[i];
+            purchaseSld(
+                _label[i],
+                _secret[i],
+                _registrationLength[i],
+                _parentNamehash[i],
+                _proofs[i],
+                to
+            );
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function purchaseSld(
         string calldata _label,
         bytes32 _secret,
@@ -62,7 +97,27 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32 _parentNamehash,
         bytes32[] calldata _proofs
     ) public payable {
+        purchaseSld(
+            _label,
+            _secret,
+            _registrationLength,
+            _parentNamehash,
+            _proofs,
+            msg.sender
+        );
+    }
+
+    function purchaseSld(
+        string calldata _label,
+        bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        bytes32[] calldata _proofs,
+        address _recipient
+    ) public payable {
         require(LabelValidator.isValidLabel(_label), "invalid label");
+
+        address to = _recipient == address(0) ? msg.sender : _recipient;
 
         //will revert if pricing strategy does not exist.
         ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash);
@@ -83,7 +138,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             "commit not allowed"
         );
 
-        _safeMint(msg.sender, id);
+        _safeMint(to, id);
 
         NamehashToLabelMap[namehash] = _label;
         NamehashToParentMap[id] = _parentNamehash;

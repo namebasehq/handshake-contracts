@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-
 interface IAddressResolver {
-
     event AddrChanged(bytes32 indexed _namehash, address _addr);
+
     /**
      * Allows a user to commit intent to register an SLD
      * @param _namehash The namehash of the domain

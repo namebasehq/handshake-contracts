@@ -10,6 +10,5 @@ contract ContractScript is Script {
     function run() public {
         vm.broadcast();
         HandshakeSld sld = new HandshakeSld();
-
     }
 }

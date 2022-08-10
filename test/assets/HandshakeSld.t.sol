@@ -10,6 +10,8 @@ import "test/mocks/mockPriceStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract HandshakeSldTests is Test {
+    error MissingPriceStrategy();
+
     using stdStorage for StdStorage;
     HandshakeSld Sld;
 
@@ -112,6 +114,27 @@ contract HandshakeSldTests is Test {
         assertEq(Sld.balanceOf(claimant), 1);
     }
 
+        function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        //comment out for the test.
+        //addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.startPrank(claimant);
+        vm.expectRevert(MissingPriceStrategy.selector);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 0);
+    }
+
     function testMintDuplicateSldFromAuthorisedWallet() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
@@ -173,6 +196,201 @@ contract HandshakeSldTests is Test {
         );
 
         assertEq(label, Sld.NamehashToLabelMap(full_hash));
+    }
+
+    function testMultiPurchaseSld() public {
+        string[] memory label = new string[](2);
+        bytes32[] memory secret = new bytes32[](2);
+        uint256[] memory registrationLength = new uint256[](2);
+        bytes32[] memory parentNamehash = new bytes32[](2);
+
+        label[0] = "test1";
+        label[1] = "test2";
+
+        secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
+        secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
+
+        registrationLength[0] = 50;
+        registrationLength[1] = 100;
+
+        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
+        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+
+        addMockPriceStrategyToTld(parentNamehash[0]);
+        addMockPriceStrategyToTld(parentNamehash[1]);
+        addMockCommitIntent(true);
+
+        bytes32[][] memory empty_array = new bytes32[][](2);
+
+        address claimant = address(0x6666);
+        address[] memory receiver = new address[](2);
+
+        receiver[0] = address(0x0123);
+        receiver[1] = address(0x2345);
+
+        vm.startPrank(claimant);
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            receiver
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(receiver[0]), 1);
+        assertEq(Sld.balanceOf(receiver[1]), 1);
+        assertEq(Sld.balanceOf(claimant), 0);
+    }
+
+    function testMultiPurchaseSldWithZeroAddressInReceiver() public {
+        string[] memory label = new string[](2);
+        bytes32[] memory secret = new bytes32[](2);
+        uint256[] memory registrationLength = new uint256[](2);
+        bytes32[] memory parentNamehash = new bytes32[](2);
+
+        label[0] = "test1";
+        label[1] = "test2";
+
+        secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
+        secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
+
+        registrationLength[0] = 50;
+        registrationLength[1] = 100;
+
+        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
+        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+
+        addMockPriceStrategyToTld(parentNamehash[0]);
+        addMockPriceStrategyToTld(parentNamehash[1]);
+        addMockCommitIntent(true);
+
+        bytes32[][] memory empty_array = new bytes32[][](2);
+
+        address claimant = address(0x6666);
+        address[] memory receiver = new address[](2);
+
+        receiver[0] = address(0x0123);
+
+        //comment this guy out for the test
+        //receiver[1] = address(0x2345);
+
+        vm.startPrank(claimant);
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            receiver
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(receiver[0]), 1);
+        assertEq(Sld.balanceOf(claimant), 1);
+    }
+
+    function testPurchaseSldToZeroAddress_expectSendToMsgSender() public {
+        string memory label = "testit";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.startPrank(claimant);
+
+        Sld.purchaseSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            address(0)
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 1);
+    }
+
+    function testPurchaseSldToOtherAddress() public {
+        string memory label = "testit";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+        address receiver = address(0x8888);
+
+        vm.startPrank(claimant);
+        Sld.purchaseSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            receiver
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(receiver), 1);
+        assertEq(Sld.balanceOf(claimant), 0);
+    }
+
+    function testMultiPurchaseSldToOtherAddressWithMissingPriceStrategy_expectFail()
+        public
+    {
+        string[] memory label = new string[](2);
+        bytes32[] memory secret = new bytes32[](2);
+        uint256[] memory registrationLength = new uint256[](2);
+        bytes32[] memory parentNamehash = new bytes32[](2);
+
+        label[0] = "test1";
+        label[1] = "test2";
+
+        secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
+        secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
+
+        registrationLength[0] = 50;
+        registrationLength[1] = 100;
+
+        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
+        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+
+        addMockPriceStrategyToTld(parentNamehash[0]);
+
+        //commented this out for the test
+        //addMockPriceStrategyToTld(parentNamehash[1]);
+        addMockCommitIntent(true);
+
+        bytes32[][] memory empty_array = new bytes32[][](2);
+
+        address claimant = address(0x6666);
+        address[] memory receiver = new address[](2);
+
+        receiver[0] = address(0x0123);
+        receiver[1] = address(0x2345);
+
+        vm.startPrank(claimant);
+        vm.expectRevert(MissingPriceStrategy.selector);
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            receiver
+        );
+        vm.stopPrank();
     }
 
     function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {

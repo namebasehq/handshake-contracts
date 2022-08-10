@@ -36,7 +36,7 @@ contract HandshakeTld is HandshakeERC721 {
     function mint(address _addr, string calldata _domain) external {
         bytes32 namehash = keccak256(abi.encodePacked(_domain));
         require(address(ClaimManager) == msg.sender, "not authorised");
-        _safeMint(_addr, uint256(namehash));
+        _mint(_addr, uint256(namehash));
         NamehashToLabelMap[namehash] = _domain;
     }
 

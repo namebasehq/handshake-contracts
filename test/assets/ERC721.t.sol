@@ -59,7 +59,7 @@ contract ERC721Test is DSTestPlus {
         token = new MockERC721("Token", "TKN");
     }
 
-    function invariantMetadata() public {
+    function testInvariantMetadata() public {
         assertEq(token.name(), "Token");
         assertEq(token.symbol(), "TKN");
     }

@@ -10,5 +10,8 @@ interface ITextResolver {
      * @param _key The text data key to query.
      * @return _ The associated text data.
      */
-    function text(bytes32 _namehash, string calldata _key) external view returns (string memory);
+    function text(bytes32 _namehash, string calldata _key)
+        external
+        view
+        returns (string memory);
 }
