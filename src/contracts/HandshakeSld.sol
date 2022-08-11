@@ -11,6 +11,14 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 pragma solidity ^0.8.15;
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld {
+    struct SubdomainDetail {
+        uint256 Id;
+        uint256 ParentId;
+        string Label;
+        uint256 Price;
+        uint256 RoyaltyAmount;
+    }
+
     using ERC165Checker for address;
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
@@ -65,11 +73,13 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     ) public payable {
         uint256 expectedLength = _label.length;
         require(
-            _secret.length == expectedLength &&
-                _registrationLength.length == expectedLength &&
-                _parentNamehash.length == expectedLength &&
-                _proofs.length == expectedLength &&
-                _recipient.length == expectedLength,
+            expectedLength ^
+                _secret.length ^
+                _registrationLength.length ^
+                _parentNamehash.length ^
+                _proofs.length ^
+                _recipient.length ==
+                0,
             "all arrays should be the same length"
         );
 
@@ -194,6 +204,33 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         return
             HandshakeTldContract.isApproved(_id, msg.sender) ||
             isApproved(_id, msg.sender);
+    }
+
+    function getSingleSubdomainDetails(uint256 _parentId, string memory _label)
+        private
+        view
+        returns (SubdomainDetail memory)
+    {
+        SubdomainDetail memory detail = SubdomainDetail(1, 2, _label, 0, 0);
+
+        return detail;
+    }
+
+    function getSubdomainDetails(
+        uint256[] calldata _parentIds,
+        string[] calldata _labels,
+        uint256[] calldata _registrationLengths,
+        bytes32[][] calldata _proofs
+    ) external view returns (SubdomainDetail[] memory) {
+        uint256 len = _parentIds.length;
+        require(
+            _parentIds.length ^
+                _labels.length ^
+                _registrationLengths.length ^
+                _proofs.length ==
+                0,
+            "array lengths are different"
+        );
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {

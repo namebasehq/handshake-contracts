@@ -209,6 +209,44 @@ contract HandshakeSldTests is Test {
         assertEq(label, Sld.NamehashToLabelMap(full_hash));
     }
 
+    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail() public {
+        string[] memory label = new string[](3);
+        bytes32[] memory secret = new bytes32[](3);
+        uint256[] memory registrationLength = new uint256[](3);
+        bytes32[] memory parentNamehash = new bytes32[](3);
+        bytes32[][] memory proofs = new bytes32[][](3);
+        address[] memory receiver = new address[](2);
+
+        vm.expectRevert("all arrays should be the same length");
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            proofs,
+            receiver
+        );
+    }
+
+    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail_2() public {
+        string[] memory label = new string[](2);
+        bytes32[] memory secret = new bytes32[](3);
+        uint256[] memory registrationLength = new uint256[](3);
+        bytes32[] memory parentNamehash = new bytes32[](3);
+        bytes32[][] memory proofs = new bytes32[][](3);
+        address[] memory receiver = new address[](3);
+
+        vm.expectRevert("all arrays should be the same length");
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            proofs,
+            receiver
+        );
+    }
+
     function testMultiPurchaseSld() public {
         string[] memory label = new string[](2);
         bytes32[] memory secret = new bytes32[](2);
@@ -1132,4 +1170,27 @@ contract HandshakeSldTests is Test {
     function testSetRoyaltyPaymentAmountForSldParentFromNotSldParentOwnerAddress_ExpectFail()
         public
     {}
+
+    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame()
+        public
+    {
+        uint256[] memory parentIds = new uint256[](5);
+        string[] memory labels = new string[](5);
+        uint256[] memory registrationLengths = new uint256[](5);
+        bytes32[][] memory proofs = new bytes32[][](5);
+
+        Sld.getSubdomainDetails(parentIds, labels, registrationLengths, proofs);
+    }
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsDifferent()
+        public
+    {
+        uint256[] memory parentIds = new uint256[](5);
+        string[] memory labels = new string[](5);
+        uint256[] memory registrationLengths = new uint256[](4);
+        bytes32[][] memory proofs = new bytes32[][](5);
+
+        vm.expectRevert("array lengths are different");
+        Sld.getSubdomainDetails(parentIds, labels, registrationLengths, proofs);
+    }
 }
