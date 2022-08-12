@@ -171,9 +171,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         address payoutAddress = RoyaltyPayoutAddressMap[parentId][owner] == address(0)
             ? owner
             : RoyaltyPayoutAddressMap[parentId][owner];
+
         uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentId] == 0
             ? 0
-            : salePrice / RoyaltyPayoutAmountMap[parentId] / 10;
+            : ((salePrice / 100) * RoyaltyPayoutAmountMap[parentId]);
 
         return (payoutAddress, royaltyAmount);
     }
@@ -186,7 +187,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         public
         onlyParentApprovedOrOwner(_id)
     {
-        require(_amount < 101, "10% maximum royalty on SLD");
+        require(_amount <= 10, "10% maximum royalty on SLD");
         RoyaltyPayoutAmountMap[_id] = _amount;
     }
 
