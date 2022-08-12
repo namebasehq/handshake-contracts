@@ -41,14 +41,18 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function addMockPriceStrategyToTld(bytes32 _tldNamehash) private {
-        MockPriceStrategy strategy = new MockPriceStrategy();
+    function addMockPriceStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
+        MockPriceStrategy strategy = new MockPriceStrategy(_price);
 
         stdstore
             .target(address(Sld))
             .sig("SldDefaultPriceStrategy(bytes32)")
             .with_key(_tldNamehash)
             .checked_write(address(strategy));
+    }
+
+    function addMockPriceStrategyToTld(bytes32 _tldNamehash) private {
+        addMockPriceStrategyToTld(_tldNamehash, 0);
     }
 
     function addMockCommitIntent(bool _returnValue) private {
@@ -1171,26 +1175,227 @@ contract HandshakeSldTests is Test {
         public
     {}
 
-    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame()
+    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame(
+        uint8 _arrayLength
+    ) public {
+        address[] memory recipients = new address[](_arrayLength);
+        uint256[] memory parentIds = new uint256[](_arrayLength);
+        string[] memory labels = new string[](_arrayLength);
+        uint256[] memory registrationLengths = new uint256[](_arrayLength);
+        bytes32[][] memory proofs = new bytes32[][](_arrayLength);
+
+        addMockPriceStrategyToTld(bytes32(0x0), 0);
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+    }
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsParentIdsDifferent()
         public
     {
-        uint256[] memory parentIds = new uint256[](5);
+        address[] memory recipients = new address[](5);
+        uint256[] memory parentIds = new uint256[](6);
         string[] memory labels = new string[](5);
         uint256[] memory registrationLengths = new uint256[](5);
         bytes32[][] memory proofs = new bytes32[][](5);
 
-        Sld.getSubdomainDetails(parentIds, labels, registrationLengths, proofs);
+        vm.expectRevert("array lengths are different");
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
     }
 
-    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsDifferent()
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsLabelsDifferent()
         public
     {
+        address[] memory recipients = new address[](5);
         uint256[] memory parentIds = new uint256[](5);
-        string[] memory labels = new string[](5);
-        uint256[] memory registrationLengths = new uint256[](4);
+        string[] memory labels = new string[](4);
+        uint256[] memory registrationLengths = new uint256[](5);
         bytes32[][] memory proofs = new bytes32[][](5);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(parentIds, labels, registrationLengths, proofs);
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+    }
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRegistrationLengthsDifferent()
+        public
+    {
+        address[] memory recipients = new address[](5);
+        uint256[] memory parentIds = new uint256[](5);
+        string[] memory labels = new string[](5);
+        uint256[] memory registrationLengths = new uint256[](7);
+        bytes32[][] memory proofs = new bytes32[][](5);
+
+        vm.expectRevert("array lengths are different");
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+    }
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsProofsDifferent()
+        public
+    {
+        address[] memory recipients = new address[](5);
+        uint256[] memory parentIds = new uint256[](5);
+        string[] memory labels = new string[](5);
+        uint256[] memory registrationLengths = new uint256[](5);
+        bytes32[][] memory proofs = new bytes32[][](4);
+
+        vm.expectRevert("array lengths are different");
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+    }
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRecipientsDifferent()
+        public
+    {
+        address[] memory recipients = new address[](5);
+        uint256[] memory parentIds = new uint256[](5);
+        string[] memory labels = new string[](5);
+        uint256[] memory registrationLengths = new uint256[](5);
+        bytes32[][] memory proofs = new bytes32[][](4);
+
+        vm.expectRevert("array lengths are different");
+        Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+    }
+
+    function testGetSubdomainDetails_single(uint256 _price) public {
+        address[] memory recipients = new address[](1);
+        uint256[] memory parentIds = new uint256[](1);
+        string[] memory labels = new string[](1);
+        uint256[] memory registrationLengths = new uint256[](1);
+        bytes32[][] memory proofs = new bytes32[][](1);
+        bytes32[] memory empty_array;
+
+        string memory label = "test";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(uint256(0x121212));
+        address recipient = address(0x998822);
+
+        recipients[0] = recipient;
+        parentIds[0] = uint256(parentNamehash);
+        labels[0] = label;
+        registrationLengths[0] = registrationLength;
+        proofs[0] = empty_array;
+
+        addMockPriceStrategyToTld(parentNamehash, _price);
+        addMockCommitIntent(true);
+
+        address claimant = address(0x6666);
+
+        SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+
+        assertEq(dets.length, 1, "invalid array length");
+        assertEq(dets[0].Price, _price, "mismatch in price");
+        assertEq(
+            dets[0].Id,
+            uint256(getNamehash(labels[0], parentNamehash)),
+            "expected Id does not match"
+        );
+        assertEq(dets[0].ParentId, parentIds[0], "Parent Id does not match");
+        assertEq(dets[0].Label, labels[0], "subdomain label does not match");
+
+        assertEq(dets[0].RoyaltyAmount, 0, "royalty amount does not match");
+    }
+
+    function testGetSubdomainDetails_multiple() public {
+        uint256 _price = 69420;
+        address[] memory recipients = new address[](3);
+        uint256[] memory parentIds = new uint256[](3);
+        string[] memory labels = new string[](3);
+        uint256[] memory registrationLengths = new uint256[](3);
+        bytes32[][] memory proofs = new bytes32[][](3);
+        bytes32[] memory empty_array;
+
+        string memory label = "test";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(uint256(0x121212));
+        address recipient = address(0x998822);
+
+        recipients[0] = recipient;
+        recipients[1] = recipient;
+        recipients[2] = recipient;
+
+        parentIds[0] = uint256(parentNamehash);
+        parentIds[1] = uint256(parentNamehash);
+        parentIds[2] = uint256(parentNamehash);
+
+        labels[0] = label;
+        labels[1] = label;
+        labels[2] = label;
+
+        registrationLengths[0] = registrationLength;
+        registrationLengths[1] = registrationLength;
+        registrationLengths[2] = registrationLength;
+
+        proofs[0] = empty_array;
+        proofs[1] = empty_array;
+        proofs[2] = empty_array;
+
+        addMockPriceStrategyToTld(parentNamehash, _price);
+        addMockCommitIntent(true);
+
+        SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
+            recipients,
+            parentIds,
+            labels,
+            registrationLengths,
+            proofs
+        );
+
+        //no worry about gas optimisation in the tests.
+        for (uint256 i; i < dets.length; i++) {
+            assertEq(dets.length, recipients.length, "invalid array length");
+            assertEq(dets[i].Price, _price, "mismatch in price");
+            assertEq(
+                dets[i].Id,
+                uint256(getNamehash(labels[i], parentNamehash)),
+                "expected Id does not match"
+            );
+            assertEq(dets[i].ParentId, parentIds[i], "Parent Id does not match");
+            assertEq(dets[i].Label, labels[i], "subdomain label does not match");
+
+            //royalty amount not currently set in this test.
+            // so should be zero
+            assertEq(dets[i].RoyaltyAmount, 0, "royalty amount does not match");
+        }
     }
 }
