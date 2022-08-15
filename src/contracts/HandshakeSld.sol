@@ -44,7 +44,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     }
 
     function getPricingStrategy(bytes32 _parentNamehash)
-        private
+        public
         view
         returns (ISldPriceStrategy)
     {
@@ -181,6 +181,17 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
     function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
         LabelValidator = _validator;
+    }
+
+    function setPricingStrategy(uint256 _id, address _strategy)
+        public
+        onlyParentApprovedOrOwner(_id)
+    {
+        require(
+            _strategy.supportsInterface(PRICE_IN_WEI_SELECTOR),
+            "missing interface for price strategy"
+        );
+        SldDefaultPriceStrategy[bytes32(_id)] = ISldPriceStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)

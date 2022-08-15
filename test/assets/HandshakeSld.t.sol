@@ -922,6 +922,153 @@ contract HandshakeSldTests is Test {
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
 
+    function testAddPriceStrategyToTldDomain_pass() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+
+        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
+        bytes32 parentNamehash = bytes32(id);
+        addMockCommitIntent(true);
+
+        string memory domain = "test";
+        address parent_address = address(0x12345678);
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(parent_address);
+
+        vm.startPrank(parent_address);
+        Sld.HandshakeTldContract().mint(parent_address, domain);
+
+        address strat = address(new MockPriceStrategy(1));
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+
+        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+    }
+
+    function testAddPriceStrategyToSldDomain_pass() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+
+        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
+        bytes32 parentNamehash = bytes32(id);
+        addMockCommitIntent(true);
+
+        string memory domain = "test";
+        address parent_address = address(0x12345678);
+        address child_address = address(0x22446688);
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(parent_address);
+
+        vm.startPrank(parent_address);
+        Sld.HandshakeTldContract().mint(parent_address, domain);
+
+        address strat = address(new MockPriceStrategy(0));
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+
+        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+        vm.stopPrank();
+
+        vm.startPrank(child_address);
+
+        bytes32[] memory emptyArr;
+
+        bytes32 namehash = getNamehash("test", parentNamehash);
+
+        Sld.purchaseSld(
+            "test",
+            bytes32(uint256(0x0)),
+            666,
+            parentNamehash,
+            emptyArr,
+            child_address
+        );
+        address childStrat = address(new MockPriceStrategy(1));
+        Sld.setPricingStrategy(uint256(namehash), childStrat);
+
+        assertEq(address(Sld.getPricingStrategy(namehash)), childStrat);
+        vm.stopPrank();
+    }
+
+    function testAddPriceStrategyToSldNotOwner_fail() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+
+        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
+        bytes32 parentNamehash = bytes32(id);
+        addMockCommitIntent(true);
+
+        string memory domain = "test";
+        address parent_address = address(0x12345678);
+        address child_address = address(0x22446688);
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(parent_address);
+
+        vm.startPrank(parent_address);
+        Sld.HandshakeTldContract().mint(parent_address, domain);
+
+        address strat = address(new MockPriceStrategy(0));
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+
+        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+        vm.stopPrank();
+
+        vm.startPrank(child_address);
+
+        bytes32[] memory emptyArr;
+
+        bytes32 namehash = getNamehash("test", parentNamehash);
+
+        //we mint to other address 0x1337
+        Sld.purchaseSld(
+            "test",
+            bytes32(uint256(0x0)),
+            666,
+            parentNamehash,
+            emptyArr,
+            address(0x1337)
+        );
+        address childStrat = address(new MockPriceStrategy(1));
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setPricingStrategy(uint256(namehash), childStrat);
+
+        vm.stopPrank();
+    }
+
+    function testAddPriceStrategyToTldNotOwner_fail() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+
+        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
+        bytes32 parentNamehash = bytes32(id);
+        addMockCommitIntent(true);
+
+        string memory domain = "test";
+        address parent_address = address(0x12345678);
+        address not_parent_address = address(0x222222);
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(parent_address);
+
+        vm.startPrank(parent_address);
+        Sld.HandshakeTldContract().mint(parent_address, domain);
+        vm.stopPrank();
+
+        vm.startPrank(not_parent_address);
+        address strat = address(new MockPriceStrategy(1));
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+    }
+
     function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
@@ -1267,7 +1414,7 @@ contract HandshakeSldTests is Test {
         vm.stopPrank();
     }
 
-    function testSetRoyaltyPaymentAddressForSldParentFromSldParentOwnerApprovedAddress()
+    function testSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerApprovedAddress()
         public
     {
         string memory tldName = "test";
@@ -1342,26 +1489,65 @@ contract HandshakeSldTests is Test {
         vm.stopPrank();
     }
 
-    function testSetRoyaltyPaymentAddressForSldParentFromNotSldParentOwnerAddress_ExpectFail()
-        public
-    {
-        assertFalse(true, "not implemented");
-    }
-
-    function testSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerAddress() public {
-        assertFalse(true, "not implemented");
-    }
-
-    function testSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerApprovedAddress()
-        public
-    {
-        assertFalse(true, "not implemented");
-    }
-
     function testSetRoyaltyPaymentAmountForSldParentFromNotSldParentOwnerAddress_ExpectFail()
         public
     {
-        assertFalse(true, "not implemented");
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address sldOwner = address(0x232323);
+        address sldSldOwner = address(0xababab);
+        address payoutAddress = address(0x22886644);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        bytes32[] memory emptyArr;
+
+        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+
+        addMockPriceStrategyToTld(parent_hash);
+        addMockCommitIntent(true);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, tldName);
+
+        vm.prank(sldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+
+        bytes32 sldHash = keccak256(
+            abi.encodePacked(
+                keccak256(abi.encodePacked("test")),
+                keccak256(abi.encodePacked("test"))
+            )
+        );
+
+        uint256 sldId = uint256(sldHash);
+
+        //test.test.test
+        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+
+        addMockPriceStrategyToTld(sldHash);
+
+        vm.prank(sldSldOwner);
+        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+
+        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+
+        assertEq(tldId, uint256(parent_hash));
+
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        uint256 parentId = uint256(parentNamehash);
+
+        address notApprovedAddress = address(0xbada55);
+
+        uint256 payoutAmount = 10;
+
+        vm.startPrank(notApprovedAddress);
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
+        vm.stopPrank();
     }
 
     function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame(
