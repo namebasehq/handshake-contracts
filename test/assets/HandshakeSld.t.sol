@@ -942,7 +942,7 @@ contract HandshakeSldTests is Test {
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockPriceStrategy(1));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        Sld.setPricingStrategy(parentNamehash, strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
     }
@@ -968,7 +968,7 @@ contract HandshakeSldTests is Test {
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockPriceStrategy(0));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        Sld.setPricingStrategy(parentNamehash, strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
@@ -988,7 +988,7 @@ contract HandshakeSldTests is Test {
             child_address
         );
         address childStrat = address(new MockPriceStrategy(1));
-        Sld.setPricingStrategy(uint256(namehash), childStrat);
+        Sld.setPricingStrategy(namehash, childStrat);
 
         assertEq(address(Sld.getPricingStrategy(namehash)), childStrat);
         vm.stopPrank();
@@ -1015,7 +1015,7 @@ contract HandshakeSldTests is Test {
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockPriceStrategy(0));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        Sld.setPricingStrategy(parentNamehash, strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
@@ -1037,7 +1037,7 @@ contract HandshakeSldTests is Test {
         );
         address childStrat = address(new MockPriceStrategy(1));
         vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(uint256(namehash), childStrat);
+        Sld.setPricingStrategy(namehash, childStrat);
 
         vm.stopPrank();
     }
@@ -1066,7 +1066,7 @@ contract HandshakeSldTests is Test {
         vm.startPrank(not_parent_address);
         address strat = address(new MockPriceStrategy(1));
         vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        Sld.setPricingStrategy(parentNamehash, strat);
     }
 
     function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
@@ -1772,5 +1772,50 @@ contract HandshakeSldTests is Test {
             // so should be zero
             assertEq(dets[i].RoyaltyAmount, 0, "royalty amount does not match");
         }
+    }
+
+    function testUpdatePriceStrategyFromSldOwner() public {
+        string memory label = "testing123";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(uint256(0x123456));
+
+        MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.startPrank(claimant);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+
+        bytes32 childHash = getNamehash(label, parentNamehash);
+        Sld.setPricingStrategy(childHash, address(priceStrategy));
+        vm.stopPrank();
+    }
+
+    function testUpdatePriceStrategyFromNotSldOwner() public {
+        string memory label = "testing123";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(uint256(0x123456));
+
+        MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.prank(claimant);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        vm.startPrank(address(0x22446666));
+        bytes32 childHash = getNamehash(label, parentNamehash);
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setPricingStrategy(childHash, address(priceStrategy));
+        vm.stopPrank();
     }
 }

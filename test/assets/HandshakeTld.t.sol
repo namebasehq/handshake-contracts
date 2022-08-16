@@ -4,6 +4,8 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/HandshakeTld.sol";
+import "src/contracts/HandshakeSld.sol";
+import "test/mocks/mockPriceStrategy.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldPriceStrategy.sol";
@@ -11,9 +13,11 @@ import "interfaces/ISldPriceStrategy.sol";
 contract HandshakeTldTests is Test {
     using stdStorage for StdStorage;
     HandshakeTld Tld;
+    HandshakeSld Sld;
 
     function setUp() public {
         Tld = new HandshakeTld(address(this));
+        Sld = new HandshakeSld();
     }
 
     function testMintFromUnauthorisedAddress() public {
@@ -45,75 +49,70 @@ contract HandshakeTldTests is Test {
         assertEq(domain, Tld.NamehashToLabelMap(namehash));
     }
 
-    //not working currently. Need to check if accessing internal storage is
-    //supported.. doesn't look like it currently
     function testUpdateDefaultSldPriceStrategyFromTldOwner() public {
         string memory domain = "test";
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
+        bytes32 tldHash = bytes32(tldId);
         address tldOwnerAddr = address(0x6942);
-        address sldPriceStrategy = address(0x133737);
+        MockPriceStrategy sldPriceStrategy = new MockPriceStrategy(0);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
-
-        Tld.mint(tldOwnerAddr, domain);
-
-        vm.startPrank(tldOwnerAddr);
-        Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
-        assertEq(
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId))),
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId)))
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(address(this));
+        stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
+            address(Sld.HandshakeTldContract())
         );
+        Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
+        assertEq(
+            tldId,
+            70622639689279718371527342103894932928233838121221666359043189029713682937432,
+            "parent id not as expected"
+        );
+
+        emit log_named_address(
+            "owner is",
+            Sld.HandshakeTldContract().ownerOf(
+                70622639689279718371527342103894932928233838121221666359043189029713682937432
+            )
+        );
+        vm.startPrank(tldOwnerAddr);
+        Sld.setPricingStrategy(tldHash, address(sldPriceStrategy));
+
+        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldPriceStrategy));
+
         vm.stopPrank();
     }
 
     function testUpdateDefaultSldPriceStrategyFromNotTldOwner() public {
         string memory domain = "test";
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
+        bytes32 tldHash = bytes32(keccak256(abi.encodePacked(domain)));
+        uint256 tldId = uint256(tldHash);
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
         address sldPriceStrategy = address(0x133737);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
+        stdstore
+            .target(address(Sld.HandshakeTldContract()))
+            .sig("ClaimManager()")
+            .checked_write(address(this));
 
-        Tld.mint(tldOwnerAddr, domain);
+        Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
 
         vm.startPrank(notTldOwnerAddr);
-        vm.expectRevert("Caller is not owner of TLD");
-        Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
-        assertEq(
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId))),
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId)))
+
+        // Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
+        stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
+            address(Sld.HandshakeTldContract())
         );
+        vm.expectRevert("not approved or owner of parent domain");
+        Sld.setPricingStrategy(tldHash, sldPriceStrategy);
         vm.stopPrank();
     }
 
-    function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {
-        string memory domain = "test";
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
-        uint256 notTldId = 4444;
-        address tldOwnerAddr = address(0x6942);
-        address notTldOwnerAddr = address(0x004204);
-        address sldPriceStrategy = address(0x133737);
-
-        //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
-
-        Tld.mint(tldOwnerAddr, domain);
-
-        vm.startPrank(tldOwnerAddr);
-        vm.expectRevert("NOT_MINTED");
-        Tld.updateSldPricingStrategy(
-            bytes32(notTldId),
-            ISldPriceStrategy(sldPriceStrategy)
-        );
-        assertEq(
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId))),
-            address(Tld.SldDefaultPriceStrategy(bytes32(tldId)))
-        );
-        vm.stopPrank();
-    }
+    function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {}
 
     function testUpdateRoyaltyPercentageFromOwnerWallet() public {
         //10 percent is the max royalty

@@ -45,13 +45,6 @@ contract HandshakeTld is HandshakeERC721 {
         _;
     }
 
-    function updateSldPricingStrategy(bytes32 _namehash, ISldPriceStrategy _strategy)
-        public
-        tldOwner(_namehash)
-    {
-        SldDefaultPriceStrategy[_namehash] = _strategy;
-    }
-
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view

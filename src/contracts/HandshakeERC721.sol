@@ -17,9 +17,6 @@ abstract contract HandshakeERC721 is ERC721, Ownable {
 
     mapping(bytes32 => string) public NamehashToLabelMap;
 
-    //moved this from tld contract so we can have subdomains of subdomains.
-    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
-
     IMetadataService public Metadata;
 
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}

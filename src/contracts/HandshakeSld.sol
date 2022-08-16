@@ -24,6 +24,9 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
 
+    //moved this from tld contract so we can have subdomains of subdomains.
+    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
+
     error MissingPriceStrategy();
 
     //interface method for price strategy
@@ -54,11 +57,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             )
         ) {
             return SldDefaultPriceStrategy[_parentNamehash];
-        } else if (
-            address(HandshakeTldContract.SldDefaultPriceStrategy(_parentNamehash))
-                .supportsInterface(PRICE_IN_WEI_SELECTOR)
-        ) {
-            return HandshakeTldContract.SldDefaultPriceStrategy(_parentNamehash);
         } else {
             revert MissingPriceStrategy();
         }
@@ -183,15 +181,15 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         LabelValidator = _validator;
     }
 
-    function setPricingStrategy(uint256 _id, address _strategy)
+    function setPricingStrategy(bytes32 _namehash, address _strategy)
         public
-        onlyParentApprovedOrOwner(_id)
+        onlyParentApprovedOrOwner(uint256(_namehash))
     {
         require(
             _strategy.supportsInterface(PRICE_IN_WEI_SELECTOR),
             "missing interface for price strategy"
         );
-        SldDefaultPriceStrategy[bytes32(_id)] = ISldPriceStrategy(_strategy);
+        SldDefaultPriceStrategy[_namehash] = ISldPriceStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)

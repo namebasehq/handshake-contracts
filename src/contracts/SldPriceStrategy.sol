@@ -2,13 +2,18 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ISldPriceStrategy.sol";
+import "./HandshakeERC721.sol";
 
 contract SldPriceStrategy is ISldPriceStrategy {
     mapping(bytes32 => uint256) public FixedPrice;
     address public AuthorisedAddress;
 
-    constructor() {
-        AuthorisedAddress = msg.sender;
+    HandshakeERC721 public NftContract;
+    bytes32 public ParentHash;
+
+    constructor(bytes32 _namehash, HandshakeERC721 _nft) {
+        NftContract = _nft;
+        ParentHash = _namehash;
     }
 
     function getPriceInWei(
