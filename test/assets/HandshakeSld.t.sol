@@ -189,7 +189,7 @@ contract HandshakeSldTests is Test {
             abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label)))
         );
 
-        assertEq(parentNamehash, Sld.NamehashToParentMap(uint256(full_hash)));
+        assertEq(parentNamehash, Sld.NamehashToParentMap(full_hash));
     }
 
     function testCheckLabelToNamehashIsCorrectAfterMint() public {
@@ -917,7 +917,7 @@ contract HandshakeSldTests is Test {
 
         vm.prank(approvedAddress);
         Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
-        emit log_named_uint("royalty amount set", Sld.RoyaltyPayoutAmountMap(tldId));
+        emit log_named_uint("royalty amount set", Sld.RoyaltyPayoutAmountMap(parent_hash));
         (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldId, 100);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
@@ -1336,7 +1336,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         emit log_named_uint("parent id is :", parentId);
@@ -1398,7 +1398,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address newOwnerAddress = address(0xbada55);
@@ -1462,7 +1462,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address approvedAddress = address(0xbada55);
@@ -1481,7 +1481,7 @@ contract HandshakeSldTests is Test {
             "invalid child of SLD owner"
         );
 
-        emit log_named_uint("royalty amount", Sld.RoyaltyPayoutAmountMap(sldId));
+
         (, uint256 amount) = Sld.royaltyInfo(expectedSldChildId, 100);
 
         //this should change to the new owner address
@@ -1537,7 +1537,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldId);
+        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address notApprovedAddress = address(0xbada55);
@@ -1817,5 +1817,7 @@ contract HandshakeSldTests is Test {
         vm.expectRevert("not approved or owner of parent domain");
         Sld.setPricingStrategy(childHash, address(priceStrategy));
         vm.stopPrank();
+
+        
     }
 }

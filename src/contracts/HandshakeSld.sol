@@ -7,16 +7,12 @@ import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "src/structs/SubdomainDetail.sol";
+import "src/structs/SubdomainRegistrationDetail.sol";
 
 pragma solidity ^0.8.15;
 
-struct SubdomainDetail {
-    uint256 Id;
-    uint256 ParentId;
-    string Label;
-    uint256 Price;
-    uint256 RoyaltyAmount;
-}
+
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     using ERC165Checker for address;
@@ -33,10 +29,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     bytes4 private constant PRICE_IN_WEI_SELECTOR =
         bytes4(keccak256("getPriceInWei(address,bytes32,string,uint256,bytes32[])"));
 
-    mapping(uint256 => bytes32) public NamehashToParentMap;
+    mapping(bytes32 => bytes32) public NamehashToParentMap;
 
-    mapping(uint256 => uint256) public RoyaltyPayoutAmountMap;
-    mapping(uint256 => mapping(address => address)) public RoyaltyPayoutAddressMap;
+    mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
+    mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
         HandshakeTldContract = new HandshakeTld(msg.sender);
@@ -150,7 +146,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         _safeMint(to, id);
 
         NamehashToLabelMap[namehash] = _label;
-        NamehashToParentMap[id] = _parentNamehash;
+        NamehashToParentMap[namehash] = _parentNamehash;
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
@@ -159,20 +155,20 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         override
         returns (address receiver, uint256 royaltyAmount)
     {
-        bytes32 parentNamehash = NamehashToParentMap[tokenId];
+        bytes32 parentNamehash = NamehashToParentMap[bytes32(tokenId)];
         uint256 parentId = uint256(parentNamehash);
 
         address owner = exists(parentId)
             ? ownerOf(parentId)
             : HandshakeTldContract.ownerOf(parentId);
 
-        address payoutAddress = RoyaltyPayoutAddressMap[parentId][owner] == address(0)
+        address payoutAddress = RoyaltyPayoutAddressMap[parentNamehash][owner] == address(0)
             ? owner
-            : RoyaltyPayoutAddressMap[parentId][owner];
+            : RoyaltyPayoutAddressMap[parentNamehash][owner];
 
-        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentId] == 0
+        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentNamehash] == 0
             ? 0
-            : ((salePrice / 100) * RoyaltyPayoutAmountMap[parentId]);
+            : ((salePrice / 100) * RoyaltyPayoutAmountMap[parentNamehash]);
 
         return (payoutAddress, royaltyAmount);
     }
@@ -197,7 +193,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         onlyParentApprovedOrOwner(_id)
     {
         require(_amount <= 10, "10% maximum royalty on SLD");
-        RoyaltyPayoutAmountMap[_id] = _amount;
+        RoyaltyPayoutAmountMap[bytes32(_id)] = _amount;
     }
 
     function setRoyaltyPayoutAddress(uint256 _id, address _addr)
@@ -208,7 +204,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         address parentOwner = exists(_id)
             ? ownerOf(_id)
             : HandshakeTldContract.ownerOf(_id);
-        RoyaltyPayoutAddressMap[_id][parentOwner] = _addr;
+        RoyaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
     }
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) public returns (bool) {
@@ -236,7 +232,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _proofs
         );
 
-        uint256 royaltyAmount = RoyaltyPayoutAmountMap[_parentId];
+        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentHash];
 
         SubdomainDetail memory detail = SubdomainDetail(
             uint256(getNamehash(_label, parentHash)),
