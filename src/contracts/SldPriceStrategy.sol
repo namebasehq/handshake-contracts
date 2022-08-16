@@ -16,7 +16,7 @@ contract SldPriceStrategy is ISldPriceStrategy {
         ParentHash = _namehash;
     }
 
-    function getPriceInWei(
+    function getPriceInDollars(
         address _buyingAddress,
         bytes32 _parentNamehash,
         string memory _label,
@@ -29,7 +29,7 @@ contract SldPriceStrategy is ISldPriceStrategy {
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
         return
             interfaceID == this.supportsInterface.selector || //ERC165
-            interfaceID == this.getPriceInWei.selector;
+            interfaceID == this.getPriceInDollars.selector;
     }
 
     function updatePrice(bytes32 _parentHash, uint256 _price) external {

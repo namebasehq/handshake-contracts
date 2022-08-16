@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@chainlink/contracts": "^0.4.2",
     "@openzeppelin/contracts": "^4.7.0",
     "solmate": "^6.5.0"
   },

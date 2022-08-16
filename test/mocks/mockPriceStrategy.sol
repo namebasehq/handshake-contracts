@@ -10,7 +10,7 @@ contract MockPriceStrategy is ISldPriceStrategy {
         Price = _price;
     }
 
-    function getPriceInWei(
+    function getPriceInDollars(
         address _buyingAddress,
         bytes32 _parentNamehash,
         string memory _label,
@@ -23,6 +23,6 @@ contract MockPriceStrategy is ISldPriceStrategy {
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
         return
             interfaceID == this.supportsInterface.selector || // ERC165
-            interfaceID == this.getPriceInWei.selector;
+            interfaceID == this.getPriceInDollars.selector;
     }
 }

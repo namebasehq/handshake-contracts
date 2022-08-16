@@ -9,4 +9,3 @@ struct SubdomainDetail {
     uint256 Price;
     uint256 RoyaltyAmount;
 }
-

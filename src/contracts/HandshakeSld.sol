@@ -9,10 +9,10 @@ import "interfaces/ISldPriceStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "src/structs/SubdomainDetail.sol";
 import "src/structs/SubdomainRegistrationDetail.sol";
+import "interfaces/IPriceOracle.sol";
+import "src/contracts/UsdPriceOracle.sol";
 
 pragma solidity ^0.8.15;
-
-
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     using ERC165Checker for address;
@@ -20,14 +20,19 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
 
+    IPriceOracle public UsdOracle = new UsdPriceOracle();
+
+    event NewUsdOracle(address indexed _usdEthPriceOracle);
+
     //moved this from tld contract so we can have subdomains of subdomains.
     mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
+    mapping(bytes32 => SubdomainRegistrationDetail) public SubdomainRegistrationHistory;
 
     error MissingPriceStrategy();
 
     //interface method for price strategy
-    bytes4 private constant PRICE_IN_WEI_SELECTOR =
-        bytes4(keccak256("getPriceInWei(address,bytes32,string,uint256,bytes32[])"));
+    bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
+        bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256,bytes32[])"));
 
     mapping(bytes32 => bytes32) public NamehashToParentMap;
 
@@ -49,7 +54,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     {
         if (
             address(SldDefaultPriceStrategy[_parentNamehash]).supportsInterface(
-                PRICE_IN_WEI_SELECTOR
+                PRICE_IN_DOLLARS_SELECTOR
             )
         ) {
             return SldDefaultPriceStrategy[_parentNamehash];
@@ -121,13 +126,19 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         address _recipient
     ) public payable {
         require(LabelValidator.isValidLabel(_label), "invalid label");
+        bytes32 namehash = getNamehash(_label, _parentNamehash);
+        require(
+            CommitIntent.allowedCommit(namehash, _secret, msg.sender),
+            "commit not allowed"
+        );
+        require(canRegister(namehash), "Subdomain already registered");
 
         address to = _recipient == address(0) ? msg.sender : _recipient;
 
         //will revert if pricing strategy does not exist.
         ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash);
 
-        uint256 priceInWei = priceStrat.getPriceInWei(
+        uint256 priceInDollars = priceStrat.getPriceInDollars(
             msg.sender,
             _parentNamehash,
             _label,
@@ -135,18 +146,43 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _proofs
         );
 
-        require(priceInWei <= msg.value, "invalid price");
-        bytes32 namehash = getNamehash(_label, _parentNamehash);
+        require(priceInDollars <= msg.value, "invalid price");
+
         uint256 id = uint256(namehash);
-        require(
-            CommitIntent.allowedCommit(namehash, _secret, msg.sender),
-            "commit not allowed"
-        );
+
+        //if it exists and we got this far
+        //then we just burn the token and mint it to the new owner.
+        if (exists(id)) {
+            _burn(id);
+        }
 
         _safeMint(to, id);
 
+        addRegistrationDetails(namehash, priceInDollars, _registrationLength);
         NamehashToLabelMap[namehash] = _label;
         NamehashToParentMap[namehash] = _parentNamehash;
+    }
+
+    function addRegistrationDetails(
+        bytes32 _namehash,
+        uint256 _price,
+        uint256 _days
+    ) private {
+        SubdomainRegistrationDetail memory details = SubdomainRegistrationDetail(
+            uint72(block.timestamp),
+            uint24(_days),
+            uint24(_price)
+        );
+        SubdomainRegistrationHistory[_namehash] = details;
+    }
+
+    function canRegister(bytes32 _namehash) private view returns (bool) {
+        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[
+            _namehash
+        ];
+        return
+            detail.RegistrationTime + (detail.RegistrationLength * 86400) <
+            block.timestamp;
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
@@ -162,7 +198,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             ? ownerOf(parentId)
             : HandshakeTldContract.ownerOf(parentId);
 
-        address payoutAddress = RoyaltyPayoutAddressMap[parentNamehash][owner] == address(0)
+        address payoutAddress = RoyaltyPayoutAddressMap[parentNamehash][owner] ==
+            address(0)
             ? owner
             : RoyaltyPayoutAddressMap[parentNamehash][owner];
 
@@ -182,7 +219,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         onlyParentApprovedOrOwner(uint256(_namehash))
     {
         require(
-            _strategy.supportsInterface(PRICE_IN_WEI_SELECTOR),
+            _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
         SldDefaultPriceStrategy[_namehash] = ISldPriceStrategy(_strategy);
@@ -224,7 +261,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         //will revert if pricing strategy does not exist.
         ISldPriceStrategy priceStrat = getPricingStrategy(parentHash);
 
-        uint256 priceInWei = priceStrat.getPriceInWei(
+        uint256 priceInDollars = priceStrat.getPriceInDollars(
             _recipient,
             parentHash,
             _label,
@@ -238,7 +275,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             uint256(getNamehash(_label, parentHash)),
             _parentId,
             _label,
-            priceInWei,
+            priceInDollars,
             royaltyAmount
         );
 
@@ -278,6 +315,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         }
 
         return arr;
+    }
+
+    function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
+        UsdOracle = _oracle;
+        emit NewUsdOracle(address(_oracle));
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {

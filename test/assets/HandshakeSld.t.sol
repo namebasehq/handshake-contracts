@@ -7,6 +7,7 @@ import "src/contracts/HandshakeSld.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
 import "test/mocks/mockPriceStrategy.sol";
+import "test/mocks/mockUsdOracle.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract HandshakeSldTests is Test {
@@ -129,6 +130,31 @@ contract HandshakeSldTests is Test {
         assertEq(Sld.balanceOf(claimant), 1);
     }
 
+    function testMintSldFromAuthorisedWalletRepurchaseWhenExpired() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.startPrank(claimant);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        vm.warp(block.timestamp + 0 + (86400 * registrationLength));
+        vm.expectRevert("Subdomain already registered");
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+
+        vm.warp(block.timestamp + 1);
+        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 1);
+    }
+
     function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
@@ -163,7 +189,7 @@ contract HandshakeSldTests is Test {
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
         Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
-        vm.expectRevert("ALREADY_MINTED");
+        vm.expectRevert("Subdomain already registered");
         Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
         vm.stopPrank();
 
@@ -917,7 +943,10 @@ contract HandshakeSldTests is Test {
 
         vm.prank(approvedAddress);
         Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
-        emit log_named_uint("royalty amount set", Sld.RoyaltyPayoutAmountMap(parent_hash));
+        emit log_named_uint(
+            "royalty amount set",
+            Sld.RoyaltyPayoutAmountMap(parent_hash)
+        );
         (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldId, 100);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
@@ -1481,7 +1510,6 @@ contract HandshakeSldTests is Test {
             "invalid child of SLD owner"
         );
 
-
         (, uint256 amount) = Sld.royaltyInfo(expectedSldChildId, 100);
 
         //this should change to the new owner address
@@ -1817,7 +1845,35 @@ contract HandshakeSldTests is Test {
         vm.expectRevert("not approved or owner of parent domain");
         Sld.setPricingStrategy(childHash, address(priceStrategy));
         vm.stopPrank();
+    }
 
-        
+    function testPriceOracle() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        MockUsdOracle oracle = new MockUsdOracle(200000000000);
+
+        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+
+        hoax(claimant, 1 ether);
+
+        Sld.purchaseSld{value: 30000}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 1);
     }
 }
