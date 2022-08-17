@@ -8,10 +8,10 @@ contract MockUsdOracle is IPriceOracle {
 
     constructor(uint256 _price) {
         //200000000000 - ($2000)
-        Price = 200000000000;
+        Price = _price;
     }
 
-    function getPrice() external returns (uint256) {
+    function getPrice() external view returns (uint256) {
         return Price;
     }
 }

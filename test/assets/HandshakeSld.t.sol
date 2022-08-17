@@ -19,6 +19,7 @@ contract HandshakeSldTests is Test {
     function setUp() public {
         Sld = new HandshakeSld();
         addMockValidatorToSld();
+        addMockOracle();
     }
 
     function getNamehash(string memory _label, bytes32 _parentHash)
@@ -30,6 +31,38 @@ contract HandshakeSldTests is Test {
         bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
 
         return big_hash;
+    }
+
+    function mintSingleSubdomain(
+        string memory _label,
+        bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        bytes32[] memory _proofs,
+        address _receiver
+    ) private {
+        string[] memory label = new string[](1);
+        bytes32[] memory secret = new bytes32[](1);
+        uint256[] memory registrationLength = new uint256[](1);
+        bytes32[] memory parentNamehash = new bytes32[](1);
+        bytes32[][] memory proofs = new bytes32[][](1);
+        address[] memory receiver = new address[](1);
+
+        label[0] = _label;
+        secret[0] = _secret;
+        registrationLength[0] = _registrationLength;
+        parentNamehash[0] = _parentNamehash;
+        proofs[0] = _proofs;
+        receiver[0] = _receiver;
+
+        Sld.purchaseMultipleSld(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            proofs,
+            receiver
+        );
     }
 
     function addMockValidatorToSld() private {
@@ -54,6 +87,11 @@ contract HandshakeSldTests is Test {
 
     function addMockPriceStrategyToTld(bytes32 _tldNamehash) private {
         addMockPriceStrategyToTld(_tldNamehash, 0);
+    }
+
+    function addMockOracle() private {
+        MockUsdOracle oracle = new MockUsdOracle(1);
+        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
     }
 
     function addMockCommitIntent(bool _returnValue) private {
@@ -188,9 +226,23 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        mintSingleSubdomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.expectRevert("Subdomain already registered");
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        mintSingleSubdomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
@@ -998,6 +1050,11 @@ contract HandshakeSldTests is Test {
 
         address strat = address(new MockPriceStrategy(0));
         Sld.setPricingStrategy(parentNamehash, strat);
+
+        emit log_named_uint("wei value of 1 dollar", Sld.getWeiValueOfDollar());
+
+        emit log_named_address("usd address", address(Sld.UsdOracle()));
+        emit log_named_uint("usd value", Sld.UsdOracle().getPrice());
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
@@ -1865,7 +1922,7 @@ contract HandshakeSldTests is Test {
 
         hoax(claimant, 1 ether);
 
-        Sld.purchaseSld{value: 30000}(
+        Sld.purchaseSld{value: 14376826850000000}(
             label,
             secret,
             registrationLength,
@@ -1875,5 +1932,24 @@ contract HandshakeSldTests is Test {
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
+    }
+
+    function testPriceOracle2() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 50;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        MockUsdOracle oracle = new MockUsdOracle(183185670000);
+
+        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+
+        emit log_named_uint("wei value of 1 dollar", Sld.getWeiValueOfDollar());
     }
 }

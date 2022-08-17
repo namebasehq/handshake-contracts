@@ -2,5 +2,5 @@
 pragma solidity ^0.8.15;
 
 interface IPriceOracle {
-    function getPrice() external returns (uint256);
+    function getPrice() external view returns (uint256);
 }
