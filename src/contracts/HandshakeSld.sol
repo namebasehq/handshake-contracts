@@ -88,9 +88,9 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
         for (uint256 i; i < expectedLength; ) {
             //will revert if pricing strategy does not exist.
-            ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash[i]);
+            //priceStrat = getPricingStrategy(_parentNamehash[i]);
 
-            domainDollarCost = priceStrat.getPriceInDollars(
+            domainDollarCost = getPricingStrategy(_parentNamehash[i]).getPriceInDollars(
                 msg.sender,
                 _parentNamehash[i],
                 _label[i],
@@ -125,8 +125,48 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         uint256 priceInWei = getWeiValueOfDollar() * priceInDollars;
         require(priceInWei <= msg.value, "Price too low");
 
-        //uint256 refund = msg.value - priceInWei;
-        //refund here
+        uint256 refund = msg.value - priceInWei;
+        payable(msg.sender).transfer(refund);
+    }
+
+    function purchaseSingleDomain(
+        string calldata _label,
+        bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        bytes32[] calldata _proofs,
+        address _recipient
+    ) external payable {
+        uint256 domainDollarCost = getPricingStrategy(_parentNamehash).getPriceInDollars(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength,
+            _proofs
+        );
+
+        //refund any excess, can't reentry as token will already exist
+
+        purchaseSld(
+            _label,
+            _secret,
+            _registrationLength,
+            _parentNamehash,
+            _proofs,
+            _recipient == address(0) ? msg.sender : _recipient
+        );
+
+        addRegistrationDetails(
+            getNamehash(_label, _parentNamehash),
+            domainDollarCost,
+            _registrationLength
+        );
+
+        uint256 priceInWei = getWeiValueOfDollar() * domainDollarCost;
+        require(priceInWei <= msg.value, "Price too low");
+
+        uint256 refund = msg.value - priceInWei;
+        payable(msg.sender).transfer(refund);
     }
 
     function purchaseSld(
@@ -135,7 +175,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         bytes32[] calldata _proofs
-    ) public payable {
+    ) private {
         purchaseSld(
             _label,
             _secret,
@@ -153,7 +193,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32 _parentNamehash,
         bytes32[] calldata _proofs,
         address _recipient
-    ) public payable returns (uint256) {
+    ) private returns (uint256) {
         require(LabelValidator.isValidLabel(_label), "invalid label");
         bytes32 namehash = getNamehash(_label, _parentNamehash);
         require(
@@ -161,8 +201,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             "commit not allowed"
         );
         require(canRegister(namehash), "Subdomain already registered");
-
-        address to = _recipient == address(0) ? msg.sender : _recipient;
 
         uint256 id = uint256(namehash);
 
@@ -172,7 +210,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _burn(id);
         }
 
-        _safeMint(to, id);
+        _safeMint(_recipient == address(0) ? msg.sender : _recipient, id);
 
         NamehashToLabelMap[namehash] = _label;
         NamehashToParentMap[namehash] = _parentNamehash;

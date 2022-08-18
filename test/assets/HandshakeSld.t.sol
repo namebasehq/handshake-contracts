@@ -39,7 +39,8 @@ contract HandshakeSldTests is Test {
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         bytes32[] memory _proofs,
-        address _receiver
+        address _receiver,
+        uint256 _wei
     ) private {
         string[] memory label = new string[](1);
         bytes32[] memory secret = new bytes32[](1);
@@ -55,7 +56,7 @@ contract HandshakeSldTests is Test {
         proofs[0] = _proofs;
         receiver[0] = _receiver;
 
-        Sld.purchaseMultipleSld(
+        Sld.purchaseMultipleSld{value: _wei}(
             label,
             secret,
             registrationLength,
@@ -162,7 +163,14 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
@@ -181,13 +189,34 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.warp(block.timestamp + 0 + (86400 * registrationLength));
         vm.expectRevert("Subdomain already registered");
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
 
         vm.warp(block.timestamp + 1);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
@@ -208,7 +237,14 @@ contract HandshakeSldTests is Test {
 
         vm.startPrank(claimant);
         vm.expectRevert(MissingPriceStrategy.selector);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 0);
@@ -226,7 +262,7 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        mintSingleSubdomain(
+        Sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -235,7 +271,7 @@ contract HandshakeSldTests is Test {
             claimant
         );
         vm.expectRevert("Subdomain already registered");
-        mintSingleSubdomain(
+        Sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -261,7 +297,14 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            msg.sender
+        );
 
         bytes32 full_hash = keccak256(
             abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label)))
@@ -282,7 +325,14 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            msg.sender
+        );
 
         bytes32 full_hash = keccak256(
             abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label)))
@@ -436,7 +486,7 @@ contract HandshakeSldTests is Test {
 
         vm.startPrank(claimant);
 
-        Sld.purchaseSld(
+        Sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -463,7 +513,7 @@ contract HandshakeSldTests is Test {
         address receiver = address(0x8888);
 
         vm.startPrank(claimant);
-        Sld.purchaseSld(
+        Sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -546,7 +596,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -596,7 +653,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -646,7 +710,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -703,7 +774,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -761,7 +839,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -811,7 +896,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -866,7 +958,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -913,7 +1012,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -963,7 +1069,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -1065,7 +1178,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 namehash = getNamehash("test", parentNamehash);
 
-        Sld.purchaseSld(
+        Sld.purchaseSingleDomain(
             "test",
             bytes32(uint256(0x0)),
             666,
@@ -1113,7 +1226,7 @@ contract HandshakeSldTests is Test {
         bytes32 namehash = getNamehash("test", parentNamehash);
 
         //we mint to other address 0x1337
-        Sld.purchaseSld(
+        Sld.purchaseSingleDomain(
             "test",
             bytes32(uint256(0x0)),
             666,
@@ -1177,7 +1290,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         //test.test
         uint256 expectedSldId = uint256(
@@ -1231,7 +1351,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         bytes32 sldHash = keccak256(
             abi.encodePacked(
@@ -1248,7 +1375,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         assertEq(
             Sld.ownerOf(
@@ -1305,7 +1439,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         bytes32 sldHash = keccak256(
             abi.encodePacked(
@@ -1322,7 +1463,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         assertEq(
             Sld.ownerOf(
@@ -1377,7 +1525,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         assertEq(
             Sld.ownerOf(
@@ -1402,7 +1557,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         assertEq(
             Sld.ownerOf(
@@ -1461,7 +1623,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         bytes32 sldHash = keccak256(
             abi.encodePacked(
@@ -1478,7 +1647,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
 
@@ -1525,7 +1701,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            sldOwner
+        );
 
         bytes32 sldHash = keccak256(
             abi.encodePacked(
@@ -1542,7 +1725,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
 
@@ -1599,7 +1789,14 @@ contract HandshakeSldTests is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, parent_hash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            parent_hash,
+            emptyArr,
+            msg.sender
+        );
 
         bytes32 sldHash = keccak256(
             abi.encodePacked(
@@ -1616,7 +1813,14 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
-        Sld.purchaseSld("test", bytes32(0x0), 50, sldHash, emptyArr);
+        Sld.purchaseSingleDomain(
+            "test",
+            bytes32(0x0),
+            50,
+            sldHash,
+            emptyArr,
+            sldSldOwner
+        );
 
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
 
@@ -1874,7 +2078,14 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
 
         bytes32 childHash = getNamehash(label, parentNamehash);
         Sld.setPricingStrategy(childHash, address(priceStrategy));
@@ -1896,7 +2107,14 @@ contract HandshakeSldTests is Test {
         address claimant = address(0x6666);
 
         vm.prank(claimant);
-        Sld.purchaseSld(label, secret, registrationLength, parentNamehash, empty_array);
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
         vm.startPrank(address(0x22446666));
         bytes32 childHash = getNamehash(label, parentNamehash);
         vm.expectRevert("not approved or owner of parent domain");
@@ -1904,8 +2122,8 @@ contract HandshakeSldTests is Test {
         vm.stopPrank();
     }
 
-    function testPriceOracle() public {
-        string memory label = "";
+    function testPurchaseSingleDomainGetRefundForExcess() public {
+        string memory label = "test";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 50;
         bytes32 parentNamehash = bytes32(0x0);
@@ -1922,16 +2140,67 @@ contract HandshakeSldTests is Test {
 
         hoax(claimant, 1 ether);
 
-        Sld.purchaseSld{value: 14376826850000000}(
+        Sld.purchaseSingleDomain{value: 1 ether}(
             label,
             secret,
             registrationLength,
             parentNamehash,
-            empty_array
+            empty_array,
+            claimant
         );
         vm.stopPrank();
 
         assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(claimant.balance, 1 ether - 15000000000000000);
+
+        // if it's $30 then we get 0.985 ether refunded (0.015 cost price @ $2000 ether)
+    }
+
+    function testPurchaseTwoDomainGetRefundForExcess() public {
+        string[] memory label = new string[](2);
+        bytes32[] memory secret = new bytes32[](2);
+        uint256[] memory registrationLength = new uint256[](2);
+        bytes32[] memory parentNamehash = new bytes32[](2);
+        bytes32[][] memory proofs = new bytes32[][](2);
+        address[] memory receiver = new address[](2);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        label[0] = "test1";
+        label[1] = "test2";
+        secret[0] = 0x0;
+        secret[1] = 0x0;
+        registrationLength[0] = 365;
+        registrationLength[1] = 365;
+        parentNamehash[0] = 0x0;
+        proofs[0] = empty_array;
+        proofs[1] = empty_array;
+        receiver[0] = claimant;
+        receiver[1] = claimant;
+
+        addMockPriceStrategyToTld(parentNamehash[0], 30); //30 dollars
+        addMockCommitIntent(true);
+
+        MockUsdOracle oracle = new MockUsdOracle(200000000000);
+
+        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+
+        hoax(claimant, 1 ether);
+        Sld.purchaseMultipleSld{value: 1 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            proofs,
+            receiver
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 2);
+        assertEq(claimant.balance, 1 ether - 30000000000000000);
+
+        // if it's $30 then we get 0.985 ether refunded (0.015 cost price @ $2000 ether)
     }
 
     function testPriceOracle2() public {
