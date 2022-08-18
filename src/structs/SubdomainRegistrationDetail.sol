@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 
 struct SubdomainRegistrationDetail {
     uint72 RegistrationTime;
-    uint24 RegistrationLength;
+    uint72 RegistrationLength;
     uint24 RegistrationPrice;
+    uint24[10] RegistrationPriceSnapshot;
 }

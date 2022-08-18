@@ -17,7 +17,7 @@ contract MockPriceStrategy is ISldPriceStrategy {
         uint256 _registrationLength,
         bytes32[] calldata _proofs
     ) external view returns (uint256) {
-        return Price;
+        return (Price * _registrationLength) / 365;
     }
 
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {

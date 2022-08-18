@@ -20,6 +20,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
 
+    uint256 private constant MIN_REGISTRATION_DAYS = 364;
+
     IPriceOracle public UsdOracle = new UsdPriceOracle();
 
     event NewUsdOracle(address indexed _usdEthPriceOracle);
@@ -63,6 +65,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         }
     }
 
+    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength)
+        external
+    {}
+
     function purchaseMultipleSld(
         string[] calldata _label,
         bytes32[] calldata _secret,
@@ -85,12 +91,13 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
         uint256 priceInDollars;
         uint256 domainDollarCost;
+        ISldPriceStrategy priceStrat;
 
         for (uint256 i; i < expectedLength; ) {
             //will revert if pricing strategy does not exist.
-            //priceStrat = getPricingStrategy(_parentNamehash[i]);
+            priceStrat = getPricingStrategy(_parentNamehash[i]);
 
-            domainDollarCost = getPricingStrategy(_parentNamehash[i]).getPriceInDollars(
+            domainDollarCost = priceStrat.getPriceInDollars(
                 msg.sender,
                 _parentNamehash[i],
                 _label[i],
@@ -114,7 +121,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             addRegistrationDetails(
                 getNamehash(_label[i], _parentNamehash[i]),
                 domainDollarCost,
-                _registrationLength[i]
+                _registrationLength[i],
+                priceStrat,
+                _parentNamehash[i],
+                _label[i],
+                _proofs[i]
             );
 
             unchecked {
@@ -137,7 +148,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32[] calldata _proofs,
         address _recipient
     ) external payable {
-        uint256 domainDollarCost = getPricingStrategy(_parentNamehash).getPriceInDollars(
+        ISldPriceStrategy strategy = getPricingStrategy(_parentNamehash);
+        uint256 domainDollarCost = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,
             _label,
@@ -159,7 +171,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         addRegistrationDetails(
             getNamehash(_label, _parentNamehash),
             domainDollarCost,
-            _registrationLength
+            _registrationLength,
+            strategy,
+            _parentNamehash,
+            _label,
+            _proofs
         );
 
         uint256 priceInWei = getWeiValueOfDollar() * domainDollarCost;
@@ -167,23 +183,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
-    }
-
-    function purchaseSld(
-        string calldata _label,
-        bytes32 _secret,
-        uint256 _registrationLength,
-        bytes32 _parentNamehash,
-        bytes32[] calldata _proofs
-    ) private {
-        purchaseSld(
-            _label,
-            _secret,
-            _registrationLength,
-            _parentNamehash,
-            _proofs,
-            msg.sender
-        );
     }
 
     function purchaseSld(
@@ -219,12 +218,35 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     function addRegistrationDetails(
         bytes32 _namehash,
         uint256 _price,
-        uint256 _days
+        uint256 _days,
+        ISldPriceStrategy _strategy,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        bytes32[] calldata _proofs
     ) private {
+        require(_days > MIN_REGISTRATION_DAYS, "Too short registration length");
+        uint24[10] memory arr;
+
+        for (uint256 i; i < arr.length; ) {
+            uint256 price = _strategy.getPriceInDollars(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                (i + 1) * 365,
+                _proofs
+            );
+
+            arr[i] = uint24(price);
+
+            unchecked {
+                ++i;
+            }
+        }
         SubdomainRegistrationDetail memory details = SubdomainRegistrationDetail(
             uint72(block.timestamp),
             uint24(_days),
-            uint24(_price)
+            uint24(_price),
+            arr
         );
         SubdomainRegistrationHistory[_namehash] = details;
     }
@@ -257,16 +279,13 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             ? ownerOf(parentId)
             : HandshakeTldContract.ownerOf(parentId);
 
-        address payoutAddress = RoyaltyPayoutAddressMap[parentNamehash][owner] ==
-            address(0)
+        receiver = RoyaltyPayoutAddressMap[parentNamehash][owner] == address(0)
             ? owner
             : RoyaltyPayoutAddressMap[parentNamehash][owner];
 
-        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentNamehash] == 0
+        royaltyAmount = RoyaltyPayoutAmountMap[parentNamehash] == 0
             ? 0
             : ((salePrice / 100) * RoyaltyPayoutAmountMap[parentNamehash]);
-
-        return (payoutAddress, royaltyAmount);
     }
 
     function updateLabelValidator(IDomainValidator _validator) public onlyOwner {
@@ -379,6 +398,16 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
         UsdOracle = _oracle;
         emit NewUsdOracle(address(_oracle));
+    }
+
+    function getGuarenteedPrices(bytes32 _namehash)
+        external
+        returns (uint24[10] memory _prices)
+    {
+        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[
+            _namehash
+        ];
+        return detail.RegistrationPriceSnapshot;
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {

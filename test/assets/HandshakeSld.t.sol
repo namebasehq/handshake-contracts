@@ -91,7 +91,7 @@ contract HandshakeSldTests is Test {
     }
 
     function addMockOracle() private {
-        MockUsdOracle oracle = new MockUsdOracle(1);
+        MockUsdOracle oracle = new MockUsdOracle(200000000000);
         stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
     }
 
@@ -153,7 +153,7 @@ contract HandshakeSldTests is Test {
     function testMintSldFromAuthorisedWallet() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -179,7 +179,7 @@ contract HandshakeSldTests is Test {
     function testMintSldFromAuthorisedWalletRepurchaseWhenExpired() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -225,7 +225,7 @@ contract HandshakeSldTests is Test {
     function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         //comment out for the test.
@@ -253,7 +253,7 @@ contract HandshakeSldTests is Test {
     function testMintDuplicateSldFromAuthorisedWallet() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -287,7 +287,7 @@ contract HandshakeSldTests is Test {
     function testCheckParentNamehashIsCorrectAfterMint() public {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -316,7 +316,7 @@ contract HandshakeSldTests is Test {
     function testCheckLabelToNamehashIsCorrectAfterMint() public {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -391,8 +391,8 @@ contract HandshakeSldTests is Test {
         secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
         secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
 
-        registrationLength[0] = 50;
-        registrationLength[1] = 100;
+        registrationLength[0] = 365;
+        registrationLength[1] = 365;
 
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
@@ -437,8 +437,8 @@ contract HandshakeSldTests is Test {
         secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
         secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
 
-        registrationLength[0] = 50;
-        registrationLength[1] = 100;
+        registrationLength[0] = 365;
+        registrationLength[1] = 365;
 
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
@@ -475,7 +475,7 @@ contract HandshakeSldTests is Test {
     function testPurchaseSldToZeroAddress_expectSendToMsgSender() public {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -502,7 +502,7 @@ contract HandshakeSldTests is Test {
     function testPurchaseSldToOtherAddress() public {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash);
@@ -541,8 +541,8 @@ contract HandshakeSldTests is Test {
         secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
         secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
 
-        registrationLength[0] = 50;
-        registrationLength[1] = 100;
+        registrationLength[0] = 365;
+        registrationLength[1] = 365;
 
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
@@ -599,7 +599,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -656,7 +656,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -713,7 +713,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -777,7 +777,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -842,7 +842,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -899,7 +899,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -961,7 +961,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1015,7 +1015,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1072,7 +1072,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1119,7 +1119,7 @@ contract HandshakeSldTests is Test {
     function testAddPriceStrategyToTldDomain_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
 
         uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
         bytes32 parentNamehash = bytes32(id);
@@ -1144,7 +1144,7 @@ contract HandshakeSldTests is Test {
     function testAddPriceStrategyToSldDomain_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
 
         uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
         bytes32 parentNamehash = bytes32(id);
@@ -1163,8 +1163,6 @@ contract HandshakeSldTests is Test {
 
         address strat = address(new MockPriceStrategy(0));
         Sld.setPricingStrategy(parentNamehash, strat);
-
-        emit log_named_uint("wei value of 1 dollar", Sld.getWeiValueOfDollar());
 
         emit log_named_address("usd address", address(Sld.UsdOracle()));
         emit log_named_uint("usd value", Sld.UsdOracle().getPrice());
@@ -1196,7 +1194,7 @@ contract HandshakeSldTests is Test {
     function testAddPriceStrategyToSldNotOwner_fail() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
 
         uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
         bytes32 parentNamehash = bytes32(id);
@@ -1244,7 +1242,7 @@ contract HandshakeSldTests is Test {
     function testAddPriceStrategyToTldNotOwner_fail() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
 
         uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
         bytes32 parentNamehash = bytes32(id);
@@ -1293,7 +1291,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1354,7 +1352,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1378,7 +1376,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1442,7 +1440,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1466,7 +1464,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1528,7 +1526,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1560,7 +1558,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1626,7 +1624,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1650,7 +1648,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1704,7 +1702,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             sldOwner
@@ -1728,7 +1726,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1792,7 +1790,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             parent_hash,
             emptyArr,
             msg.sender
@@ -1816,7 +1814,7 @@ contract HandshakeSldTests is Test {
         Sld.purchaseSingleDomain(
             "test",
             bytes32(0x0),
-            50,
+            365,
             sldHash,
             emptyArr,
             sldSldOwner
@@ -1953,7 +1951,8 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function testGetSubdomainDetails_single(uint256 _price) public {
+    function testGetSubdomainDetails_single() public {
+        uint256 _price = 500000000000;
         address[] memory recipients = new address[](1);
         uint256[] memory parentIds = new uint256[](1);
         string[] memory labels = new string[](1);
@@ -1963,7 +1962,7 @@ contract HandshakeSldTests is Test {
 
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x121212));
         address recipient = address(0x998822);
 
@@ -2010,7 +2009,7 @@ contract HandshakeSldTests is Test {
 
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x121212));
         address recipient = address(0x998822);
 
@@ -2066,7 +2065,7 @@ contract HandshakeSldTests is Test {
     function testUpdatePriceStrategyFromSldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x123456));
 
         MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
@@ -2095,7 +2094,7 @@ contract HandshakeSldTests is Test {
     function testUpdatePriceStrategyFromNotSldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x123456));
 
         MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
@@ -2125,7 +2124,7 @@ contract HandshakeSldTests is Test {
     function testPurchaseSingleDomainGetRefundForExcess() public {
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
@@ -2206,7 +2205,7 @@ contract HandshakeSldTests is Test {
     function testPriceOracle2() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 50;
+        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
@@ -2218,7 +2217,124 @@ contract HandshakeSldTests is Test {
         MockUsdOracle oracle = new MockUsdOracle(183185670000);
 
         stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
-
-        emit log_named_uint("wei value of 1 dollar", Sld.getWeiValueOfDollar());
     }
+
+    function testMintSldFromAuthorisedWallet_LessThan365Days_ExpectFail() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 364;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.startPrank(claimant);
+        vm.expectRevert("Too short registration length");
+        Sld.purchaseSingleDomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+    }
+
+    function testMintSingleDomainCheckCheckHistory() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        uint256 annualCost = 5456;
+
+        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockCommitIntent(true);
+
+        addMockOracle();
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        hoax(claimant, 1000 ether);
+        Sld.purchaseSingleDomain{value: 1000 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        uint256 weiValue = Sld.getWeiValueOfDollar();
+
+        emit log_named_uint("wei value", weiValue);
+
+        assertEq(Sld.balanceOf(claimant), 1);
+
+        bytes32 namehash = getNamehash(label, parentNamehash);
+
+        (uint72 RegistrationTime, uint72 regLength, uint24 regPrice) = Sld
+            .SubdomainRegistrationHistory(namehash);
+
+        assertEq(regLength, registrationLength, "registration length incorrect");
+        assertEq(regPrice, annualCost, "registration price incorrect");
+
+        uint24[10] memory prices = Sld.getGuarenteedPrices(namehash);
+
+        for (uint256 i; i < prices.length; i++) {
+            assertEq(prices[i], (i + 1) * annualCost, "annual cost incorrect");
+        }
+    }
+
+    function testMintMultipleSldFromAuthorisedWallet_LessThan365Days_ExpectFail() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 364;
+        bytes32 parentNamehash = bytes32(uint256(0x12));
+
+        addMockPriceStrategyToTld(parentNamehash, 1 ether);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        hoax(claimant, 1 ether);
+        vm.expectRevert("Too short registration length");
+        mintSingleSubdomain(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant,
+            1 ether //price
+        );
+        vm.stopPrank();
+
+        bytes32 namehash = getNamehash(label, parentNamehash);
+
+        (
+            uint72 RegistrationTime,
+            uint72 RegistrationLength,
+            uint24 RegistrationPrice
+        ) = Sld.SubdomainRegistrationHistory(namehash);
+
+        uint24[10] memory prices = Sld.getGuarenteedPrices(namehash);
+
+        for (uint256 i; i < prices.length; i++) {
+            emit log_named_uint("price", prices[i]);
+        }
+    }
+
+    function testRenewSubdomainFromSldOwner_pass() public {}
+
+    function testRenewSubdomainFromApprovedAddress_pass() public {}
+
+    function testRenewSubdomainFromNotApprovedAddress_check_desired_behaviour() public {}
 }
