@@ -65,9 +65,43 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         }
     }
 
+    //TODO: need to make sure can't reentry this function
     function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength)
         external
-    {}
+        payable
+    {
+        SubdomainRegistrationDetail memory history = SubdomainRegistrationHistory[
+            _subdomainHash
+        ];
+
+        uint256 priceInDollars = getRenewalPricePerDay(history, _registrationLength);
+
+        uint256 priceInWei = getWeiValueOfDollar() * priceInDollars * _registrationLength;
+        require(priceInWei <= msg.value, "Price too low");
+
+        uint256 refund = msg.value - priceInWei;
+        payable(msg.sender).transfer(refund);
+
+        history.RegistrationLength += uint72(_registrationLength);
+
+        SubdomainRegistrationHistory[_subdomainHash].RegistrationLength = history
+            .RegistrationLength;
+    }
+
+    function getRenewalPricePerDay(
+        SubdomainRegistrationDetail memory _history,
+        uint256 _registrationLength
+    ) private view returns (uint256) {
+        require(_registrationLength > 364, "365 day minimum renewal");
+        uint256 registrationYears = _registrationLength / 365; //get the annual rate
+
+        registrationYears = registrationYears > 10 ? 10 : registrationYears;
+
+        uint256 renewalCost = _history.RegistrationPriceSnapshot[registrationYears - 1] /
+            _registrationLength /
+            registrationYears;
+        return renewalCost;
+    }
 
     function purchaseMultipleSld(
         string[] calldata _label,

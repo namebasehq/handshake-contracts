@@ -2332,7 +2332,68 @@ contract HandshakeSldTests is Test {
         }
     }
 
-    function testRenewSubdomainFromSldOwner_pass() public {}
+    function testRenewSubdomainFromSldOwner_pass() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365 * 2;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        uint256 annualCost = 5456;
+
+        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockCommitIntent(true);
+
+        addMockOracle();
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.warp(6666);
+
+        hoax(claimant, 1000 ether);
+        Sld.purchaseSingleDomain{value: 5.5 ether}( //should cost 5.456 ether
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        bytes32 namehash = getNamehash(label, parentNamehash);
+
+        (
+            uint72 RegistrationTime,
+            uint72 RegistrationLength,
+            uint24 RegistrationPrice
+        ) = Sld.SubdomainRegistrationHistory(namehash);
+
+        emit log_named_uint("registration time", RegistrationTime);
+        emit log_named_uint("registration length", RegistrationLength);
+        emit log_named_uint("registration price", RegistrationPrice);
+        emit log_named_uint("wei value of dollar", Sld.getWeiValueOfDollar());
+
+        uint256 newRegLength = 400;
+        hoax(claimant, 1000 ether);
+        Sld.renewSubdomain{value: 7 ether}(namehash, newRegLength);
+
+        (
+            uint72 NewRegistrationTime,
+            uint72 NewRegistrationLength,
+            uint24 NewRegistrationPrice
+        ) = Sld.SubdomainRegistrationHistory(namehash);
+
+        assertEq(
+            NewRegistrationLength,
+            RegistrationLength + newRegLength,
+            "new registrationLength not correct"
+        );
+    }
+
+    function testRenewNoneExistingToken_fail() public {}
+
+    function testRenewExpiredSld_fail() public {}
 
     function testRenewSubdomainFromApprovedAddress_pass() public {}
 
