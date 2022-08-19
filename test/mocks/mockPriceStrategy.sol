@@ -7,7 +7,7 @@ contract MockPriceStrategy is ISldPriceStrategy {
     uint256 public Price;
 
     constructor(uint256 _price) {
-        Price = _price;
+        Price = _price * 1000;
     }
 
     function getPriceInDollars(

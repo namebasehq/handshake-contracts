@@ -1986,7 +1986,7 @@ contract HandshakeSldTests is Test {
         );
 
         assertEq(dets.length, 1, "invalid array length");
-        assertEq(dets[0].Price, _price, "mismatch in price");
+        assertEq(dets[0].Price, _price * 1000, "mismatch in price");
         assertEq(
             dets[0].Id,
             uint256(getNamehash(labels[0], parentNamehash)),
@@ -2047,7 +2047,7 @@ contract HandshakeSldTests is Test {
         //no worry about gas optimisation in the tests.
         for (uint256 i; i < dets.length; i++) {
             assertEq(dets.length, recipients.length, "invalid array length");
-            assertEq(dets[i].Price, _price, "mismatch in price");
+            assertEq(dets[i].Price, _price * 1000, "mismatch in price");
             assertEq(
                 dets[i].Id,
                 uint256(getNamehash(labels[i], parentNamehash)),
@@ -2279,16 +2279,16 @@ contract HandshakeSldTests is Test {
 
         bytes32 namehash = getNamehash(label, parentNamehash);
 
-        (uint72 RegistrationTime, uint72 regLength, uint24 regPrice) = Sld
+        (uint80 RegistrationTime, uint80 regLength, uint96 regPrice) = Sld
             .SubdomainRegistrationHistory(namehash);
 
         assertEq(regLength, registrationLength, "registration length incorrect");
-        assertEq(regPrice, annualCost, "registration price incorrect");
+        assertEq(regPrice, annualCost * 1000, "registration price incorrect");
 
-        uint24[10] memory prices = Sld.getGuarenteedPrices(namehash);
+        uint48[10] memory prices = Sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < prices.length; i++) {
-            assertEq(prices[i], (i + 1) * annualCost, "annual cost incorrect");
+            assertEq(prices[i] / 1000, (i + 1) * annualCost, "annual cost incorrect");
         }
     }
 
@@ -2320,16 +2320,44 @@ contract HandshakeSldTests is Test {
         bytes32 namehash = getNamehash(label, parentNamehash);
 
         (
-            uint72 RegistrationTime,
-            uint72 RegistrationLength,
-            uint24 RegistrationPrice
+            uint80 RegistrationTime,
+            uint80 RegistrationLength,
+            uint96 RegistrationPrice
         ) = Sld.SubdomainRegistrationHistory(namehash);
 
-        uint24[10] memory prices = Sld.getGuarenteedPrices(namehash);
+        uint48[10] memory prices = Sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < prices.length; i++) {
             emit log_named_uint("price", prices[i]);
         }
+    }
+
+    function testRegisterSubdomainForOneDollarLowestPrice_pass() public {
+        string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        addMockPriceStrategyToTld(parentNamehash, 1);
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        hoax(claimant, 0.0005 ether);
+        Sld.purchaseSingleDomain{value: 0.0005 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        assertEq(claimant.balance, 0);
+
+        assertEq(Sld.balanceOf(claimant), 1);
     }
 
     function testRenewSubdomainFromSldOwner_pass() public {
@@ -2338,7 +2366,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365 * 2;
         bytes32 parentNamehash = bytes32(0x0);
 
-        uint256 annualCost = 5456;
+        uint256 annualCost = 2000;
 
         addMockPriceStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
@@ -2348,10 +2376,10 @@ contract HandshakeSldTests is Test {
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
 
-        vm.warp(6666);
+        vm.warp(6688);
 
-        hoax(claimant, 1000 ether);
-        Sld.purchaseSingleDomain{value: 5.5 ether}( //should cost 5.456 ether
+        hoax(claimant, 2 ether);
+        Sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
             label,
             secret,
             registrationLength,
@@ -2364,9 +2392,9 @@ contract HandshakeSldTests is Test {
         bytes32 namehash = getNamehash(label, parentNamehash);
 
         (
-            uint72 RegistrationTime,
-            uint72 RegistrationLength,
-            uint24 RegistrationPrice
+            uint80 RegistrationTime,
+            uint80 RegistrationLength,
+            uint96 RegistrationPrice
         ) = Sld.SubdomainRegistrationHistory(namehash);
 
         emit log_named_uint("registration time", RegistrationTime);
@@ -2374,14 +2402,24 @@ contract HandshakeSldTests is Test {
         emit log_named_uint("registration price", RegistrationPrice);
         emit log_named_uint("wei value of dollar", Sld.getWeiValueOfDollar());
 
+        uint48[10] memory rates = Sld.getGuarenteedPrices(namehash);
+
+        for (uint256 i; i < rates.length; i++) {
+            emit log_named_uint("rate", rates[i]);
+        }
+
         uint256 newRegLength = 400;
-        hoax(claimant, 1000 ether);
-        Sld.renewSubdomain{value: 7 ether}(namehash, newRegLength);
+        hoax(claimant, 1.095 ether);
+        vm.expectRevert("Price too low");
+        Sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
+
+        hoax(claimant, 1.096 ether);
+        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
 
         (
-            uint72 NewRegistrationTime,
-            uint72 NewRegistrationLength,
-            uint24 NewRegistrationPrice
+            uint80 NewRegistrationTime,
+            uint80 NewRegistrationLength,
+            uint96 NewRegistrationPrice
         ) = Sld.SubdomainRegistrationHistory(namehash);
 
         assertEq(
@@ -2391,11 +2429,123 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function testRenewNoneExistingToken_fail() public {}
+    function testRenewNoneExistingToken_fail() public {
 
-    function testRenewExpiredSld_fail() public {}
 
-    function testRenewSubdomainFromApprovedAddress_pass() public {}
 
-    function testRenewSubdomainFromNotApprovedAddress_check_desired_behaviour() public {}
+    }
+
+    function testRenewExpiredSld_fail() public {
+           string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        uint256 annualCost = 2000;
+
+        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockCommitIntent(true);
+
+        addMockOracle();
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.warp(6688);
+
+        hoax(claimant, 1 ether);
+        Sld.purchaseSingleDomain{value: 1 ether}( //should cost 1 ether
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + (86400 * 366));
+        bytes32 namehash = getNamehash(label, parentNamehash);
+
+        uint256 newRegLength = 400;
+
+        hoax(claimant, 1.096 ether);
+        vm.expectRevert("domain expired");
+        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
+
+    }
+
+    function testRenewSubdomainFromNotOwner_pass() public {
+             string memory label = "";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365 * 2;
+        bytes32 parentNamehash = bytes32(0x0);
+
+        uint256 annualCost = 2000;
+
+        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockCommitIntent(true);
+
+        addMockOracle();
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        vm.warp(6688);
+
+        hoax(claimant, 2 ether);
+        Sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        bytes32 namehash = getNamehash(label, parentNamehash);
+
+        (
+            uint80 RegistrationTime,
+            uint80 RegistrationLength,
+            uint96 RegistrationPrice
+        ) = Sld.SubdomainRegistrationHistory(namehash);
+
+        emit log_named_uint("registration time", RegistrationTime);
+        emit log_named_uint("registration length", RegistrationLength);
+        emit log_named_uint("registration price", RegistrationPrice);
+        emit log_named_uint("wei value of dollar", Sld.getWeiValueOfDollar());
+
+        uint48[10] memory rates = Sld.getGuarenteedPrices(namehash);
+
+        for (uint256 i; i < rates.length; i++) {
+            emit log_named_uint("rate", rates[i]);
+        }
+
+        address notClaimant = address(0x22446688664422);
+
+        uint256 newRegLength = 400;
+        hoax(notClaimant, 1.095 ether);
+        vm.expectRevert("Price too low");
+        Sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
+
+        hoax(notClaimant, 1.096 ether);
+        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
+
+        (
+            uint80 NewRegistrationTime,
+            uint80 NewRegistrationLength,
+            uint96 NewRegistrationPrice
+        ) = Sld.SubdomainRegistrationHistory(namehash);
+
+        assertEq(
+            NewRegistrationLength,
+            RegistrationLength + newRegLength,
+            "new registrationLength not correct"
+        );
+
+    }
+
+
 }

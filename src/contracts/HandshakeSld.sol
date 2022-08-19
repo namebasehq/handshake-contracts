@@ -12,6 +12,8 @@ import "src/structs/SubdomainRegistrationDetail.sol";
 import "interfaces/IPriceOracle.sol";
 import "src/contracts/UsdPriceOracle.sol";
 
+import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
+
 pragma solidity ^0.8.15;
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld {
@@ -19,6 +21,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
+
+    uint256 private DECIMAL_MULTIPLIER = 1000;
 
     uint256 private constant MIN_REGISTRATION_DAYS = 364;
 
@@ -74,9 +78,15 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _subdomainHash
         ];
 
+        require(history.RegistrationTime + (history.RegistrationLength * 86400) > block.timestamp, "domain expired");
+
+
+
         uint256 priceInDollars = getRenewalPricePerDay(history, _registrationLength);
 
-        uint256 priceInWei = getWeiValueOfDollar() * priceInDollars * _registrationLength;
+        uint256 priceInWei = (getWeiValueOfDollar() *
+            priceInDollars *
+            _registrationLength) / DECIMAL_MULTIPLIER;
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
@@ -91,16 +101,16 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
     function getRenewalPricePerDay(
         SubdomainRegistrationDetail memory _history,
         uint256 _registrationLength
-    ) private view returns (uint256) {
+    ) public view returns (uint256) {
         require(_registrationLength > 364, "365 day minimum renewal");
-        uint256 registrationYears = _registrationLength / 365; //get the annual rate
+        uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
 
-        uint256 renewalCost = _history.RegistrationPriceSnapshot[registrationYears - 1] /
-            _registrationLength /
-            registrationYears;
-        return renewalCost;
+        uint256 renewalCostPerAnnum = _history.RegistrationPriceSnapshot[
+            registrationYears - 1
+        ] / registrationYears;
+        return renewalCostPerAnnum / 365;
     }
 
     function purchaseMultipleSld(
@@ -167,7 +177,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             }
         }
 
-        uint256 priceInWei = getWeiValueOfDollar() * priceInDollars;
+        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) /
+            DECIMAL_MULTIPLIER;
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
@@ -212,7 +223,9 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _proofs
         );
 
-        uint256 priceInWei = getWeiValueOfDollar() * domainDollarCost;
+        uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) /
+            DECIMAL_MULTIPLIER;
+
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
@@ -228,6 +241,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         address _recipient
     ) private returns (uint256) {
         require(LabelValidator.isValidLabel(_label), "invalid label");
+
         bytes32 namehash = getNamehash(_label, _parentNamehash);
         require(
             CommitIntent.allowedCommit(namehash, _secret, msg.sender),
@@ -259,7 +273,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32[] calldata _proofs
     ) private {
         require(_days > MIN_REGISTRATION_DAYS, "Too short registration length");
-        uint24[10] memory arr;
+        uint48[10] memory arr;
 
         for (uint256 i; i < arr.length; ) {
             uint256 price = _strategy.getPriceInDollars(
@@ -270,7 +284,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
                 _proofs
             );
 
-            arr[i] = uint24(price);
+            arr[i] = uint48(price);
 
             unchecked {
                 ++i;
@@ -436,7 +450,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
     function getGuarenteedPrices(bytes32 _namehash)
         external
-        returns (uint24[10] memory _prices)
+        returns (uint48[10] memory _prices)
     {
         SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[
             _namehash
