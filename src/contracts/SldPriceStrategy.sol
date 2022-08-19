@@ -20,8 +20,7 @@ contract SldPriceStrategy is ISldPriceStrategy {
         address _buyingAddress,
         bytes32 _parentNamehash,
         string memory _label,
-        uint256 _registrationLength,
-        bytes32[] calldata _proofs
+        uint256 _registrationLength
     ) external view returns (uint256) {
         return 0;
     }

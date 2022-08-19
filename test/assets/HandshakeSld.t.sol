@@ -38,7 +38,6 @@ contract HandshakeSldTests is Test {
         bytes32 _secret,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        bytes32[] memory _proofs,
         address _receiver,
         uint256 _wei
     ) private {
@@ -53,7 +52,7 @@ contract HandshakeSldTests is Test {
         secret[0] = _secret;
         registrationLength[0] = _registrationLength;
         parentNamehash[0] = _parentNamehash;
-        proofs[0] = _proofs;
+
         receiver[0] = _receiver;
 
         Sld.purchaseMultipleSld{value: _wei}(
@@ -61,7 +60,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            proofs,
             receiver
         );
     }
@@ -355,7 +353,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            proofs,
             receiver
         );
     }
@@ -374,7 +371,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            proofs,
             receiver
         );
     }
@@ -401,8 +397,6 @@ contract HandshakeSldTests is Test {
         addMockPriceStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
 
-        bytes32[][] memory empty_array = new bytes32[][](2);
-
         address claimant = address(0x6666);
         address[] memory receiver = new address[](2);
 
@@ -415,7 +409,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            empty_array,
             receiver
         );
         vm.stopPrank();
@@ -463,7 +456,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            empty_array,
             receiver
         );
         vm.stopPrank();
@@ -568,7 +560,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            empty_array,
             receiver
         );
         vm.stopPrank();
@@ -2191,7 +2182,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            proofs,
             receiver
         );
         vm.stopPrank();
@@ -2311,7 +2301,6 @@ contract HandshakeSldTests is Test {
             secret,
             registrationLength,
             parentNamehash,
-            empty_array,
             claimant,
             1 ether //price
         );
@@ -2429,14 +2418,10 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function testRenewNoneExistingToken_fail() public {
-
-
-
-    }
+    function testRenewNoneExistingToken_fail() public {}
 
     function testRenewExpiredSld_fail() public {
-           string memory label = "";
+        string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
@@ -2472,11 +2457,10 @@ contract HandshakeSldTests is Test {
         hoax(claimant, 1.096 ether);
         vm.expectRevert("domain expired");
         Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
-
     }
 
     function testRenewSubdomainFromNotOwner_pass() public {
-             string memory label = "";
+        string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
         bytes32 parentNamehash = bytes32(0x0);
@@ -2544,8 +2528,5 @@ contract HandshakeSldTests is Test {
             RegistrationLength + newRegLength,
             "new registrationLength not correct"
         );
-
     }
-
-
 }

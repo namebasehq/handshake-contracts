@@ -11,12 +11,13 @@ import "src/structs/SubdomainDetail.sol";
 import "src/structs/SubdomainRegistrationDetail.sol";
 import "interfaces/IPriceOracle.sol";
 import "src/contracts/UsdPriceOracle.sol";
+import "src/contracts/HasUsdOracle.sol";
 
-import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 pragma solidity ^0.8.15;
 
-contract HandshakeSld is HandshakeERC721, IHandshakeSld {
+contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     using ERC165Checker for address;
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
@@ -26,10 +27,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
     uint256 private constant MIN_REGISTRATION_DAYS = 364;
 
-    IPriceOracle public UsdOracle = new UsdPriceOracle();
-
-    event NewUsdOracle(address indexed _usdEthPriceOracle);
-
     //moved this from tld contract so we can have subdomains of subdomains.
     mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
     mapping(bytes32 => SubdomainRegistrationDetail) public SubdomainRegistrationHistory;
@@ -38,7 +35,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
 
     //interface method for price strategy
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
-        bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256,bytes32[])"));
+        bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
     mapping(bytes32 => bytes32) public NamehashToParentMap;
 
@@ -78,9 +75,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _subdomainHash
         ];
 
-        require(history.RegistrationTime + (history.RegistrationLength * 86400) > block.timestamp, "domain expired");
-
-
+        require(
+            history.RegistrationTime + (history.RegistrationLength * 86400) >
+                block.timestamp,
+            "domain expired"
+        );
 
         uint256 priceInDollars = getRenewalPricePerDay(history, _registrationLength);
 
@@ -118,71 +117,78 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32[] calldata _secret,
         uint256[] calldata _registrationLength,
         bytes32[] calldata _parentNamehash,
-        bytes32[][] calldata _proofs,
         address[] calldata _recipient
     ) public payable {
         uint256 expectedLength = _label.length;
+
         require(
-            expectedLength ^
-                _secret.length ^
-                _registrationLength.length ^
-                _parentNamehash.length ^
-                _proofs.length ^
-                _recipient.length ==
-                0,
+            expectedLength == _secret.length &&
+                expectedLength == _registrationLength.length &&
+                expectedLength == _parentNamehash.length &&
+                expectedLength == _recipient.length,
             "all arrays should be the same length"
         );
+        {
+            uint256 priceInDollars;
 
-        uint256 priceInDollars;
-        uint256 domainDollarCost;
-        ISldPriceStrategy priceStrat;
+            for (uint256 i; i < expectedLength; ) {
+                priceInDollars += purchaseDomainReturnPrice(
+                    _parentNamehash[i],
+                    _label[i],
+                    _registrationLength[i],
+                    _secret[i],
+                    _recipient[i]
+                );
 
-        for (uint256 i; i < expectedLength; ) {
-            //will revert if pricing strategy does not exist.
-            priceStrat = getPricingStrategy(_parentNamehash[i]);
-
-            domainDollarCost = priceStrat.getPriceInDollars(
-                msg.sender,
-                _parentNamehash[i],
-                _label[i],
-                _registrationLength[i],
-                _proofs[i]
-            );
-
-            priceInDollars += domainDollarCost;
-
-            //refund any excess, can't reentry as token will already exist
-
-            purchaseSld(
-                _label[i],
-                _secret[i],
-                _registrationLength[i],
-                _parentNamehash[i],
-                _proofs[i],
-                _recipient[i] == address(0) ? msg.sender : _recipient[i]
-            );
-
-            addRegistrationDetails(
-                getNamehash(_label[i], _parentNamehash[i]),
-                domainDollarCost,
-                _registrationLength[i],
-                priceStrat,
-                _parentNamehash[i],
-                _label[i],
-                _proofs[i]
-            );
-
-            unchecked {
-                ++i;
+                unchecked {
+                    ++i;
+                }
             }
+
+            uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) /
+                DECIMAL_MULTIPLIER;
+            require(priceInWei <= msg.value, "Price too low");
+
+            uint256 refund = msg.value - priceInWei;
+            payable(msg.sender).transfer(refund);
         }
+    }
 
-        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) /
-            DECIMAL_MULTIPLIER;
-        require(priceInWei <= msg.value, "Price too low");
+    function purchaseDomainReturnPrice(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength,
+        bytes32 _secret,
+        address _recipient
+    ) private returns (uint256) {
+        //will revert if pricing strategy does not exist.
+        ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash);
 
-        uint256 refund = msg.value - priceInWei;
-        payable(msg.sender).transfer(refund);
+        uint256 domainDollarCost = priceStrat.getPriceInDollars(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
+
+        purchaseSld(
+            _label,
+            _secret,
+            _registrationLength,
+            _parentNamehash,
+            _recipient == address(0) ? msg.sender : _recipient
+        );
+
+        addRegistrationDetails(
+            getNamehash(_label, _parentNamehash),
+            domainDollarCost,
+            _registrationLength,
+            priceStrat,
+            _parentNamehash,
+            _label
+        );
+
+        return domainDollarCost;
     }
 
     function purchaseSingleDomain(
@@ -198,8 +204,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             msg.sender,
             _parentNamehash,
             _label,
-            _registrationLength,
-            _proofs
+            _registrationLength
         );
 
         //refund any excess, can't reentry as token will already exist
@@ -209,7 +214,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _secret,
             _registrationLength,
             _parentNamehash,
-            _proofs,
             _recipient == address(0) ? msg.sender : _recipient
         );
 
@@ -219,8 +223,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _registrationLength,
             strategy,
             _parentNamehash,
-            _label,
-            _proofs
+            _label
         );
 
         uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) /
@@ -237,7 +240,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         bytes32 _secret,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        bytes32[] calldata _proofs,
         address _recipient
     ) private returns (uint256) {
         require(LabelValidator.isValidLabel(_label), "invalid label");
@@ -269,8 +271,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
         uint256 _days,
         ISldPriceStrategy _strategy,
         bytes32 _parentNamehash,
-        string calldata _label,
-        bytes32[] calldata _proofs
+        string calldata _label
     ) private {
         require(_days > MIN_REGISTRATION_DAYS, "Too short registration length");
         uint48[10] memory arr;
@@ -280,8 +281,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
                 msg.sender,
                 _parentNamehash,
                 _label,
-                (i + 1) * 365,
-                _proofs
+                (i + 1) * 365
             );
 
             arr[i] = uint48(price);
@@ -391,8 +391,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld {
             _recipient,
             parentHash,
             _label,
-            _registrationLength,
-            _proofs
+            _registrationLength
         );
 
         uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentHash];
