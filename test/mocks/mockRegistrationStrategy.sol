@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "interfaces/ISldPriceStrategy.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 
-contract MockPriceStrategy is ISldPriceStrategy {
+contract MockRegistrationStrategy is ISldRegistrationStrategy {
     uint256 public Price;
 
     constructor(uint256 _price) {

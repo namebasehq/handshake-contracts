@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "interfaces/ISldPriceStrategy.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 import "./HandshakeERC721.sol";
 
-contract SldPriceStrategy is ISldPriceStrategy {
+contract SldRegistrationStrategy is ISldRegistrationStrategy {
     mapping(bytes32 => uint256) public FixedPrice;
     address public AuthorisedAddress;
 

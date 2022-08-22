@@ -6,12 +6,12 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/HandshakeSld.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
-import "test/mocks/mockPriceStrategy.sol";
+import "test/mocks/mockRegistrationStrategy.sol";
 import "test/mocks/mockUsdOracle.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract HandshakeSldTests is Test {
-    error MissingPriceStrategy();
+    error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;
     HandshakeSld Sld;
@@ -74,18 +74,18 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function addMockPriceStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
-        MockPriceStrategy strategy = new MockPriceStrategy(_price);
+    function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
 
         stdstore
             .target(address(Sld))
-            .sig("SldDefaultPriceStrategy(bytes32)")
+            .sig("SldDefaultRegistrationStrategy(bytes32)")
             .with_key(_tldNamehash)
             .checked_write(address(strategy));
     }
 
-    function addMockPriceStrategyToTld(bytes32 _tldNamehash) private {
-        addMockPriceStrategyToTld(_tldNamehash, 0);
+    function addMockRegistrationStrategyToTld(bytes32 _tldNamehash) private {
+        addMockRegistrationStrategyToTld(_tldNamehash, 0);
     }
 
     function addMockOracle() private {
@@ -154,7 +154,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -180,7 +180,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -220,21 +220,21 @@ contract HandshakeSldTests is Test {
         assertEq(Sld.balanceOf(claimant), 1);
     }
 
-    function testMintSldFromAuthorisedWalletWithMissingPriceStrategy() public {
+    function testMintSldFromAuthorisedWalletWithMissingRegistrationStrategy() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
         //comment out for the test.
-        //addMockPriceStrategyToTld(parentNamehash);
+        //addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        vm.expectRevert(MissingPriceStrategy.selector);
+        vm.expectRevert(MissingRegistrationStrategy.selector);
         Sld.purchaseSingleDomain(
             label,
             secret,
@@ -254,7 +254,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -288,7 +288,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -317,7 +317,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -393,8 +393,8 @@ contract HandshakeSldTests is Test {
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
 
-        addMockPriceStrategyToTld(parentNamehash[0]);
-        addMockPriceStrategyToTld(parentNamehash[1]);
+        addMockRegistrationStrategyToTld(parentNamehash[0]);
+        addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -436,8 +436,8 @@ contract HandshakeSldTests is Test {
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
 
-        addMockPriceStrategyToTld(parentNamehash[0]);
-        addMockPriceStrategyToTld(parentNamehash[1]);
+        addMockRegistrationStrategyToTld(parentNamehash[0]);
+        addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
 
         bytes32[][] memory empty_array = new bytes32[][](2);
@@ -470,7 +470,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -497,7 +497,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -519,7 +519,7 @@ contract HandshakeSldTests is Test {
         assertEq(Sld.balanceOf(claimant), 0);
     }
 
-    function testMultiPurchaseSldToOtherAddressWithMissingPriceStrategy_expectFail()
+    function testMultiPurchaseSldToOtherAddressWithMissingRegistrationStrategy_expectFail()
         public
     {
         string[] memory label = new string[](2);
@@ -539,10 +539,10 @@ contract HandshakeSldTests is Test {
         parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
 
-        addMockPriceStrategyToTld(parentNamehash[0]);
+        addMockRegistrationStrategyToTld(parentNamehash[0]);
 
         //commented this out for the test
-        //addMockPriceStrategyToTld(parentNamehash[1]);
+        //addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
 
         bytes32[][] memory empty_array = new bytes32[][](2);
@@ -554,7 +554,7 @@ contract HandshakeSldTests is Test {
         receiver[1] = address(0x2345);
 
         vm.startPrank(claimant);
-        vm.expectRevert(MissingPriceStrategy.selector);
+        vm.expectRevert(MissingRegistrationStrategy.selector);
         Sld.purchaseMultipleSld(
             label,
             secret,
@@ -577,7 +577,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -634,7 +634,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -691,7 +691,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -755,7 +755,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -820,7 +820,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -877,7 +877,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -939,7 +939,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -993,7 +993,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1050,7 +1050,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1107,7 +1107,7 @@ contract HandshakeSldTests is Test {
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
 
-    function testAddPriceStrategyToTldDomain_pass() public {
+    function testAddRegistrationStrategyToTldDomain_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1126,13 +1126,13 @@ contract HandshakeSldTests is Test {
         vm.startPrank(parent_address);
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
-        address strat = address(new MockPriceStrategy(1));
+        address strat = address(new MockRegistrationStrategy(1));
         Sld.setPricingStrategy(parentNamehash, strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
     }
 
-    function testAddPriceStrategyToSldDomain_pass() public {
+    function testAddRegistrationStrategyToSldDomain_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1152,7 +1152,7 @@ contract HandshakeSldTests is Test {
         vm.startPrank(parent_address);
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
-        address strat = address(new MockPriceStrategy(0));
+        address strat = address(new MockRegistrationStrategy(0));
         Sld.setPricingStrategy(parentNamehash, strat);
 
         emit log_named_address("usd address", address(Sld.UsdOracle()));
@@ -1175,14 +1175,14 @@ contract HandshakeSldTests is Test {
             emptyArr,
             child_address
         );
-        address childStrat = address(new MockPriceStrategy(1));
+        address childStrat = address(new MockRegistrationStrategy(1));
         Sld.setPricingStrategy(namehash, childStrat);
 
         assertEq(address(Sld.getPricingStrategy(namehash)), childStrat);
         vm.stopPrank();
     }
 
-    function testAddPriceStrategyToSldNotOwner_fail() public {
+    function testAddRegistrationStrategyToSldNotOwner_fail() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1202,7 +1202,7 @@ contract HandshakeSldTests is Test {
         vm.startPrank(parent_address);
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
-        address strat = address(new MockPriceStrategy(0));
+        address strat = address(new MockRegistrationStrategy(0));
         Sld.setPricingStrategy(parentNamehash, strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
@@ -1223,14 +1223,14 @@ contract HandshakeSldTests is Test {
             emptyArr,
             address(0x1337)
         );
-        address childStrat = address(new MockPriceStrategy(1));
+        address childStrat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("not approved or owner of parent domain");
         Sld.setPricingStrategy(namehash, childStrat);
 
         vm.stopPrank();
     }
 
-    function testAddPriceStrategyToTldNotOwner_fail() public {
+    function testAddRegistrationStrategyToTldNotOwner_fail() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1252,7 +1252,7 @@ contract HandshakeSldTests is Test {
         vm.stopPrank();
 
         vm.startPrank(not_parent_address);
-        address strat = address(new MockPriceStrategy(1));
+        address strat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("not approved or owner of parent domain");
         Sld.setPricingStrategy(parentNamehash, strat);
     }
@@ -1269,7 +1269,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1330,7 +1330,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1361,7 +1361,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1418,7 +1418,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1449,7 +1449,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1504,7 +1504,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1543,7 +1543,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1602,7 +1602,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1633,7 +1633,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1680,7 +1680,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1711,7 +1711,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1768,7 +1768,7 @@ contract HandshakeSldTests is Test {
 
         bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
 
-        addMockPriceStrategyToTld(parent_hash);
+        addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -1799,7 +1799,7 @@ contract HandshakeSldTests is Test {
         //test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
-        addMockPriceStrategyToTld(sldHash);
+        addMockRegistrationStrategyToTld(sldHash);
 
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain(
@@ -1837,7 +1837,7 @@ contract HandshakeSldTests is Test {
         uint256[] memory registrationLengths = new uint256[](_arrayLength);
         bytes32[][] memory proofs = new bytes32[][](_arrayLength);
 
-        addMockPriceStrategyToTld(bytes32(0x0), 0);
+        addMockRegistrationStrategyToTld(bytes32(0x0), 0);
         Sld.getSubdomainDetails(
             recipients,
             parentIds,
@@ -1963,7 +1963,7 @@ contract HandshakeSldTests is Test {
         registrationLengths[0] = registrationLength;
         proofs[0] = empty_array;
 
-        addMockPriceStrategyToTld(parentNamehash, _price);
+        addMockRegistrationStrategyToTld(parentNamehash, _price);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -2024,7 +2024,7 @@ contract HandshakeSldTests is Test {
         proofs[1] = empty_array;
         proofs[2] = empty_array;
 
-        addMockPriceStrategyToTld(parentNamehash, _price);
+        addMockRegistrationStrategyToTld(parentNamehash, _price);
         addMockCommitIntent(true);
 
         SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
@@ -2053,15 +2053,15 @@ contract HandshakeSldTests is Test {
         }
     }
 
-    function testUpdatePriceStrategyFromSldOwner() public {
+    function testUpdateRegistrationStrategyFromSldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x123456));
 
-        MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
+        MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2078,19 +2078,19 @@ contract HandshakeSldTests is Test {
         );
 
         bytes32 childHash = getNamehash(label, parentNamehash);
-        Sld.setPricingStrategy(childHash, address(priceStrategy));
+        Sld.setPricingStrategy(childHash, address(RegistrationStrategy));
         vm.stopPrank();
     }
 
-    function testUpdatePriceStrategyFromNotSldOwner() public {
+    function testUpdateRegistrationStrategyFromNotSldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x123456));
 
-        MockPriceStrategy priceStrategy = new MockPriceStrategy(10);
+        MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2108,7 +2108,7 @@ contract HandshakeSldTests is Test {
         vm.startPrank(address(0x22446666));
         bytes32 childHash = getNamehash(label, parentNamehash);
         vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(childHash, address(priceStrategy));
+        Sld.setPricingStrategy(childHash, address(RegistrationStrategy));
         vm.stopPrank();
     }
 
@@ -2118,7 +2118,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2169,7 +2169,7 @@ contract HandshakeSldTests is Test {
         receiver[0] = claimant;
         receiver[1] = claimant;
 
-        addMockPriceStrategyToTld(parentNamehash[0], 30); //30 dollars
+        addMockRegistrationStrategyToTld(parentNamehash[0], 30); //30 dollars
         addMockCommitIntent(true);
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
@@ -2198,7 +2198,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2215,7 +2215,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 364;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash);
+        addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2242,7 +2242,7 @@ contract HandshakeSldTests is Test {
 
         uint256 annualCost = 5456;
 
-        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();
@@ -2288,7 +2288,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 364;
         bytes32 parentNamehash = bytes32(uint256(0x12));
 
-        addMockPriceStrategyToTld(parentNamehash, 1 ether);
+        addMockRegistrationStrategyToTld(parentNamehash, 1 ether);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2327,7 +2327,7 @@ contract HandshakeSldTests is Test {
         uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockPriceStrategyToTld(parentNamehash, 1);
+        addMockRegistrationStrategyToTld(parentNamehash, 1);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
@@ -2357,7 +2357,7 @@ contract HandshakeSldTests is Test {
 
         uint256 annualCost = 2000;
 
-        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();
@@ -2428,7 +2428,7 @@ contract HandshakeSldTests is Test {
 
         uint256 annualCost = 2000;
 
-        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();
@@ -2467,7 +2467,7 @@ contract HandshakeSldTests is Test {
 
         uint256 annualCost = 2000;
 
-        addMockPriceStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();

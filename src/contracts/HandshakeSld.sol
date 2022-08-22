@@ -5,7 +5,7 @@ import "src/contracts/HandshakeTld.sol";
 import "src/contracts/SldCommitIntent.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
-import "interfaces/ISldPriceStrategy.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "src/structs/SubdomainDetail.sol";
 import "src/structs/SubdomainRegistrationDetail.sol";
@@ -28,10 +28,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     uint256 private constant MIN_REGISTRATION_DAYS = 364;
 
     //moved this from tld contract so we can have subdomains of subdomains.
-    mapping(bytes32 => ISldPriceStrategy) public SldDefaultPriceStrategy;
+    mapping(bytes32 => ISldRegistrationStrategy) public SldDefaultRegistrationStrategy;
     mapping(bytes32 => SubdomainRegistrationDetail) public SubdomainRegistrationHistory;
 
-    error MissingPriceStrategy();
+    error MissingRegistrationStrategy();
 
     //interface method for price strategy
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
@@ -53,16 +53,16 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     function getPricingStrategy(bytes32 _parentNamehash)
         public
         view
-        returns (ISldPriceStrategy)
+        returns (ISldRegistrationStrategy)
     {
         if (
-            address(SldDefaultPriceStrategy[_parentNamehash]).supportsInterface(
+            address(SldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
                 PRICE_IN_DOLLARS_SELECTOR
             )
         ) {
-            return SldDefaultPriceStrategy[_parentNamehash];
+            return SldDefaultRegistrationStrategy[_parentNamehash];
         } else {
-            revert MissingPriceStrategy();
+            revert MissingRegistrationStrategy();
         }
     }
 
@@ -162,7 +162,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         address _recipient
     ) private returns (uint256) {
         //will revert if pricing strategy does not exist.
-        ISldPriceStrategy priceStrat = getPricingStrategy(_parentNamehash);
+        ISldRegistrationStrategy priceStrat = getPricingStrategy(_parentNamehash);
 
         uint256 domainDollarCost = priceStrat.getPriceInDollars(
             msg.sender,
@@ -199,7 +199,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         bytes32[] calldata _proofs,
         address _recipient
     ) external payable {
-        ISldPriceStrategy strategy = getPricingStrategy(_parentNamehash);
+        ISldRegistrationStrategy strategy = getPricingStrategy(_parentNamehash);
         uint256 domainDollarCost = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,
@@ -269,7 +269,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         bytes32 _namehash,
         uint256 _price,
         uint256 _days,
-        ISldPriceStrategy _strategy,
+        ISldRegistrationStrategy _strategy,
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
@@ -348,7 +348,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
             _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
-        SldDefaultPriceStrategy[_namehash] = ISldPriceStrategy(_strategy);
+        SldDefaultRegistrationStrategy[_namehash] = ISldRegistrationStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
@@ -385,7 +385,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     ) private view returns (SubdomainDetail memory) {
         bytes32 parentHash = bytes32(_parentId);
         //will revert if pricing strategy does not exist.
-        ISldPriceStrategy priceStrat = getPricingStrategy(parentHash);
+        ISldRegistrationStrategy priceStrat = getPricingStrategy(parentHash);
 
         uint256 priceInDollars = priceStrat.getPriceInDollars(
             _recipient,

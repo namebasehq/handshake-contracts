@@ -2,7 +2,7 @@
 
 import "solmate/src/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
 import "interfaces/IMetadataService.sol";
-import "interfaces/ISldPriceStrategy.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 

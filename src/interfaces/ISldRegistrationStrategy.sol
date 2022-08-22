@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-interface ISldPriceStrategy is IERC165 {
+interface ISldRegistrationStrategy is IERC165 {
     function getPriceInDollars(
         address _buyingAddress,
         bytes32 _parentNamehash,

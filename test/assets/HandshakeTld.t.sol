@@ -5,10 +5,10 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "src/contracts/HandshakeTld.sol";
 import "src/contracts/HandshakeSld.sol";
-import "test/mocks/mockPriceStrategy.sol";
+import "test/mocks/mockRegistrationStrategy.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
-import "interfaces/ISldPriceStrategy.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 
 contract HandshakeTldTests is Test {
     using stdStorage for StdStorage;
@@ -49,12 +49,12 @@ contract HandshakeTldTests is Test {
         assertEq(domain, Tld.NamehashToLabelMap(namehash));
     }
 
-    function testUpdateDefaultSldPriceStrategyFromTldOwner() public {
+    function testUpdateDefaultSldRegistrationStrategyFromTldOwner() public {
         string memory domain = "test";
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         bytes32 tldHash = bytes32(tldId);
         address tldOwnerAddr = address(0x6942);
-        MockPriceStrategy sldPriceStrategy = new MockPriceStrategy(0);
+        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore
@@ -78,20 +78,20 @@ contract HandshakeTldTests is Test {
             )
         );
         vm.startPrank(tldOwnerAddr);
-        Sld.setPricingStrategy(tldHash, address(sldPriceStrategy));
+        Sld.setPricingStrategy(tldHash, address(sldRegistrationStrategy));
 
-        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldPriceStrategy));
+        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
 
         vm.stopPrank();
     }
 
-    function testUpdateDefaultSldPriceStrategyFromNotTldOwner() public {
+    function testUpdateDefaultSldRegistrationStrategyFromNotTldOwner() public {
         string memory domain = "test";
         bytes32 tldHash = bytes32(keccak256(abi.encodePacked(domain)));
         uint256 tldId = uint256(tldHash);
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
-        address sldPriceStrategy = address(0x133737);
+        address sldRegistrationStrategy = address(0x133737);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore
@@ -103,16 +103,16 @@ contract HandshakeTldTests is Test {
 
         vm.startPrank(notTldOwnerAddr);
 
-        // Tld.updateSldPricingStrategy(bytes32(tldId), ISldPriceStrategy(sldPriceStrategy));
+        // Tld.updateSldPricingStrategy(bytes32(tldId), ISldRegistrationStrategy(sldRegistrationStrategy));
         stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
             address(Sld.HandshakeTldContract())
         );
         vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(tldHash, sldPriceStrategy);
+        Sld.setPricingStrategy(tldHash, sldRegistrationStrategy);
         vm.stopPrank();
     }
 
-    function testUpdateDefaultSldPriceStrategyFromNoneExistingTld() public {}
+    function testUpdateDefaultSldRegistrationStrategyFromNoneExistingTld() public {}
 
     function testUpdateRoyaltyPercentageFromOwnerWallet() public {
         //10 percent is the max royalty
