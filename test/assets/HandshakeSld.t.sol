@@ -8,6 +8,7 @@ import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "test/mocks/mockUsdOracle.sol";
+import "test/mocks/mockGlobalRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract HandshakeSldTests is Test {
@@ -76,7 +77,7 @@ contract HandshakeSldTests is Test {
 
     function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
-
+       
         stdstore
             .target(address(Sld))
             .sig("SldDefaultRegistrationStrategy(bytes32)")
@@ -396,7 +397,7 @@ contract HandshakeSldTests is Test {
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
-
+         Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
         address claimant = address(0x6666);
         address[] memory receiver = new address[](2);
 
@@ -439,7 +440,8 @@ contract HandshakeSldTests is Test {
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
-
+        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        
         bytes32[][] memory empty_array = new bytes32[][](2);
 
         address claimant = address(0x6666);
@@ -540,7 +542,7 @@ contract HandshakeSldTests is Test {
         parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
-
+        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
         //commented this out for the test
         //addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
@@ -2171,6 +2173,8 @@ contract HandshakeSldTests is Test {
 
         addMockRegistrationStrategyToTld(parentNamehash[0], 30); //30 dollars
         addMockCommitIntent(true);
+        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
 
@@ -2207,31 +2211,6 @@ contract HandshakeSldTests is Test {
         MockUsdOracle oracle = new MockUsdOracle(183185670000);
 
         stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
-    }
-
-    function testMintSldFromAuthorisedWallet_LessThan365Days_ExpectFail() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 364;
-        bytes32 parentNamehash = bytes32(0x0);
-
-        addMockRegistrationStrategyToTld(parentNamehash);
-        addMockCommitIntent(true);
-
-        bytes32[] memory empty_array;
-        address claimant = address(0x6666);
-
-        vm.startPrank(claimant);
-        vm.expectRevert("Too short registration length");
-        Sld.purchaseSingleDomain(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            empty_array,
-            claimant
-        );
-        vm.stopPrank();
     }
 
     function testMintSingleDomainCheckCheckHistory() public {
@@ -2282,44 +2261,7 @@ contract HandshakeSldTests is Test {
         }
     }
 
-    function testMintMultipleSldFromAuthorisedWallet_LessThan365Days_ExpectFail() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 364;
-        bytes32 parentNamehash = bytes32(uint256(0x12));
 
-        addMockRegistrationStrategyToTld(parentNamehash, 1 ether);
-        addMockCommitIntent(true);
-
-        bytes32[] memory empty_array;
-        address claimant = address(0x6666);
-
-        hoax(claimant, 1 ether);
-        vm.expectRevert("Too short registration length");
-        mintSingleSubdomain(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            claimant,
-            1 ether //price
-        );
-        vm.stopPrank();
-
-        bytes32 namehash = getNamehash(label, parentNamehash);
-
-        (
-            uint80 RegistrationTime,
-            uint80 RegistrationLength,
-            uint96 RegistrationPrice
-        ) = Sld.SubdomainRegistrationHistory(namehash);
-
-        uint48[10] memory prices = Sld.getGuarenteedPrices(namehash);
-
-        for (uint256 i; i < prices.length; i++) {
-            emit log_named_uint("price", prices[i]);
-        }
-    }
 
     function testRegisterSubdomainForOneDollarLowestPrice_pass() public {
         string memory label = "";
@@ -2393,9 +2335,11 @@ contract HandshakeSldTests is Test {
 
         uint48[10] memory rates = Sld.getGuarenteedPrices(namehash);
 
+        /*
         for (uint256 i; i < rates.length; i++) {
             emit log_named_uint("rate", rates[i]);
         }
+        */
 
         uint256 newRegLength = 400;
         hoax(claimant, 1.095 ether);
@@ -2528,5 +2472,28 @@ contract HandshakeSldTests is Test {
             RegistrationLength + newRegLength,
             "new registrationLength not correct"
         );
+    }
+
+    function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
+        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(true);
+
+        Sld.setGlobalRegistrationStrategy(address(strategy));
+
+        assertEq(address(Sld.ContractRegistrationStrategy()), address(strategy), "registration strategy not successfully set");
+    }
+
+    function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
+        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(true);
+
+        vm.prank(address(0x64646464644));
+        vm.expectRevert("Ownable: caller is not the owner");
+        Sld.setGlobalRegistrationStrategy(address(strategy));
+    }
+
+    function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail() public {
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(100);
+        vm.expectRevert("IGlobalRegistrationStrategy interface not supported");
+        Sld.setGlobalRegistrationStrategy(address(strategy));
+
     }
 }

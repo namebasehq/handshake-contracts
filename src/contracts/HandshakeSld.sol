@@ -12,6 +12,7 @@ import "src/structs/SubdomainRegistrationDetail.sol";
 import "interfaces/IPriceOracle.sol";
 import "src/contracts/UsdPriceOracle.sol";
 import "src/contracts/HasUsdOracle.sol";
+import "interfaces/IGlobalRegistrationStrategy.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -23,9 +24,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     ICommitIntent public CommitIntent;
     IDomainValidator public LabelValidator;
 
+    IGlobalRegistrationStrategy public ContractRegistrationStrategy;
+
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
-    uint256 private constant MIN_REGISTRATION_DAYS = 364;
+   
 
     //moved this from tld contract so we can have subdomains of subdomains.
     mapping(bytes32 => ISldRegistrationStrategy) public SldDefaultRegistrationStrategy;
@@ -101,7 +104,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         SubdomainRegistrationDetail memory _history,
         uint256 _registrationLength
     ) public view returns (uint256) {
-        require(_registrationLength > 364, "365 day minimum renewal");
+
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
@@ -170,6 +173,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
             _label,
             _registrationLength
         );
+
+        require(ContractRegistrationStrategy.canRegister(msg.sender, _parentNamehash, _label, _registrationLength, domainDollarCost), "not eligible");
 
         purchaseSld(
             _label,
@@ -273,7 +278,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
-        require(_days > MIN_REGISTRATION_DAYS, "Too short registration length");
         uint48[10] memory arr;
 
         for (uint256 i; i < arr.length; ) {
@@ -445,6 +449,13 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
         UsdOracle = _oracle;
         emit NewUsdOracle(address(_oracle));
+    }
+
+    function setGlobalRegistrationStrategy(address _strategy) public onlyOwner {
+        require(_strategy.supportsInterface(type(IGlobalRegistrationStrategy).interfaceId), "IGlobalRegistrationStrategy interface not supported");
+
+        ContractRegistrationStrategy = IGlobalRegistrationStrategy(_strategy);
+
     }
 
     function getGuarenteedPrices(bytes32 _namehash)
