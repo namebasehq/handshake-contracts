@@ -75,9 +75,11 @@ contract HandshakeSldTests is Test {
         );
     }
 
-    function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
+    function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price)
+        private
+    {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
-       
+
         stdstore
             .target(address(Sld))
             .sig("SldDefaultRegistrationStrategy(bytes32)")
@@ -153,10 +155,22 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("testtest"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345dddd679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x646464));
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "testtest");
+
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -179,13 +193,25 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("packed"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
+
+        address tldOwner = address(0x12345dddd679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x646464));
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "packed");
+
+        vm.stopPrank();
 
         vm.startPrank(claimant);
         Sld.purchaseSingleDomain(
@@ -253,10 +279,22 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yyyyy"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yyyyy");
+
+        vm.stopPrank();
 
         address claimant = address(0x6666);
         bytes32[] memory empty_array;
@@ -287,10 +325,22 @@ contract HandshakeSldTests is Test {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
+        bytes32 parentNamehash = keccak256(abi.encodePacked("testing"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "testing");
+
+        vm.stopPrank();
 
         address claimant = address(0x6666);
 
@@ -316,13 +366,26 @@ contract HandshakeSldTests is Test {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(uint256(0x1234567890abcdef));
+        bytes32 parentNamehash = keccak256(abi.encodePacked("testing"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
-        address claimant = address(0x6666);
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "testing");
+
+        vm.stopPrank();
+
         bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
         vm.startPrank(claimant);
         Sld.purchaseSingleDomain(
             label,
@@ -391,13 +454,28 @@ contract HandshakeSldTests is Test {
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
-        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("yo")));
+        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("yoyo")));
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yo");
+        tld.mint(tldOwner, "yoyo");
+        vm.stopPrank();
+
         addMockCommitIntent(true);
-         Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        Sld.setGlobalRegistrationStrategy(
+            address(new MockGlobalRegistrationStrategy(true))
+        );
         address claimant = address(0x6666);
         address[] memory receiver = new address[](2);
 
@@ -428,20 +506,33 @@ contract HandshakeSldTests is Test {
         label[0] = "test1";
         label[1] = "test2";
 
-        secret[0] = bytes32(abi.encodePacked(uint256(0x0)));
-        secret[1] = bytes32(abi.encodePacked(uint256(0x1)));
+        secret[0] = bytes32(abi.encodePacked(uint256(0x2)));
+        secret[1] = bytes32(abi.encodePacked(uint256(0x3)));
 
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
-        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("yes")));
+        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("no")));
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
-        
+        Sld.setGlobalRegistrationStrategy(
+            address(new MockGlobalRegistrationStrategy(true))
+        );
+
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yes");
+        tld.mint(tldOwner, "no");
+        vm.stopPrank();
+
         bytes32[][] memory empty_array = new bytes32[][](2);
 
         address claimant = address(0x6666);
@@ -470,13 +561,24 @@ contract HandshakeSldTests is Test {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("heyman"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
+
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "heyman");
+
+        vm.stopPrank();
 
         vm.startPrank(claimant);
 
@@ -497,10 +599,20 @@ contract HandshakeSldTests is Test {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("hash"));
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "hash");
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -538,14 +650,27 @@ contract HandshakeSldTests is Test {
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(abi.encodePacked(uint256(0x2)));
-        parentNamehash[1] = bytes32(abi.encodePacked(uint256(0x3)));
+        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("hey")));
+        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("you")));
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        Sld.setGlobalRegistrationStrategy(
+            address(new MockGlobalRegistrationStrategy(true))
+        );
         //commented this out for the test
         //addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "hey");
+        tld.mint(tldOwner, "you");
+        vm.stopPrank();
 
         bytes32[][] memory empty_array = new bytes32[][](2);
 
@@ -2059,12 +2184,24 @@ contract HandshakeSldTests is Test {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(uint256(0x123456));
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yo"));
 
         MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yo");
+
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -2088,12 +2225,24 @@ contract HandshakeSldTests is Test {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(uint256(0x123456));
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyo"));
 
         MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yoyo");
+
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -2118,10 +2267,22 @@ contract HandshakeSldTests is Test {
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yyyttt"));
 
         addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345dddd679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x646464));
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yyyttt");
+
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -2165,16 +2326,32 @@ contract HandshakeSldTests is Test {
         secret[1] = 0x0;
         registrationLength[0] = 365;
         registrationLength[1] = 365;
-        parentNamehash[0] = 0x0;
+        parentNamehash[0] = keccak256(abi.encodePacked("testing12345"));
+        parentNamehash[1] = keccak256(abi.encodePacked("testing98765"));
         proofs[0] = empty_array;
         proofs[1] = empty_array;
         receiver[0] = claimant;
         receiver[1] = claimant;
 
         addMockRegistrationStrategyToTld(parentNamehash[0], 30); //30 dollars
-        addMockCommitIntent(true);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        addMockRegistrationStrategyToTld(parentNamehash[1], 30); //30 dollars
 
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x464646));
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "testing12345");
+        tld.mint(tldOwner, "testing98765");
+        vm.stopPrank();
+
+        addMockCommitIntent(true);
+        Sld.setGlobalRegistrationStrategy(
+            address(new MockGlobalRegistrationStrategy(true))
+        );
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
 
@@ -2217,12 +2394,24 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("tatata"));
 
         uint256 annualCost = 5456;
 
         addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345dddd679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x646464));
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "tatata");
+
+        vm.stopPrank();
 
         addMockOracle();
 
@@ -2261,16 +2450,26 @@ contract HandshakeSldTests is Test {
         }
     }
 
-
-
     function testRegisterSubdomainForOneDollarLowestPrice_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("tatata"));
 
         addMockRegistrationStrategyToTld(parentNamehash, 1);
         addMockCommitIntent(true);
+
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        Sld.setHandshakeWalletAddress(address(0x999999));
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "tatata");
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -2295,7 +2494,7 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyo"));
 
         uint256 annualCost = 2000;
 
@@ -2306,6 +2505,16 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
+        address tldOwner = address(0x464646);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x57595351));
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, "yoyo");
 
         vm.warp(6688);
 
@@ -2368,7 +2577,7 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("abc"));
 
         uint256 annualCost = 2000;
 
@@ -2376,6 +2585,17 @@ contract HandshakeSldTests is Test {
         addMockCommitIntent(true);
 
         addMockOracle();
+
+        Sld.setHandshakeWalletAddress(address(0x787878));
+        address tldOwner = address(0x12345679);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "abc");
+        vm.stopPrank();
 
         bytes32[] memory empty_array;
         address claimant = address(0x6666);
@@ -2407,13 +2627,21 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
-        bytes32 parentNamehash = bytes32(0x0);
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yo"));
 
         uint256 annualCost = 2000;
 
         addMockRegistrationStrategyToTld(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
+        address tldOwner = address(0x222);
+        HandshakeTld tld = Sld.HandshakeTldContract();
+        Sld.setHandshakeWalletAddress(address(0x124578));
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.mint(tldOwner, "yo");
         addMockOracle();
 
         bytes32[] memory empty_array;
@@ -2474,26 +2702,117 @@ contract HandshakeSldTests is Test {
         );
     }
 
+    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {
+        string memory label = "test";
+        bytes32 secret = bytes32(0x0);
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyoyo"));
+
+        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockCommitIntent(true);
+
+        bytes32[] memory empty_array;
+        address claimant = address(0x6666);
+
+        address tldOwner = address(0x12345679);
+
+        HandshakeTld tld = Sld.HandshakeTldContract();
+
+        Sld.setHandshakeWalletAddress(address(0x888888));
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.mint(tldOwner, "yoyoyo");
+        vm.stopPrank();
+
+        MockUsdOracle oracle = new MockUsdOracle(200000000000);
+
+        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+
+        hoax(claimant, 1 ether);
+
+        Sld.purchaseSingleDomain{value: 1 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            empty_array,
+            claimant
+        );
+        vm.stopPrank();
+
+        assertEq(Sld.balanceOf(claimant), 1);
+
+        emit log_named_uint("tld balance", tldOwner.balance); //14250000000000000
+        emit log_named_uint(
+            "handshake balance",
+            Sld.HandshakeWalletPayoutAddress().balance
+        ); //750000000000000
+
+        assertEq(claimant.balance, 1 ether - 15000000000000000);
+        assertEq(tldOwner.balance, 14250000000000000);
+        assertEq(Sld.HandshakeWalletPayoutAddress().balance, 750000000000000);
+        assertEq(
+            tldOwner.balance +
+                Sld.HandshakeWalletPayoutAddress().balance +
+                claimant.balance,
+            1 ether
+        );
+    }
+
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
-        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(true);
+        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(
+            true
+        );
 
         Sld.setGlobalRegistrationStrategy(address(strategy));
 
-        assertEq(address(Sld.ContractRegistrationStrategy()), address(strategy), "registration strategy not successfully set");
+        assertEq(
+            address(Sld.ContractRegistrationStrategy()),
+            address(strategy),
+            "registration strategy not successfully set"
+        );
     }
 
     function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
-        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(true);
+        MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(
+            true
+        );
 
         vm.prank(address(0x64646464644));
         vm.expectRevert("Ownable: caller is not the owner");
         Sld.setGlobalRegistrationStrategy(address(strategy));
     }
 
-    function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail() public {
+    function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail()
+        public
+    {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(100);
         vm.expectRevert("IGlobalRegistrationStrategy interface not supported");
         Sld.setGlobalRegistrationStrategy(address(strategy));
+    }
 
+    function testSetHandshakeWalletAddressFromContractOwner_pass() public {
+        address addr = address(0x2244661122);
+        vm.startPrank(Sld.owner());
+        Sld.setHandshakeWalletAddress(addr);
+
+        assertEq(Sld.HandshakeWalletPayoutAddress(), addr);
+    }
+
+    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {
+        address addr = address(0);
+        vm.startPrank(Sld.owner());
+        vm.expectRevert("cannot set to zero address");
+        Sld.setHandshakeWalletAddress(addr);
+    }
+
+    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {
+        vm.startPrank(address(0x5555555555));
+        address addr = address(0x2244661122);
+        vm.expectRevert("Ownable: caller is not the owner");
+        Sld.setHandshakeWalletAddress(addr);
     }
 }

@@ -54,7 +54,9 @@ contract HandshakeTldTests is Test {
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         bytes32 tldHash = bytes32(tldId);
         address tldOwnerAddr = address(0x6942);
-        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
+        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(
+            0
+        );
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore
@@ -80,7 +82,10 @@ contract HandshakeTldTests is Test {
         vm.startPrank(tldOwnerAddr);
         Sld.setPricingStrategy(tldHash, address(sldRegistrationStrategy));
 
-        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
+        assertEq(
+            address(Sld.getPricingStrategy(tldHash)),
+            address(sldRegistrationStrategy)
+        );
 
         vm.stopPrank();
     }

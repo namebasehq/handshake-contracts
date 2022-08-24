@@ -13,12 +13,13 @@ import "interfaces/IPriceOracle.sol";
 import "src/contracts/UsdPriceOracle.sol";
 import "src/contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationStrategy.sol";
+import "./PaymentManager.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 pragma solidity ^0.8.15;
 
-contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
+contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
@@ -27,8 +28,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     IGlobalRegistrationStrategy public ContractRegistrationStrategy;
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
-
-   
 
     //moved this from tld contract so we can have subdomains of subdomains.
     mapping(bytes32 => ISldRegistrationStrategy) public SldDefaultRegistrationStrategy;
@@ -45,7 +44,10 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
     mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
-    constructor() HandshakeERC721("HSLD", "Handshake Second Level Domain") {
+    constructor()
+        HandshakeERC721("HSLD", "Handshake Second Level Domain")
+        PaymentManager(msg.sender)
+    {
         HandshakeTldContract = new HandshakeTld(msg.sender);
         HandshakeTldContract.transferOwnership(msg.sender);
 
@@ -91,20 +93,24 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
             _registrationLength) / DECIMAL_MULTIPLIER;
         require(priceInWei <= msg.value, "Price too low");
 
-        uint256 refund = msg.value - priceInWei;
-        payable(msg.sender).transfer(refund);
-
         history.RegistrationLength += uint72(_registrationLength);
 
         SubdomainRegistrationHistory[_subdomainHash].RegistrationLength = history
             .RegistrationLength;
+
+        //process the funds
+        //refund excess paid (maybe due to delay in processing tx and $ price changing)
+        uint256 refund = msg.value - priceInWei;
+        payable(msg.sender).transfer(refund);
+
+        address parentAddress = getOwnerOfParent(_subdomainHash);
+        distributePrimaryFunds(parentAddress, priceInWei);
     }
 
     function getRenewalPricePerDay(
         SubdomainRegistrationDetail memory _history,
         uint256 _registrationLength
     ) public view returns (uint256) {
-
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
@@ -122,25 +128,27 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         bytes32[] calldata _parentNamehash,
         address[] calldata _recipient
     ) public payable {
-        uint256 expectedLength = _label.length;
+        // uint256 expectedLength = _label.length;
 
         require(
-            expectedLength == _secret.length &&
-                expectedLength == _registrationLength.length &&
-                expectedLength == _parentNamehash.length &&
-                expectedLength == _recipient.length,
+            _label.length == _secret.length &&
+                _label.length == _registrationLength.length &&
+                _label.length == _parentNamehash.length &&
+                _label.length == _recipient.length,
             "all arrays should be the same length"
         );
         {
-            uint256 priceInDollars;
+            uint256 priceInWei;
+            uint256 weiValueOfDollar = getWeiValueOfDollar();
 
-            for (uint256 i; i < expectedLength; ) {
-                priceInDollars += purchaseDomainReturnPrice(
+            for (uint256 i; i < _label.length; ) {
+                priceInWei += purchaseDomainReturnPrice(
                     _parentNamehash[i],
                     _label[i],
                     _registrationLength[i],
                     _secret[i],
-                    _recipient[i]
+                    _recipient[i],
+                    weiValueOfDollar
                 );
 
                 unchecked {
@@ -148,8 +156,6 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
                 }
             }
 
-            uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) /
-                DECIMAL_MULTIPLIER;
             require(priceInWei <= msg.value, "Price too low");
 
             uint256 refund = msg.value - priceInWei;
@@ -174,7 +180,16 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
             _registrationLength
         );
 
-        require(ContractRegistrationStrategy.canRegister(msg.sender, _parentNamehash, _label, _registrationLength, domainDollarCost), "not eligible");
+        require(
+            ContractRegistrationStrategy.canRegister(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                _registrationLength,
+                domainDollarCost
+            ),
+            "not eligible"
+        );
 
         purchaseSld(
             _label,
@@ -194,6 +209,62 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         );
 
         return domainDollarCost;
+    }
+
+    function purchaseDomainReturnPrice(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength,
+        bytes32 _secret,
+        address _recipient,
+        uint256 _weiToDollar
+    ) private returns (uint256 domainWeiCost) {
+        //will revert if pricing strategy does not exist.
+        ISldRegistrationStrategy priceStrat = getPricingStrategy(_parentNamehash);
+
+        uint256 domainDollarCost = priceStrat.getPriceInDollars(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
+
+        require(
+            ContractRegistrationStrategy.canRegister(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                _registrationLength,
+                domainDollarCost
+            ),
+            "not eligible"
+        );
+
+        purchaseSld(
+            _label,
+            _secret,
+            _registrationLength,
+            _parentNamehash,
+            _recipient == address(0) ? msg.sender : _recipient
+        );
+
+        bytes32 subdomainHash = getNamehash(_label, _parentNamehash);
+
+        addRegistrationDetails(
+            subdomainHash,
+            domainDollarCost,
+            _registrationLength,
+            priceStrat,
+            _parentNamehash,
+            _label
+        );
+
+        uint256 priceInWei = (domainDollarCost * _weiToDollar) / DECIMAL_MULTIPLIER;
+
+        address parentAddress = getOwnerOfParent(subdomainHash);
+        distributePrimaryFunds(parentAddress, priceInWei);
+
+        return priceInWei;
     }
 
     function purchaseSingleDomain(
@@ -238,6 +309,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
 
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
+
+        distributePrimaryFunds(
+            getOwnerOfParent(getNamehash(_label, _parentNamehash)),
+            priceInWei
+        );
     }
 
     function purchaseSld(
@@ -446,16 +522,23 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
         return arr;
     }
 
+    function setHandshakeWalletAddress(address _addr) public onlyOwner {
+        require(_addr != address(0), "cannot set to zero address");
+        HandshakeWalletPayoutAddress = _addr;
+    }
+
     function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
         UsdOracle = _oracle;
         emit NewUsdOracle(address(_oracle));
     }
 
     function setGlobalRegistrationStrategy(address _strategy) public onlyOwner {
-        require(_strategy.supportsInterface(type(IGlobalRegistrationStrategy).interfaceId), "IGlobalRegistrationStrategy interface not supported");
+        require(
+            _strategy.supportsInterface(type(IGlobalRegistrationStrategy).interfaceId),
+            "IGlobalRegistrationStrategy interface not supported"
+        );
 
         ContractRegistrationStrategy = IGlobalRegistrationStrategy(_strategy);
-
     }
 
     function getGuarenteedPrices(bytes32 _namehash)
@@ -466,6 +549,12 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle {
             _namehash
         ];
         return detail.RegistrationPriceSnapshot;
+    }
+
+    function getOwnerOfParent(bytes32 _childHash) private returns (address _parent) {
+        uint256 id = uint256(NamehashToParentMap[_childHash]);
+        require(id > 0, "parent does not exist");
+        _parent = exists(id) ? ownerOf(id) : HandshakeTldContract.ownerOf(id);
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
