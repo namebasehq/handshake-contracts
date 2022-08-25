@@ -32,9 +32,9 @@ forge build
 forge test
 ```
 
-**Record Remappings**
+**Check Remappings**
 ```sh
-forge remappings > remappings.txt
+forge remappings
 ```
 
 
