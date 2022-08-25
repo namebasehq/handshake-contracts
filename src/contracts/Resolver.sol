@@ -26,11 +26,7 @@ contract Resolver is IResolver {
 
     function publickey(bytes32 _namehash) external view returns (bytes32 x, bytes32 y) {}
 
-    function text(bytes32 _namehash, string calldata _key)
-        external
-        view
-        returns (string memory)
-    {}
+    function text(bytes32 _namehash, string calldata _key) external view returns (string memory) {}
 
     function setDnsRecord(
         bytes32 _namehash,
@@ -40,15 +36,9 @@ contract Resolver is IResolver {
 
     function setAddr(bytes32 _namehash, address addr) external isDomainContract {}
 
-    function setContentHash(bytes32 _namehash, bytes calldata hash)
-        external
-        isDomainContract
-    {}
+    function setContentHash(bytes32 _namehash, bytes calldata hash) external isDomainContract {}
 
-    function setName(bytes32 _namehash, string calldata _name)
-        external
-        isDomainContract
-    {}
+    function setName(bytes32 _namehash, string calldata _name) external isDomainContract {}
 
     function setPublicKey(
         bytes32 _namehash,
