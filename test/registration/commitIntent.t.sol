@@ -5,7 +5,7 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ICommitIntent.sol";
-import "src/contracts/SldCommitIntent.sol";
+import "contracts/SldCommitIntent.sol";
 
 contract SldCommitIntentTests is Test {
     ICommitIntent internal intent;

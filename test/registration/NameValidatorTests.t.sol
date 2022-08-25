@@ -5,12 +5,32 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ICommitIntent.sol";
-import "src/contracts/DomainLabelValidator.sol";
+import "contracts/NameValidator.sol";
 
-contract LabelValidatorTests is Test {
-    function setUp() public {}
+contract NameValidatorTests is Test {
+    INameValidator validator;
 
-    function testLowercaseLettersOnlyIsValid() public {}
+    function setUp() public {
+        validator = new NameValidator();
+    }
+
+    function testLowercaseLettersOnlyIsValid_pass() public {
+        string memory name = "testing";
+        bool valid = validator.isValidName(name);
+        assertTrue(valid, "simple lowercase name is valid");
+    }
+
+    function testAlphanumericIsValid_pass() public {
+        string memory name = "testing123";
+        bool valid = validator.isValidName(name);
+        assertTrue(valid, "alphanumeric name is valid");
+    }
+
+    function testUppercaseLettersIsInvalid_fail() public {
+        string memory name = "TESTING";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "uppercase name is invalid");
+    }
 
     function testLowercaseLettersAndNumbersIsValid() public {}
 

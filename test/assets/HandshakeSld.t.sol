@@ -3,9 +3,9 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/HandshakeSld.sol";
+import "contracts/HandshakeSld.sol";
 import "test/mocks/mockCommitIntent.sol";
-import "test/mocks/mockLabelValidator.sol";
+import "test/mocks/mockNameValidator.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "test/mocks/mockUsdOracle.sol";
 import "test/mocks/mockGlobalRegistrationStrategy.sol";
@@ -63,10 +63,10 @@ contract HandshakeSldTests is Test {
 
     function addMockValidatorToSld() private {
         //this mock validator will always pass true
-        MockLabelValidator validator = new MockLabelValidator(true);
+        MockNameValidator validator = new MockNameValidator(true);
 
         //update commit intent with mock object
-        stdstore.target(address(Sld)).sig("LabelValidator()").checked_write(address(validator));
+        stdstore.target(address(Sld)).sig("Validator()").checked_write(address(validator));
     }
 
     function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
@@ -95,27 +95,27 @@ contract HandshakeSldTests is Test {
         stdstore.target(address(Sld)).sig("CommitIntent()").checked_write(address(intent));
     }
 
-    function testUpdateLabelValidatorWithOwnerWalletExpectSuccess() public {
-        MockLabelValidator validator = new MockLabelValidator(false);
-        Sld.updateLabelValidator(validator);
+    function testUpdateNameValidatorWithOwnerWalletExpectSuccess() public {
+        MockNameValidator validator = new MockNameValidator(false);
+        Sld.updateNameValidator(validator);
 
-        assertEq(address(Sld.LabelValidator()), address(validator));
+        assertEq(address(Sld.Validator()), address(validator));
     }
 
-    function testUpdateLabelValidatorWithNotOwnerWalletExpectFail() public {
+    function testUpdateNameValidatorWithNotOwnerWalletExpectFail() public {
         //assign
-        MockLabelValidator validator = new MockLabelValidator(false);
-        address currentValidatorAddress = address(Sld.LabelValidator());
+        MockNameValidator validator = new MockNameValidator(false);
+        address currentValidatorAddress = address(Sld.Validator());
         address otherWallet = address(0x224466);
 
         //act
         vm.startPrank(otherWallet);
         vm.expectRevert("Ownable: caller is not the owner");
-        Sld.updateLabelValidator(validator);
+        Sld.updateNameValidator(validator);
 
         //assert
         //should not have changed
-        assertEq(currentValidatorAddress, address(Sld.LabelValidator()));
+        assertEq(currentValidatorAddress, address(Sld.Validator()));
         vm.stopPrank();
     }
 

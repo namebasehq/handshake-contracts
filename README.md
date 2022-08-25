@@ -3,11 +3,8 @@
 
 <br>
 
-<br>
-
 # Handshake Domains
 Handshake is a decentralized naming system. These contracts define a new protocol for second-level domains (SLDs) anchored to the HNS root zone. These domains are based on the ERC-721 NFT standard and deployed on a secure, scalable, and inexpensive EVM L2 blockchain. 
-
 
 <br>
 
@@ -16,10 +13,9 @@ Handshake is a decentralized naming system. These contracts define a new protoco
 # Development
 
 **Install Foundry**
-
+```
 https://book.getfoundry.sh/getting-started/installation
-
-<br>
+```
 
 **Install NPM Requirements**
 ```sh

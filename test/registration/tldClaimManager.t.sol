@@ -5,8 +5,8 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ITldClaimManager.sol";
-import "src/contracts/TldClaimManager.sol";
-import "src/contracts/HandshakeTld.sol";
+import "contracts/TldClaimManager.sol";
+import "contracts/HandshakeTld.sol";
 
 contract TldClaimManagerTests is Test {
     ITldClaimManager internal manager;

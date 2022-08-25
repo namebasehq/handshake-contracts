@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "src/contracts/HandshakeERC721.sol";
+import "contracts/HandshakeERC721.sol";
 import "interfaces/ITldClaimManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "src/contracts/TldClaimManager.sol";
+import "contracts/TldClaimManager.sol";
 
 contract HandshakeTld is HandshakeERC721 {
     using SafeMath for uint256;
