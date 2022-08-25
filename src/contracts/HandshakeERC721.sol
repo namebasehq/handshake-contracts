@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
-import "solmate/src/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
+import "solmate/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";

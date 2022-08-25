@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.15;
 
-import {DSTestPlus} from "solmate/src/test/utils/DSTestPlus.sol";
-import {DSInvariantTest} from "solmate/src/test/utils/DSInvariantTest.sol";
-import {MockERC721} from "solmate/src/test/utils/mocks/MockERC721.sol";
-import {ERC721TokenReceiver} from "solmate/src/tokens/ERC721.sol";
+import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
+import {DSInvariantTest} from "solmate/test/utils/DSInvariantTest.sol";
+import {MockERC721} from "solmate/test/utils/mocks/MockERC721.sol";
+import {ERC721TokenReceiver} from "solmate/tokens/ERC721.sol";
 
 //these are just the standard tests for the solmate implementation of the ERC-721 NFT
 contract ERC721Recipient is ERC721TokenReceiver {
