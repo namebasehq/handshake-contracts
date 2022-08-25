@@ -14,41 +14,114 @@ contract NameValidatorTests is Test {
         validator = new NameValidator();
     }
 
-    function testLowercaseLettersOnlyIsValid_pass() public {
+    function testLowercaseLettersOnlyIsValid() public {
         string memory name = "testing";
         bool valid = validator.isValidName(name);
         assertTrue(valid, "simple lowercase name is valid");
     }
 
-    function testAlphanumericIsValid_pass() public {
+    function testLowercaseAlphanumericIsValid() public {
         string memory name = "testing123";
         bool valid = validator.isValidName(name);
         assertTrue(valid, "alphanumeric name is valid");
     }
 
-    function testUppercaseLettersIsInvalid_fail() public {
+    function testUppercaseLettersIsInvalid() public {
         string memory name = "TESTING";
         bool valid = validator.isValidName(name);
         assertFalse(valid, "uppercase name is invalid");
     }
 
-    function testLowercaseLettersAndNumbersIsValid() public {}
+    function testUppercaseAlphanumericIsInvalid() public {
+        string memory name = "TESTING123";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "uppercase alphanumeric name is invalid");
+    }
 
-    function testNumbersOnlyIsValid() public {}
+    function testNumbersOnlyIsValid() public {
+        string memory name = "123";
+        bool valid = validator.isValidName(name);
+        assertTrue(valid, "numbers only name is valid");
+    }
 
-    function testMaxSizeForDomain() public {}
+    function testUnderscoreIsInvalid() public {
+        string memory name = "test_ing";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "underscore in name is invalid");
+    }
 
-    function testNullByteAtEndOfLabelFails() public {}
+    function testSpaceInMiddleOfLabelFails() public {
+        string memory name = "test ing";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with space is invalid");
+    }
 
-    function testNullByteAtStartOfLabelFails() public {}
+    function testSpaceAtStartOfLabelFails() public {
+        string memory name = " testing";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with leading space is invalid");
+    }
 
-    function testNullByteInMiddleOfLabelFails() public {}
+    function testSpaceAtEndOfLabelFails() public {
+        string memory name = "testing ";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with trailing space is invalid");
+    }
 
-    //find out what the min size of a domain is.. probably single char is acceptable.
-    function testSingleLetterDomainLabel___provide_expected_behaviour() public {}
+    function testNullByteLabelFails() public {
+        bytes memory _bytes = "\u0000";
+        string memory name = string(abi.encodePacked(_bytes));
+        // console.log(name);
+        // console.log(_bytes.length);
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "null byte is invalid");
+    }
 
-    function testSingleNumberDomainLabel___provide_expected_behaviour() public {}
+    function testNullByteInMiddleOfLabelFails() public {
+        bytes memory _bytes = "tes\u0000ting";
+        string memory name = string(abi.encodePacked(_bytes));
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with null byte is invalid");
+    }
 
-    //find out what the max size of a label is. There needs to be a max size!!
-    function testMaxSizePlusOneDomainFails() public {}
+    function testNullByteAtStartOfLabelFails() public {
+        bytes memory _bytes = "\u0000testing";
+        string memory name = string(abi.encodePacked(_bytes));
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with leading null byte is invalid");
+    }
+
+    function testNullByteAtEndOfLabelFails() public {
+        bytes memory _bytes = "testing\u0000";
+        string memory name = string(abi.encodePacked(_bytes));
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name with trailing null byte is invalid");
+    }
+
+    function testEmptyNameIsInvalid() public {
+        string memory name = "";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "empty name is invalid");
+    }
+
+    function testMinLengthIsValid() public {
+        // 1 chars
+        string memory name = "a";
+        bool valid = validator.isValidName(name);
+        assertTrue(valid, "name of minimum length is valid");
+    }
+
+    function testMaxLengthIsValid() public {
+        // 63 chars
+        string memory name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        bool valid = validator.isValidName(name);
+        assertTrue(valid, "name of maximum length is valid");
+    }
+
+    function testOverMaxLengthIsInvalid() public {
+        // 64 chars
+        string memory name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        bool valid = validator.isValidName(name);
+        assertFalse(valid, "name over maximum length is invalid");
+    }
 }

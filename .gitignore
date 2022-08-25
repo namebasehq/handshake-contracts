@@ -3,4 +3,5 @@ out/
 node_modules/
 broadcast/
 .idea/
+.vscode/
 .DS_Store
