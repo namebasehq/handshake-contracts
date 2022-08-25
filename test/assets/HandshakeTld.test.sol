@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/HandshakeTld.sol";
-import "src/contracts/HandshakeSld.sol";
+import "contracts/HandshakeTld.sol";
+import "contracts/HandshakeSld.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
@@ -54,15 +54,12 @@ contract HandshakeTldTests is Test {
         uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
         bytes32 tldHash = bytes32(tldId);
         address tldOwnerAddr = address(0x6942);
-        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(
-            0
-        );
+        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore
-            .target(address(Sld.HandshakeTldContract()))
-            .sig("ClaimManager()")
-            .checked_write(address(this));
+        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+            address(this)
+        );
         stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
             address(Sld.HandshakeTldContract())
         );
@@ -82,10 +79,7 @@ contract HandshakeTldTests is Test {
         vm.startPrank(tldOwnerAddr);
         Sld.setPricingStrategy(tldHash, address(sldRegistrationStrategy));
 
-        assertEq(
-            address(Sld.getPricingStrategy(tldHash)),
-            address(sldRegistrationStrategy)
-        );
+        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
 
         vm.stopPrank();
     }
@@ -99,10 +93,9 @@ contract HandshakeTldTests is Test {
         address sldRegistrationStrategy = address(0x133737);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore
-            .target(address(Sld.HandshakeTldContract()))
-            .sig("ClaimManager()")
-            .checked_write(address(this));
+        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+            address(this)
+        );
 
         Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
 

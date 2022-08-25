@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/HandshakeERC721.sol";
+import "contracts/HandshakeERC721.sol";
 import "test/mocks/mockMetadataService.sol";
 import "test/mocks/mockCommitIntent.sol";
 

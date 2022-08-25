@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 
-import "src/contracts/HandshakeERC721.sol";
+import "contracts/HandshakeERC721.sol";
 import "interfaces/ITldClaimManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "src/contracts/TldClaimManager.sol";
-
-pragma solidity ^0.8.15;
+import "contracts/TldClaimManager.sol";
 
 contract HandshakeTld is HandshakeERC721 {
     using SafeMath for uint256;
@@ -52,9 +51,7 @@ contract HandshakeTld is HandshakeERC721 {
         returns (address receiver, uint256 royaltyAmount)
     {
         uint256 divisor = RoyaltyPayoutAmount.div(10);
-        uint256 amount = RoyaltyPayoutAmount == 0 || divisor == 0
-            ? 0
-            : salePrice.div(divisor);
+        uint256 amount = RoyaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
         return (RoyaltyPayoutAddress, amount);
     }
 }

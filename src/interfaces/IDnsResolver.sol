@@ -1,21 +1,11 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
 interface IDnsResolver {
     //just took this from impervious for now..
 
-    event DnsRecordAdded(
-        bytes32 indexed _namehash,
-        bytes _name,
-        uint16 _resource,
-        bytes _record
-    );
-    event DnsRecordChanged(
-        bytes32 indexed _namehash,
-        bytes _name,
-        uint16 _resource,
-        bytes _record
-    );
+    event DnsRecordAdded(bytes32 indexed _namehash, bytes _name, uint16 _resource, bytes _record);
+    event DnsRecordChanged(bytes32 indexed _namehash, bytes _name, uint16 _resource, bytes _record);
     event DnsRecordDeleted(bytes32 indexed _namehash, bytes _name, uint16 _resource);
     event DnsZoneCleared(bytes32 indexed _namehash);
 

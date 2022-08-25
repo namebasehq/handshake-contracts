@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
 import "interfaces/ISldRegistrationStrategy.sol";
-import "./HandshakeERC721.sol";
+import "contracts/HandshakeERC721.sol";
 
 contract SldRegistrationStrategy is ISldRegistrationStrategy {
     mapping(bytes32 => uint256) public FixedPrice;
