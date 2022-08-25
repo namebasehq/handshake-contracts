@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 
 import "solmate/tokens/ERC721.sol"; //more gas efficient than OpenZeppelin
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-
-pragma solidity ^0.8.15;
 
 //this is the base class for both SLD and TLD NFTs
 abstract contract HandshakeERC721 is ERC721, Ownable {

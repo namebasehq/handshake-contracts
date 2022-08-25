@@ -14,6 +14,5 @@ interface ITldClaimManager {
 
     function AllowedTldManager(address _addr) external view returns (bool);
 
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
-        external;
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external;
 }
