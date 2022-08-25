@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import "src/contracts/HandshakeTld.sol";
+import "contracts/HandshakeTld.sol";
 
 pragma solidity ^0.8.15;
 

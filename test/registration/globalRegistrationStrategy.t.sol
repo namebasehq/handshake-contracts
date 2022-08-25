@@ -5,8 +5,8 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ICommitIntent.sol";
-import "src/contracts/GlobalRegistrationStrategy.sol";
-import "src/interfaces/IGlobalRegistrationStrategy.sol";
+import "contracts/GlobalRegistrationStrategy.sol";
+import "interfaces/IGlobalRegistrationStrategy.sol";
 
 contract GlobalRegistrationTests is Test {
     IGlobalRegistrationStrategy strategy;
