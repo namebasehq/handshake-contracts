@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 import "src/contracts/HandshakeERC721.sol";
 import "src/contracts/HandshakeTld.sol";

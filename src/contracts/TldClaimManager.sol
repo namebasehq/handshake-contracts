@@ -3,7 +3,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/ITldClaimManager.sol";
 import "src/contracts/HandshakeTld.sol";
 
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
 contract TldClaimManager is Ownable, ITldClaimManager {

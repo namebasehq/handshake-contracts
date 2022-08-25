@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 import "src/contracts/HandshakeTld.sol";
 
 pragma solidity ^0.8.15;
