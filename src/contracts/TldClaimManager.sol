@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/ITldClaimManager.sol";
-import "src/contracts/HandshakeTld.sol";
+import "contracts/HandshakeTld.sol";
 
 contract TldClaimManager is Ownable, ITldClaimManager {
     mapping(bytes32 => bool) public IsNodeRegistered;

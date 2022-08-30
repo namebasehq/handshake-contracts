@@ -2,8 +2,8 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ICommitIntent.sol";
-import "interfaces/IDomainValidator.sol";
-import "src/contracts/DomainLabelValidator.sol";
+import "interfaces/ILabelValidator.sol";
+import "contracts/LabelValidator.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SldCommitIntent is ICommitIntent, Ownable {

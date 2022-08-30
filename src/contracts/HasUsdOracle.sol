@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IPriceOracle.sol";
-import "src/contracts/UsdPriceOracle.sol";
+import "contracts/UsdPriceOracle.sol";
 
 contract HasUsdOracle is Ownable {
     IPriceOracle public UsdOracle = new UsdPriceOracle();

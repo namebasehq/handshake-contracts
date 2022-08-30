@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "src/contracts/HandshakeSld.sol";
+import "contracts/HandshakeSld.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
@@ -66,7 +66,7 @@ contract HandshakeSldTests is Test {
         MockLabelValidator validator = new MockLabelValidator(true);
 
         //update commit intent with mock object
-        stdstore.target(address(Sld)).sig("LabelValidator()").checked_write(address(validator));
+        stdstore.target(address(Sld)).sig("Validator()").checked_write(address(validator));
     }
 
     function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
@@ -99,13 +99,13 @@ contract HandshakeSldTests is Test {
         MockLabelValidator validator = new MockLabelValidator(false);
         Sld.updateLabelValidator(validator);
 
-        assertEq(address(Sld.LabelValidator()), address(validator));
+        assertEq(address(Sld.Validator()), address(validator));
     }
 
     function testUpdateLabelValidatorWithNotOwnerWalletExpectFail() public {
         //assign
         MockLabelValidator validator = new MockLabelValidator(false);
-        address currentValidatorAddress = address(Sld.LabelValidator());
+        address currentValidatorAddress = address(Sld.Validator());
         address otherWallet = address(0x224466);
 
         //act
@@ -115,7 +115,7 @@ contract HandshakeSldTests is Test {
 
         //assert
         //should not have changed
-        assertEq(currentValidatorAddress, address(Sld.LabelValidator()));
+        assertEq(currentValidatorAddress, address(Sld.Validator()));
         vm.stopPrank();
     }
 

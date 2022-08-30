@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "interfaces/IDomainValidator.sol";
+import "interfaces/ILabelValidator.sol";
 
-contract MockLabelValidator is IDomainValidator {
+contract MockLabelValidator is ILabelValidator {
     bool private IsValid;
 
     constructor(bool _isValid) {
         IsValid = _isValid;
     }
 
-    function isValidLabel(string memory _label) external returns (bool) {
+    function isValidLabel(string memory _name) external returns (bool) {
         return IsValid;
     }
 }

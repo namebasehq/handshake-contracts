@@ -1,65 +1,43 @@
-# Namebase-DSLD
+<br>
+<img src="https://user-images.githubusercontent.com/136583/182129623-3bab6cb3-ef97-41bb-bfd1-39500e2bc3f5.png" width="70">
 
-### Namebase Decentralised Domain Names
+<br>
 
-These are the smart contracts that will power the Namebase DSLDs on an EVM (tbd). SLDs will conform to the ERC-721 standard so they can be traded efficiently on compatible marketplaces.
+# Handshake SLDs
+Handshake is a decentralized naming system. The contracts in this repo define a new protocol for second-level domains (SLDs) anchored to the HNS root zone. These domains are based on the ERC-721 NFT standard and deployed on a secure and scalable EVM L2 blockchain. 
 
+<br>
 
-### Installing Forge
+# Development
 
-_Having issues? See the [troubleshooting section](#troubleshooting-installation)_.
-
-_For Windows, I would recommend installing [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)_
-
-First run the command below to get `foundryup`, the Foundry toolchain installer:
-
-```sh
-curl -L https://foundry.paradigm.xyz | bash
+**Install Foundry**
+```
+https://book.getfoundry.sh/getting-started/installation
 ```
 
-If you do not want to use the redirect, feel free to manually download the foundryup installation script from [here](https://raw.githubusercontent.com/foundry-rs/foundry/master/foundryup/install).
-
-Then, run `foundryup` in a new terminal session or after reloading your `PATH`.
-
-Other ways to use `foundryup`, and other documentation, can be found [here](./foundryup). Happy forging!
-
-## Installing from Source
-
-For people that want to install from source, you can do so like below:
-
+**Install NPM Requirements**
 ```sh
-git clone https://github.com/foundry-rs/foundry
-cd foundry
-# install cast + forge
-cargo install --path ./cli --profile local --bins --locked --force
-# install anvil
-cargo install --path ./anvil --profile local --locked --force
+npm install
 ```
 
-Or via `cargo install --git https://github.com/foundry-rs/foundry --profile local --locked foundry-cli anvil`.
-
-## Installing for CI in Github Action
-
-See [https://github.com/foundry-rs/foundry-toolchain](https://github.com/foundry-rs/foundry-toolchain) GitHub Action.
-
-## Installing via Docker
-
-Foundry maintains a [Docker image repository](https://github.com/foundry-rs/foundry/pkgs/container/foundry).
-
-You can pull the latest release image like so:
-
+**Build Contracts**
 ```sh
-docker pull ghcr.io/foundry-rs/foundry:latest
+forge build
 ```
 
-For examples and guides on using this image, see the [Docker section](https://book.getfoundry.sh/tutorials/foundry-docker.html) in the book.
-
-### Running Forge Tests
-
-Just run 
-
+**Run Tests**
 ```sh
-Forge Test
+forge test
 ```
-in the terminal / console.
+
+**Check Remappings**
+```sh
+forge remappings
+```
+
+**Run Prettier**
+```sh
+npm run prettier
+```
+
 
