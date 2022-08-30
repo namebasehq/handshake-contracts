@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 import "src/contracts/HandshakeTld.sol";
 
 pragma solidity ^0.8.15;
@@ -14,6 +14,5 @@ interface ITldClaimManager {
 
     function AllowedTldManager(address _addr) external view returns (bool);
 
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
-        external;
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external;
 }

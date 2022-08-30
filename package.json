@@ -1,8 +1,16 @@
 {
+  "name": "handshake-slds",
+  "version": "0.0.1",
+  "description": "Handshake Decentralized SLDs",
+  "repository": "https://github.com/namebasehq/handshake-slds",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "prettier": "prettier --write 'src/**/*.sol' 'script/**/*.sol' 'test/**/*.sol'"
+  },
   "dependencies": {
     "@chainlink/contracts": "^0.4.2",
-    "@openzeppelin/contracts": "^4.7.0",
-    "solmate": "^6.5.0"
+    "@openzeppelin/contracts": "^4.7.0"
   },
   "devDependencies": {
     "keccak256": "^1.0.6",

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 
 import "src/contracts/HandshakeERC721.sol";
 import "src/contracts/HandshakeTld.sol";
@@ -16,8 +17,6 @@ import "interfaces/IGlobalRegistrationStrategy.sol";
 import "./PaymentManager.sol";
 
 import {Test} from "forge-std/Test.sol";
-
-pragma solidity ^0.8.15;
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
@@ -72,25 +71,18 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
     }
 
     //TODO: need to make sure can't reentry this function
-    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength)
-        external
-        payable
-    {
-        SubdomainRegistrationDetail memory history = SubdomainRegistrationHistory[
-            _subdomainHash
-        ];
+    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {
+        SubdomainRegistrationDetail memory history = SubdomainRegistrationHistory[_subdomainHash];
 
         require(
-            history.RegistrationTime + (history.RegistrationLength * 86400) >
-                block.timestamp,
+            history.RegistrationTime + (history.RegistrationLength * 86400) > block.timestamp,
             "domain expired"
         );
 
         uint256 priceInDollars = getRenewalPricePerDay(history, _registrationLength);
 
-        uint256 priceInWei = (getWeiValueOfDollar() *
-            priceInDollars *
-            _registrationLength) / DECIMAL_MULTIPLIER;
+        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
+            DECIMAL_MULTIPLIER;
         require(priceInWei <= msg.value, "Price too low");
 
         history.RegistrationLength += uint72(_registrationLength);
@@ -115,9 +107,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
 
-        uint256 renewalCostPerAnnum = _history.RegistrationPriceSnapshot[
-            registrationYears - 1
-        ] / registrationYears;
+        uint256 renewalCostPerAnnum = _history.RegistrationPriceSnapshot[registrationYears - 1] /
+            registrationYears;
         return renewalCostPerAnnum / 365;
     }
 
@@ -302,18 +293,14 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
             _label
         );
 
-        uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) /
-            DECIMAL_MULTIPLIER;
+        uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) / DECIMAL_MULTIPLIER;
 
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
 
-        distributePrimaryFunds(
-            getOwnerOfParent(getNamehash(_label, _parentNamehash)),
-            priceInWei
-        );
+        distributePrimaryFunds(getOwnerOfParent(getNamehash(_label, _parentNamehash)), priceInWei);
     }
 
     function purchaseSld(
@@ -326,10 +313,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
         require(LabelValidator.isValidLabel(_label), "invalid label");
 
         bytes32 namehash = getNamehash(_label, _parentNamehash);
-        require(
-            CommitIntent.allowedCommit(namehash, _secret, msg.sender),
-            "commit not allowed"
-        );
+        require(CommitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
         require(canRegister(namehash), "Subdomain already registered");
 
         uint256 id = uint256(namehash);
@@ -380,12 +364,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
-        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[
-            _namehash
-        ];
-        return
-            detail.RegistrationTime + (detail.RegistrationLength * 86400) <
-            block.timestamp;
+        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[_namehash];
+        return detail.RegistrationTime + (detail.RegistrationLength * 86400) < block.timestamp;
     }
 
     function getWeiValueOfDollar() public view returns (uint256) {
@@ -444,16 +424,12 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
         onlyParentApprovedOrOwner(_id)
     {
         require(_addr != address(0), "cannot set to zero address");
-        address parentOwner = exists(_id)
-            ? ownerOf(_id)
-            : HandshakeTldContract.ownerOf(_id);
+        address parentOwner = exists(_id) ? ownerOf(_id) : HandshakeTldContract.ownerOf(_id);
         RoyaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
     }
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) public returns (bool) {
-        return
-            HandshakeTldContract.isApproved(_id, msg.sender) ||
-            isApproved(_id, msg.sender);
+        return HandshakeTldContract.isApproved(_id, msg.sender) || isApproved(_id, msg.sender);
     }
 
     function getSingleSubdomainDetails(
@@ -541,13 +517,8 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
         ContractRegistrationStrategy = IGlobalRegistrationStrategy(_strategy);
     }
 
-    function getGuarenteedPrices(bytes32 _namehash)
-        external
-        returns (uint48[10] memory _prices)
-    {
-        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[
-            _namehash
-        ];
+    function getGuarenteedPrices(bytes32 _namehash) external returns (uint48[10] memory _prices) {
+        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[_namehash];
         return detail.RegistrationPriceSnapshot;
     }
 
@@ -558,10 +529,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
-        require(
-            isApprovedOrOwnerOfChildOrParent(_id),
-            "not approved or owner of parent domain"
-        );
+        require(isApprovedOrOwnerOfChildOrParent(_id), "not approved or owner of parent domain");
         _;
     }
 }

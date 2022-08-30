@@ -2,3 +2,5 @@ cache/
 out/
 node_modules/
 broadcast/
+.idea/
+.DS_Store
