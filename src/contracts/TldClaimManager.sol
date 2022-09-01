@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/ITldClaimManager.sol";
-import "contracts/HandshakeTld.sol";
+import "contracts/HandshakeTLD.sol";
 
 contract TldClaimManager is Ownable, ITldClaimManager {
     mapping(bytes32 => bool) public IsNodeRegistered;
@@ -23,8 +23,8 @@ contract TldClaimManager is Ownable, ITldClaimManager {
         return TldClaimantMap[_namehash] == _addr && !IsNodeRegistered[_namehash];
     }
 
-    function setHandshakeTldContract(HandshakeTld _tld) external onlyOwner {
-        HandshakeTldContract = _tld;
+    function setHandshakeTldContract(address _addr) external onlyOwner {
+        HandshakeTldContract = new HandshakeTld(_addr);
     }
 
     function claimTld(string calldata _domain) external {

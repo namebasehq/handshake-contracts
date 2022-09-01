@@ -3,7 +3,8 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "contracts/HandshakeSld.sol";
+import "contracts/HandshakeSLD.sol";
+import "interfaces/ITldClaimManager.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
@@ -135,10 +136,12 @@ contract HandshakeSldTests is Test {
         HandshakeSld tempSld = new HandshakeSld();
 
         assertEq(Ownable(tempSld.HandshakeTldContract()).owner(), myAddress);
-        assertEq(
-            Ownable(address(tempSld.HandshakeTldContract().ClaimManager())).owner(),
-            myAddress
-        );
+        // TODO: fix ClaimManager reference on TLD
+        assertTrue(false, "fix ClaimManager reference on TLD");
+        // assertEq(
+        //     Ownable(address(tempSld.HandshakeTldContract().ClaimManager())).owner(),
+        //     myAddress
+        // );
     }
 
     function testMintSldFromAuthorisedWallet() public {

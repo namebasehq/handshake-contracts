@@ -1,10 +1,10 @@
-pragma solidity ^0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 
-import "../registry/ENS.sol";
+import "interfaces/IHandshakeRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Controllable.sol";
 
-contract Root is Ownable, Controllable {
+contract HandshakeRoot is Ownable {
     bytes32 private constant ROOT_NODE = bytes32(0);
 
     bytes4 private constant INTERFACE_META_ID =
@@ -12,23 +12,23 @@ contract Root is Ownable, Controllable {
 
     event TLDLocked(bytes32 indexed label);
 
-    ENS public ens;
+    IHandshakeRegistry public registry;
     mapping(bytes32 => bool) public locked;
 
-    constructor(ENS _ens) public {
-        ens = _ens;
+    constructor(IHandshakeRegistry _registry) {
+        registry = _registry;
     }
 
     function setSubnodeOwner(bytes32 label, address owner)
         external
-        onlyController
+        onlyOwner
     {
         require(!locked[label]);
-        ens.setSubnodeOwner(ROOT_NODE, label, owner);
+        registry.setSubnodeOwner(ROOT_NODE, label, owner);
     }
 
     function setResolver(address resolver) external onlyOwner {
-        ens.setResolver(ROOT_NODE, resolver);
+        registry.setResolver(ROOT_NODE, resolver);
     }
 
     function lock(bytes32 label) external onlyOwner {

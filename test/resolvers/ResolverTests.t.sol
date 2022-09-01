@@ -4,32 +4,40 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
-import "contracts/Resolver.sol";
+import "contracts/PublicResolver.sol";
+import "contracts/HandshakeRegistry.sol";
+import "interfaces/IHandshakeRegistry.sol";
 
-contract ResolverTests is Test {
-    address constant SldContract = address(0x336699);
-    address constant TldContract = address(0x996633);
+abstract contract ResolverTests is Test {
+    // TODO: get actual registry contract address
+    IHandshakeRegistry registry;
+    address constant registryContract = address(0x336699);
+    address constant tldContract = address(0x996633);
+    address constant sldContract = address(0x336699);
 
-    Resolver resolver;
+    PublicResolver resolver;
 
-    function setUp() public {
-        resolver = new Resolver(SldContract, TldContract);
+    function setUp() virtual public {
+        resolver = new PublicResolver(registry, tldContract, sldContract);
     }
 
-    function testUpdateTextFromAuthorisedAddress() public {
+    function testUpdateTextFromAuthorisedAddressSLD() public {
         bytes32 namehash = bytes32(uint256(0x1337));
         string memory key = "key1";
         string memory value = "value1";
 
-        vm.startPrank(SldContract);
+        vm.startPrank(sldContract);
         resolver.setText(namehash, key, value);
         assertEq(value, resolver.text(namehash, key));
         vm.stopPrank();
+    }
 
-        //change value
-        value = "value2";
+    function testUpdateTextFromAuthorisedAddressTLD() public {
+        bytes32 namehash = bytes32(uint256(0x1337));
+        string memory key = "key1";
+        string memory value = "value1";
 
-        vm.startPrank(TldContract);
+        vm.startPrank(tldContract);
         resolver.setText(namehash, key, value);
         assertEq(value, resolver.text(namehash, key));
         vm.stopPrank();
@@ -40,22 +48,18 @@ contract ResolverTests is Test {
 
         bytes memory value = bytes("value123");
 
-        vm.startPrank(SldContract);
-        resolver.setContentHash(namehash, value);
+        vm.startPrank(sldContract);
+        resolver.setContenthash(namehash, value);
         assertEq(value, resolver.contenthash(namehash));
         vm.stopPrank();
 
         //change value
         value = bytes("value234");
 
-        vm.startPrank(TldContract);
-        resolver.setContentHash(namehash, value);
+        vm.startPrank(tldContract);
+        resolver.setContenthash(namehash, value);
         assertEq(value, resolver.contenthash(namehash));
         vm.stopPrank();
-    }
-
-    function testUpdateDnsRecordFromAuthorisedAddress() public {
-        assertTrue(false, "not implemented");
     }
 
     function testUpdateNameFromAuthorisedAddress() public {
@@ -63,7 +67,7 @@ contract ResolverTests is Test {
 
         string memory value = "name1";
 
-        vm.startPrank(SldContract);
+        vm.startPrank(sldContract);
         resolver.setName(namehash, value);
         assertEq(value, resolver.name(namehash));
         vm.stopPrank();
@@ -71,10 +75,14 @@ contract ResolverTests is Test {
         //change value
         value = "value2";
 
-        vm.startPrank(TldContract);
+        vm.startPrank(tldContract);
         resolver.setName(namehash, value);
         assertEq(value, resolver.name(namehash));
         vm.stopPrank();
+    }
+
+    function testUpdateDnsRecordFromAuthorisedAddress() public {
+        assertTrue(false, "not implemented");
     }
 
     function testUpdatePublicKeyFromAuthorisedAddress() public {

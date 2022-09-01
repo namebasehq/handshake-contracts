@@ -1,17 +1,20 @@
-pragma solidity >=0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./profiles/ABIResolver.sol";
-import "./profiles/AddrResolver.sol";
-import "./profiles/ContentHashResolver.sol";
-import "./profiles/DNSResolver.sol";
-import "./profiles/InterfaceResolver.sol";
-import "./profiles/NameResolver.sol";
-import "./profiles/PubkeyResolver.sol";
-import "./profiles/TextResolver.sol";
+import "interfaces/IHandshakeRegistry.sol";
+import "ens/resolvers/profiles/ABIResolver.sol";
+import "ens/resolvers/profiles/AddrResolver.sol";
+import "ens/resolvers/profiles/ContentHashResolver.sol";
+import "ens/resolvers/profiles/DNSResolver.sol";
+import "ens/resolvers/profiles/InterfaceResolver.sol";
+import "ens/resolvers/profiles/NameResolver.sol";
+import "ens/resolvers/profiles/PubkeyResolver.sol";
+import "ens/resolvers/profiles/TextResolver.sol";
+import "ens/resolvers/Multicallable.sol";
 
 /**
- * A simple resolver anyone can use; only allows the owner of a node to set its
- * address.
+ * A simple resolver that only allows the owner of a node to set its address.
  */
 contract OwnedResolver is
     Ownable,
@@ -24,6 +27,17 @@ contract OwnedResolver is
     PubkeyResolver,
     TextResolver
 {
+
+    IHandshakeRegistry immutable registry;
+    address immutable tldContract;
+    address immutable sldContract;
+
+    constructor(IHandshakeRegistry _registry, address _tldContract, address _sldContract) {
+        registry = _registry;
+        tldContract = _tldContract;
+        sldContract = _sldContract;
+    }
+
     function isAuthorised(bytes32) internal view override returns (bool) {
         return msg.sender == owner();
     }

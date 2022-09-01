@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "contracts/HandshakeERC721.sol";
-import "contracts/HandshakeTld.sol";
+import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeTLD.sol";
 import "contracts/SldCommitIntent.sol";
+import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/ICommitIntent.sol";
-import "interfaces/IHandshakeSld.sol";
+import "interfaces/IHandshakeSLD.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "structs/SubdomainDetail.sol";
@@ -16,10 +17,10 @@ import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationStrategy.sol";
 import "contracts/PaymentManager.sol";
 
-import {Test} from "forge-std/Test.sol";
 
-contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentManager {
+contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
+    
     HandshakeTld public HandshakeTldContract;
     ICommitIntent public CommitIntent;
     ILabelValidator public Validator;
@@ -44,7 +45,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor()
-        HandshakeERC721("HSLD", "Handshake Second Level Domain")
+        HandshakeNFT(registry, "SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
         HandshakeTldContract = new HandshakeTld(msg.sender);

@@ -1,18 +1,12 @@
-pragma solidity >=0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 
-import "./ENS.sol";
+import "interfaces/IHandshakeRegistry.sol";
+import "structs/RegistryRecord.sol";
 
-/**
- * The ENS registry contract.
- */
-contract ENSRegistry is ENS {
-    struct Record {
-        address owner;
-        address resolver;
-        uint64 ttl;
-    }
-
-    mapping(bytes32 => Record) records;
+contract HandshakeRegistry is IHandshakeRegistry {
+    
+    mapping(bytes32 => RegistryRecord) records;
     mapping(address => mapping(address => bool)) operators;
 
     // Permits modifications only by the owner of the specified node.
@@ -22,10 +16,8 @@ contract ENSRegistry is ENS {
         _;
     }
 
-    /**
-     * @dev Constructs a new ENS registry.
-     */
-    constructor() public {
+    // Constructs a new registry.
+    constructor() {
         records[0x0].owner = msg.sender;
     }
 
@@ -129,7 +121,7 @@ contract ENSRegistry is ENS {
 
     /**
      * @dev Enable or disable approval for a third party ("operator") to manage
-     *  all of `msg.sender`'s ENS records. Emits the ApprovalForAll event.
+     *  all of `msg.sender`'s records. Emits the ApprovalForAll event.
      * @param operator Address to add to the set of authorized operators.
      * @param approved True if the operator is approved, false to revoke approval.
      */

@@ -3,8 +3,8 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "contracts/HandshakeTld.sol";
-import "contracts/HandshakeSld.sol";
+import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSLD.sol";
+// import "contracts/HandshakeSLD.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";

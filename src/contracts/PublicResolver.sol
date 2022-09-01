@@ -1,25 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity ^0.8.15;
 
-import "../registry/ENS.sol";
-import "./profiles/ABIResolver.sol";
-import "./profiles/AddrResolver.sol";
-import "./profiles/ContentHashResolver.sol";
-import "./profiles/DNSResolver.sol";
-import "./profiles/InterfaceResolver.sol";
-import "./profiles/NameResolver.sol";
-import "./profiles/PubkeyResolver.sol";
-import "./profiles/TextResolver.sol";
-import "./Multicallable.sol";
+import "interfaces/IHandshakeRegistry.sol";
+import "ens/resolvers/profiles/ABIResolver.sol";
+import "ens/resolvers/profiles/AddrResolver.sol";
+import "ens/resolvers/profiles/ContentHashResolver.sol";
+import "ens/resolvers/profiles/DNSResolver.sol";
+import "ens/resolvers/profiles/InterfaceResolver.sol";
+import "ens/resolvers/profiles/NameResolver.sol";
+import "ens/resolvers/profiles/PubkeyResolver.sol";
+import "ens/resolvers/profiles/TextResolver.sol";
+import "ens/resolvers/Multicallable.sol";
 
-interface INameWrapper {
-    function ownerOf(uint256 id) external view returns (address);
-}
-
-/**
- * A simple resolver anyone can use; only allows the owner of a node to set its
- * address.
- */
 contract PublicResolver is
     Multicallable,
     ABIResolver,
@@ -31,74 +23,86 @@ contract PublicResolver is
     PubkeyResolver,
     TextResolver
 {
-    ENS immutable ens;
-    INameWrapper immutable nameWrapper;
-    address immutable trustedETHController;
-    address immutable trustedReverseRegistrar;
 
-    /**
-     * A mapping of operators. An address that is authorised for an address
-     * may make any changes to the name that the owner could, but may not update
-     * the set of authorisations.
-     * (owner, operator) => approved
-     */
-    mapping(address => mapping(address => bool)) private _operatorApprovals;
+    IHandshakeRegistry immutable registry;
+    address immutable tldContract;
+    address immutable sldContract;
 
-    // Logged when an operator is added or removed.
-    event ApprovalForAll(
-        address indexed owner,
-        address indexed operator,
-        bool approved
-    );
-
-    constructor(
-        ENS _ens,
-        INameWrapper wrapperAddress,
-        address _trustedETHController,
-        address _trustedReverseRegistrar
-    ) {
-        ens = _ens;
-        nameWrapper = wrapperAddress;
-        trustedETHController = _trustedETHController;
-        trustedReverseRegistrar = _trustedReverseRegistrar;
-    }
-
-    /**
-     * @dev See {IERC1155-setApprovalForAll}.
-     */
-    function setApprovalForAll(address operator, bool approved) external {
-        require(
-            msg.sender != operator,
-            "ERC1155: setting approval status for self"
-        );
-
-        _operatorApprovals[msg.sender][operator] = approved;
-        emit ApprovalForAll(msg.sender, operator, approved);
-    }
-
-    /**
-     * @dev See {IERC1155-isApprovedForAll}.
-     */
-    function isApprovedForAll(address account, address operator)
-        public
-        view
-        returns (bool)
-    {
-        return _operatorApprovals[account][operator];
+    constructor(IHandshakeRegistry _registry, address _tldContract, address _sldContract) {
+        registry = _registry;
+        tldContract = _tldContract;
+        sldContract = _sldContract;
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
         if (
-            msg.sender == trustedETHController ||
-            msg.sender == trustedReverseRegistrar
+            msg.sender == tldContract ||
+            msg.sender == sldContract
         ) {
             return true;
         }
-        address owner = ens.owner(node);
-        if (owner == address(nameWrapper)) {
-            owner = nameWrapper.ownerOf(uint256(node));
-        }
-        return owner == msg.sender || isApprovedForAll(owner, msg.sender);
+        address owner = registry.owner(node);
+        return owner == msg.sender || registry.isApprovedForAll(owner, msg.sender);
+    }
+
+    /**
+     * Sets the contenthash associated with a node.
+     * May only be called by the owner of that node in the registry.
+     * @param node The node to update.
+     * @param hash The contenthash to set
+     */
+    function setContenthash(bytes32 node, bytes calldata hash)
+        external
+        override (ContentHashResolver)
+        authorised(node)
+    {
+        hashes[node] = hash;
+        emit ContenthashChanged(node, hash);
+    }
+
+    /**
+     * Returns the contenthash associated with a node.
+     * @param node The node to query.
+     * @return The associated contenthash.
+     */
+    function contenthash(bytes32 node)
+        external
+        view
+        override (ContentHashResolver)
+        returns (bytes memory)
+    {
+        return hashes[node];
+    }
+
+    /**
+     * Sets the text data associated with a node and key.
+     * May only be called by the owner of that node in the registry.
+     * @param node The node to update.
+     * @param key The key to set.
+     * @param value The text data value to set.
+     */
+    function setText(
+        bytes32 node,
+        string calldata key,
+        string calldata value
+    ) public override (TextResolver) authorised(node) {
+        texts[node][key] = value;
+        emit TextChanged(node, key, key);
+    }
+
+    /**
+     * Returns the text data associated with a node and key.
+     * @param node The node to query.
+     * @param key The text data key to query.
+     * @return The associated text data.
+     */
+    function text(bytes32 node, string calldata key)
+        external
+        view
+        override (TextResolver)
+        returns (string memory)
+    {
+        return texts[node][key];
     }
 
     function supportsInterface(bytes4 interfaceID)
@@ -119,4 +123,5 @@ contract PublicResolver is
     {
         return super.supportsInterface(interfaceID);
     }
+
 }
