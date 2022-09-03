@@ -2,4 +2,5 @@
 pragma solidity ^0.8.15;
 
 interface IHandshakeTld {
+    function mint(address _addr, string calldata _domain) external;
 }

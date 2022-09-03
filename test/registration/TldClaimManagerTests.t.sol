@@ -6,7 +6,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ITldClaimManager.sol";
 import "contracts/TldClaimManager.sol";
-import "contracts/HandshakeTLD.sol";
+import "contracts/HandshakeTld.sol";
 
 contract TldClaimManagerTests is Test {
     ITldClaimManager internal manager;
@@ -51,9 +51,7 @@ contract TldClaimManagerTests is Test {
     function testAddWalletAndClaimTldDuplicateClaim() public {
         address allowed_address = address(0x134567);
         manager.updateAllowedTldManager(allowed_address, true);
-        // TODO: get TLD contract address
-        // manager.setHandshakeTldContract(nft);
-        manager.setHandshakeTldContract(address(this));
+        manager.setHandshakeTldContract(nft);
         string[] memory domains = new string[](1);
         address[] memory addresses = new address[](1);
         domains[0] = "badass";

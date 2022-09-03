@@ -2,11 +2,11 @@
 pragma solidity ^0.8.15;
 
 import "contracts/HandshakeNFT.sol";
-import "contracts/HandshakeTLD.sol";
+import "contracts/HandshakeTld.sol";
 import "contracts/SldCommitIntent.sol";
 import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/ICommitIntent.sol";
-import "interfaces/IHandshakeSLD.sol";
+import "interfaces/IHandshakeSld.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "structs/SubdomainDetail.sol";
