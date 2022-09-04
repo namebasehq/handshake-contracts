@@ -18,9 +18,9 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
     address public RoyaltyPayoutAddress;
     uint256 public RoyaltyPayoutAmount;
 
-    constructor(IHandshakeRegistry _registry, address _owner) HandshakeNFT(_registry, "TLD", "Handshake TLD") {
-        ClaimManager = new TldClaimManager();
-        Ownable(address(ClaimManager)).transferOwnership(_owner);
+    constructor(address _owner) HandshakeERC721("HTLD", "Handshake Top Level Domain") {
+        ClaimManager = new TldClaimManager(_owner);
+        
     }
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {

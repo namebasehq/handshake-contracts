@@ -43,8 +43,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         CommitData memory data = NodeIntentBlockNumber[combinedHash];
 
         return
-            data.blockNumber > 0 && //if the combined hash has not been registered then quick exit
-            data.blockNumber > block.number &&
+            data.blockNumber > (block.number + MinBlockWaitForCommit) &&
             (data.blockNumber - MaxBlockWaitForCommit + MinBlockWaitForCommit) <= //min time to wait
             block.number &&
             data.user == _addr;
