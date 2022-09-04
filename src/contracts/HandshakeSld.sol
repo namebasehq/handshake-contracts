@@ -16,7 +16,6 @@ import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationStrategy.sol";
 import "contracts/PaymentManager.sol";
 
-import {Test} from "forge-std/Test.sol";
 
 contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;

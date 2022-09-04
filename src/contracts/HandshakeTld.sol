@@ -14,8 +14,8 @@ contract HandshakeTld is HandshakeERC721 {
     uint256 public RoyaltyPayoutAmount;
 
     constructor(address _owner) HandshakeERC721("HTLD", "Handshake Top Level Domain") {
-        ClaimManager = new TldClaimManager();
-        Ownable(address(ClaimManager)).transferOwnership(_owner);
+        ClaimManager = new TldClaimManager(_owner);
+        
     }
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {

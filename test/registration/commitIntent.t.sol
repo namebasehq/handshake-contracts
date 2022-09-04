@@ -110,7 +110,7 @@ contract SldCommitIntentTests is Test {
         vm.roll(startBlock + maxBlocks - 5);
         vm.prank(newAddress);
         intent.commitIntent(combinedHash2);
-        vm.roll(block.number + minWait + 1);
+        vm.roll(block.number + minWait);
         bool allowed2 = intent.allowedCommit(node, secret, newAddress);
         allowed = intent.allowedCommit(node, secret, address(this));
 

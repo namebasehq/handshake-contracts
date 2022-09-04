@@ -13,7 +13,7 @@ contract TldClaimManagerTests is Test {
     HandshakeTld internal nft;
 
     function setUp() public {
-        manager = new TldClaimManager();
+        manager = new TldClaimManager(address(this));
         nft = new HandshakeTld(address(this));
         nft.setTldClaimManager(manager);
     }
