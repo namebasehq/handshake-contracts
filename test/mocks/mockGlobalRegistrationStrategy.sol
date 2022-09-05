@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "interfaces/IGlobalRegistrationStrategy.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 
-contract MockGlobalRegistrationStrategy is IGlobalRegistrationStrategy {
+contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     bool private shouldRegister;
 
     constructor(bool _canRegister) {
