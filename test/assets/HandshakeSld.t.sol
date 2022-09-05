@@ -2510,7 +2510,7 @@ contract HandshakeSldTests is Test {
 
     function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail() public {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(100);
-        vm.expectRevert("IGlobalRegistrationStrategy interface not supported");
+        vm.expectRevert("IGlobalRegistrationRules interface not supported");
         Sld.setGlobalRegistrationStrategy(address(strategy));
     }
 

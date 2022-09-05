@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "interfaces/IGlobalRegistrationStrategy.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 
-contract GlobalRegistrationStrategy is IGlobalRegistrationStrategy {
+contract GlobalRegistrationRules is IGlobalRegistrationRules{
     uint256 private constant MIN_REGISTRATION_DAYS = 365;
     uint256 private constant MIN_DOLLAR_COST = 1;
 

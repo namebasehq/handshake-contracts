@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-interface IGlobalRegistrationStrategy is IERC165 {
+interface IGlobalRegistrationRules is IERC165 {
     function canRegister(
         address _buyingAddress,
         bytes32 _parentNamehash,

@@ -13,7 +13,7 @@ import "structs/SubdomainRegistrationDetail.sol";
 import "interfaces/IPriceOracle.sol";
 import "contracts/UsdPriceOracle.sol";
 import "contracts/HasUsdOracle.sol";
-import "interfaces/IGlobalRegistrationStrategy.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
 
 
@@ -23,7 +23,7 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
     ICommitIntent public CommitIntent;
     ILabelValidator public Validator;
 
-    IGlobalRegistrationStrategy public ContractRegistrationStrategy;
+    IGlobalRegistrationRules public ContractRegistrationStrategy;
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
@@ -509,11 +509,11 @@ contract HandshakeSld is HandshakeERC721, IHandshakeSld, HasUsdOracle, PaymentMa
 
     function setGlobalRegistrationStrategy(address _strategy) public onlyOwner {
         require(
-            _strategy.supportsInterface(type(IGlobalRegistrationStrategy).interfaceId),
-            "IGlobalRegistrationStrategy interface not supported"
+            _strategy.supportsInterface(type(IGlobalRegistrationRules).interfaceId),
+            "IGlobalRegistrationRules interface not supported"
         );
 
-        ContractRegistrationStrategy = IGlobalRegistrationStrategy(_strategy);
+        ContractRegistrationStrategy = IGlobalRegistrationRules(_strategy);
     }
 
     function getGuarenteedPrices(bytes32 _namehash) external returns (uint48[10] memory _prices) {

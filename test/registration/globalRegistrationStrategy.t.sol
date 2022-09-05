@@ -5,14 +5,14 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "interfaces/ICommitIntent.sol";
-import "contracts/GlobalRegistrationStrategy.sol";
-import "interfaces/IGlobalRegistrationStrategy.sol";
+import "contracts/GlobalRegistrationRules.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 
 contract GlobalRegistrationTests is Test {
-    IGlobalRegistrationStrategy strategy;
+    IGlobalRegistrationRules rules;
 
     function setUp() public {
-        strategy = new GlobalRegistrationStrategy();
+        rules = new GlobalRegistrationRules();
     }
 
     function testClaimWithZeroDollars_fail() public {
@@ -21,7 +21,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = 365;
         uint256 dollarPrice = 0;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
@@ -38,7 +38,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = 365;
         uint256 dollarPrice = 1;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
@@ -55,7 +55,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = 365;
         uint256 dollarPrice = type(uint256).max;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
@@ -72,7 +72,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = 364;
         uint256 dollarPrice = type(uint256).max;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
@@ -89,7 +89,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = (365 * 100);
         uint256 dollarPrice = 99;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
@@ -106,7 +106,7 @@ contract GlobalRegistrationTests is Test {
         string memory label = "testing";
         uint256 registrationLength = (365 * 100);
         uint256 dollarPrice = 100;
-        bool result = strategy.canRegister(
+        bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
             label,
