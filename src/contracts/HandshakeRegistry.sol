@@ -11,6 +11,7 @@ contract HandshakeRegistry is IHandshakeRegistry {
 
     // Permits modifications only by the owner of the specified node.
     modifier authorised(bytes32 node) {
+        // TODO: use ERC721 methods instead
         address owner = records[node].owner;
         require(owner == msg.sender || operators[owner][msg.sender]);
         _;

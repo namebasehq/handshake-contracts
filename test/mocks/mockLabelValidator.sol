@@ -10,7 +10,7 @@ contract MockLabelValidator is ILabelValidator {
         IsValid = _isValid;
     }
 
-    function isValidLabel(string memory _name) external returns (bool) {
+    function isValidLabel(string calldata _label) external view returns (bool) {
         return IsValid;
     }
 }

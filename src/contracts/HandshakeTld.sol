@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+import {console} from "forge-std/console.sol";
+
 import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeRegistry.sol";
 import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
@@ -15,7 +18,7 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
     address public RoyaltyPayoutAddress;
     uint256 public RoyaltyPayoutAmount;
 
-    constructor(address _owner) HandshakeNFT(registry, "TLD", "Handshake TLD") {
+    constructor(IHandshakeRegistry _registry, address _owner) HandshakeNFT(_registry, "TLD", "Handshake TLD") {
         ClaimManager = new TldClaimManager();
         Ownable(address(ClaimManager)).transferOwnership(_owner);
     }
@@ -35,7 +38,8 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
     }
 
     function mint(address _addr, string calldata _domain) external {
-        bytes32 namehash = keccak256(abi.encodePacked(_domain));
+        // TLD node and token ID is full namehash with root 0x0 as parent
+        bytes32 namehash = getTldNamehash(_domain);
         require(address(ClaimManager) == msg.sender, "not authorised");
         _mint(_addr, uint256(namehash));
         NamehashToLabelMap[namehash] = _domain;
@@ -55,5 +59,14 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
         uint256 divisor = RoyaltyPayoutAmount.div(10);
         uint256 amount = RoyaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
         return (RoyaltyPayoutAddress, amount);
+    }
+
+    // TODO: swap param order
+    function getNamehash(string memory _label, bytes32 _parentHash) internal pure override returns (bytes32) {
+        return Namehash.getNamehash(_label, _parentHash);
+    }
+
+    function getTldNamehash(string memory _label) internal pure returns (bytes32) {
+        return Namehash.getTldNamehash(_label);
     }
 }

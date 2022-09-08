@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+import {console} from "forge-std/console.sol";
+
 import "interfaces/ICommitIntent.sol";
 
 contract MockCommitIntent is ICommitIntent {

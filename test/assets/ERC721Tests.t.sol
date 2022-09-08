@@ -5,8 +5,10 @@ import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
 import {DSInvariantTest} from "solmate/test/utils/DSInvariantTest.sol";
 import {MockERC721} from "solmate/test/utils/mocks/MockERC721.sol";
 import {ERC721TokenReceiver} from "solmate/tokens/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-//these are just the standard tests for the solmate implementation of the ERC-721 NFT
+
+// these are just the standard tests for the solmate implementation of the ERC-721 NFT
 contract ERC721Recipient is ERC721TokenReceiver {
     address public operator;
     address public from;
@@ -52,7 +54,7 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 
 contract NonERC721Recipient {}
 
-contract ERC721Test is DSTestPlus {
+contract ERC721Tests is DSTestPlus {
     MockERC721 token;
 
     function setUp() public {

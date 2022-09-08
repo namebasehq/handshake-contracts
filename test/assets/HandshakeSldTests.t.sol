@@ -3,7 +3,10 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
+import { Namehash } from "utils/Namehash.sol";
 import "contracts/HandshakeSld.sol";
+import "contracts/HandshakeRegistry.sol";
+import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
@@ -16,19 +19,173 @@ contract HandshakeSldTests is Test {
     error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;
+    IHandshakeRegistry registry;
+    HandshakeTld Tld;
     HandshakeSld Sld;
 
+    // test
+    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    // test.test
+    bytes32 constant TEST_SLD_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    // test.test.test
+    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+
     function setUp() public {
-        Sld = new HandshakeSld();
+        registry = new HandshakeRegistry();
+        Tld = new HandshakeTld(registry, address(this));
+        Sld = new HandshakeSld(registry, Tld);
         addMockValidatorToSld();
         addMockOracle();
     }
 
-    function getNamehash(string memory _label, bytes32 _parentHash) private pure returns (bytes32) {
-        bytes32 encoded_label = keccak256(abi.encodePacked(_label));
-        bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
+    // TODO: swap param order
+    function getNamehash(string memory _label, bytes32 _parentHash) public pure returns (bytes32) {
+        return Namehash.getNamehash(_label, _parentHash);
+    }
 
-        return big_hash;
+    function getTldNamehash(string memory _label) public pure returns (bytes32) {
+        return Namehash.getTldNamehash(_label);
+    }
+
+    function testEthTldTokenIds() public {
+        // .eth
+        // tld labelhash: 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0
+        // tld labelhash int: 35894389512221139346028120028875095598761990588366713962827482865185691260912
+        // tld namehash: 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae
+        // tld namehash int: 6685381733461190219423816448488981918031594240242612856324574583496001347703
+
+        // aox.eth
+        // sld labelhash: 0x76afc3e13980f4710646e2f1af38cfa1e0e584a1d61d3c6057b23efe6a19c05b
+        // sld labelhash int: 53683466281743124927853074219771454931349794037600093387976968725467848360027
+        // sld namehash: 0x81f536edca1dbdb9582598140d28a86010c4dbb395f128647f1add370d334d89
+        // sld namehash int: 58781614103207472765857548334332670569870930160421619975555094596235683909001
+
+        // test aox.eth
+        string memory sldLabel = "aox";
+        string memory tldLabel = "eth";
+
+        // bytes32 tldLabelhash = keccak256(abi.encodePacked(tldLabel));
+        bytes32 tldNamehash = getNamehash(tldLabel, bytes32(0));
+
+        // emit log_named_string("tld", tldLabel);
+        // emit log_named_bytes32("tld labelhash", tldLabelhash);
+        // emit log_named_bytes32("tld namehash", tldNamehash);
+        // emit log_named_uint("tld namehash int", uint256(tldNamehash));
+
+        // bytes32 sldLabelhash = keccak256(abi.encodePacked(sldLabel));
+        bytes32 sldNamehash = getNamehash(sldLabel, tldNamehash);
+
+        // emit log_named_string("sld", sldLabel);
+        // emit log_named_bytes32("sld labelhash", sldLabelhash);
+        // emit log_named_uint("sld labelhash int", uint256(sldLabelhash));
+
+        // emit log_named_bytes32("sld namehash", sldNamehash);
+        // emit log_named_uint("sld namehash int", uint256(sldNamehash));
+
+        addMockCommitIntent(true);
+        address parent_address = address(0x12345678);
+        address child_address = address(0x22446688);
+
+        vm.startPrank(parent_address);
+
+        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+            parent_address
+        );
+        Sld.HandshakeTldContract().mint(parent_address, tldLabel);
+
+        address strat = address(new MockRegistrationStrategy(0));
+        Sld.setPricingStrategy(uint256(tldNamehash), strat);
+        assertEq(address(Sld.getPricingStrategy(tldNamehash)), strat);
+
+        // check .eth TLD token ID
+        assertEq(tldNamehash, 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae);
+        vm.stopPrank();
+
+        vm.startPrank(child_address);
+
+        bytes32[] memory emptyArr;
+
+        Sld.purchaseSingleDomain(
+            sldLabel,
+            bytes32(uint256(0x0)),
+            666,
+            tldNamehash,
+            emptyArr,
+            child_address
+        );
+
+        // check aox.eth SLD token ID
+        assertEq(sldNamehash, 0x81f536edca1dbdb9582598140d28a86010c4dbb395f128647f1add370d334d89);
+
+    }
+
+    function testTestTldTokenIds() public {
+
+        // .test
+        // tld labelhash: 0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658
+        // tld namehash: 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6
+        // tld namehash int: 2246110249003717592995719785342735456823593955286278257408408162934437658070
+
+        // test.test
+        // sld labelhash: 0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658
+        // sld labelhash int: 70622639689279718371527342103894932928233838121221666359043189029713682937432
+        // sld namehash: 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb
+        // sld namehash int: 18525325615313904658989563537422688421354628918912926368091081131812458754507
+
+        // test.test.test
+        // sub namehash: 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494
+        // sub namehash int: 77464103288645080441481072468819809447960920101373085550134511165123855226004
+
+        // test test.test
+        string memory sldLabel = "test";
+        string memory tldLabel = "test";
+
+        bytes32 tldNamehash = getNamehash(tldLabel, bytes32(0));
+        bytes32 sldNamehash = getNamehash(sldLabel, tldNamehash);
+        bytes32 subNamehash = getNamehash(sldLabel, sldNamehash);
+
+        // emit log_named_bytes32("sld namehash", sldNamehash);
+        // emit log_named_uint("sld namehash int", uint256(sldNamehash));
+
+        // emit log_named_bytes32("sub namehash", subNamehash);
+        // emit log_named_uint("sub namehash int", uint256(subNamehash));
+
+        addMockCommitIntent(true);
+        address parent_address = address(0x12345678);
+        address child_address = address(0x22446688);
+
+        vm.startPrank(parent_address);
+
+        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+            parent_address
+        );
+        Sld.HandshakeTldContract().mint(parent_address, tldLabel);
+
+        address strat = address(new MockRegistrationStrategy(0));
+        Sld.setPricingStrategy(uint256(tldNamehash), strat);
+        assertEq(address(Sld.getPricingStrategy(tldNamehash)), strat);
+
+        // check .test TLD token ID
+        assertEq(tldNamehash, 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6);
+        vm.stopPrank();
+
+        vm.startPrank(child_address);
+
+        bytes32[] memory emptyArr;
+
+        Sld.purchaseSingleDomain(
+            sldLabel,
+            bytes32(uint256(0x0)),
+            666,
+            tldNamehash,
+            emptyArr,
+            child_address
+        );
+
+        // check test.test SLD token ID
+        assertEq(sldNamehash, 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb);
+
+        vm.stopPrank();
     }
 
     function mintSingleSubdomain(
@@ -70,18 +227,23 @@ contract HandshakeSldTests is Test {
         stdstore.target(address(Sld)).sig("Validator()").checked_write(address(validator));
     }
 
-    function addMockRegistrationStrategyToTld(bytes32 _tldNamehash, uint256 _price) private {
-        MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
-
+    function _addMockRegistrationStrategyToTld(MockRegistrationStrategy _strategy, bytes32 _tldNamehash, uint256 _price) private {
         stdstore
             .target(address(Sld))
             .sig("SldDefaultRegistrationStrategy(bytes32)")
             .with_key(_tldNamehash)
-            .checked_write(address(strategy));
+            .checked_write(address(_strategy));
+    }
+
+    function addMockRegistrationStrategyToTldWithPrice(bytes32 _tldNamehash, uint256 _price) private {
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
+        _addMockRegistrationStrategyToTld(strategy, _tldNamehash, _price);
+
     }
 
     function addMockRegistrationStrategyToTld(bytes32 _tldNamehash) private {
-        addMockRegistrationStrategyToTld(_tldNamehash, 0);
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
+        _addMockRegistrationStrategyToTld(strategy, _tldNamehash, 0);
     }
 
     function addMockOracle() private {
@@ -99,7 +261,6 @@ contract HandshakeSldTests is Test {
     function testUpdateLabelValidatorWithOwnerWalletExpectSuccess() public {
         MockLabelValidator validator = new MockLabelValidator(false);
         Sld.updateLabelValidator(validator);
-
         assertEq(address(Sld.Validator()), address(validator));
     }
 
@@ -133,7 +294,8 @@ contract HandshakeSldTests is Test {
         address myAddress = address(0xbeef);
 
         vm.prank(myAddress);
-        HandshakeSld tempSld = new HandshakeSld();
+        HandshakeTld tempTld = new HandshakeTld(registry, myAddress);
+        HandshakeSld tempSld = new HandshakeSld(registry, tempTld);
 
         assertEq(Ownable(tempSld.HandshakeTldContract()).owner(), myAddress);
         assertEq(
@@ -146,7 +308,7 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("testtest"));
+        bytes32 parentNamehash = getTldNamehash("testtest");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -184,7 +346,7 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("packed"));
+        bytes32 parentNamehash = getTldNamehash("packed");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -270,7 +432,7 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yyyyy"));
+        bytes32 parentNamehash = getTldNamehash("yyyyy");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -316,7 +478,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("testing"));
+        bytes32 parentNamehash = getTldNamehash("testing");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -346,9 +508,7 @@ contract HandshakeSldTests is Test {
             msg.sender
         );
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label)))
-        );
+        bytes32 full_hash = getNamehash(label, parentNamehash);
 
         assertEq(parentNamehash, Sld.NamehashToParentMap(full_hash));
     }
@@ -357,7 +517,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testing";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("testing"));
+        bytes32 parentNamehash = getTldNamehash("testing");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -387,9 +547,7 @@ contract HandshakeSldTests is Test {
             msg.sender
         );
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(parentNamehash, keccak256(abi.encodePacked(label)))
-        );
+        bytes32 full_hash = getNamehash(label, parentNamehash);
 
         assertEq(label, Sld.NamehashToLabelMap(full_hash));
     }
@@ -433,8 +591,8 @@ contract HandshakeSldTests is Test {
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("yo")));
-        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("yoyo")));
+        parentNamehash[0] = getTldNamehash("yo");
+        parentNamehash[1] = getTldNamehash("yoyo");
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
@@ -483,8 +641,8 @@ contract HandshakeSldTests is Test {
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("yes")));
-        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("no")));
+        parentNamehash[0] = getTldNamehash("yes");
+        parentNamehash[1] = getTldNamehash("no");
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
@@ -524,7 +682,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("heyman"));
+        bytes32 parentNamehash = getTldNamehash("heyman");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -562,7 +720,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("hash"));
+        bytes32 parentNamehash = getTldNamehash("hash");
 
         addMockRegistrationStrategyToTld(parentNamehash);
         addMockCommitIntent(true);
@@ -611,8 +769,8 @@ contract HandshakeSldTests is Test {
         registrationLength[0] = 365;
         registrationLength[1] = 365;
 
-        parentNamehash[0] = bytes32(keccak256(abi.encodePacked("hey")));
-        parentNamehash[1] = bytes32(keccak256(abi.encodePacked("you")));
+        parentNamehash[0] = getTldNamehash("hey");
+        parentNamehash[1] = getTldNamehash("you");
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
@@ -655,7 +813,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -669,24 +827,16 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
-
-        assertEq(tldId, uint256(parent_hash));
+        uint256 tldId = uint256(parent_hash);
+        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         vm.prank(tldOwner);
         Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
@@ -705,7 +855,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -719,22 +869,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -753,7 +896,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -767,22 +910,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -810,7 +946,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -824,22 +960,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -866,7 +995,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -880,29 +1009,22 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
         address notApprovedAddress = address(0x2299);
 
         vm.prank(notApprovedAddress);
-        vm.expectRevert("not approved or owner of parent domain");
+        vm.expectRevert("ERC721: invalid token ID");
         Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
     }
 
@@ -916,7 +1038,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -930,22 +1052,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -969,7 +1084,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -983,17 +1098,10 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         uint256 setRoyaltyNumber = 11;
 
@@ -1016,7 +1124,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1030,22 +1138,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1066,7 +1167,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1080,22 +1181,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1116,12 +1210,7 @@ contract HandshakeSldTests is Test {
     }
 
     function testAddRegistrationStrategyToTldDomain_pass() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 365;
-
-        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
-        bytes32 parentNamehash = bytes32(id);
+        bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
@@ -1134,18 +1223,13 @@ contract HandshakeSldTests is Test {
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(1));
-        Sld.setPricingStrategy(parentNamehash, strat);
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
     }
 
     function testAddRegistrationStrategyToSldDomain_pass() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 365;
-
-        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
-        bytes32 parentNamehash = bytes32(id);
+        bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
@@ -1156,10 +1240,10 @@ contract HandshakeSldTests is Test {
         );
 
         vm.startPrank(parent_address);
-        Sld.HandshakeTldContract().mint(parent_address, domain);
+        Tld.mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(parentNamehash, strat);
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
 
         emit log_named_address("usd address", address(Sld.UsdOracle()));
         emit log_named_uint("usd value", Sld.UsdOracle().getPrice());
@@ -1182,19 +1266,14 @@ contract HandshakeSldTests is Test {
             child_address
         );
         address childStrat = address(new MockRegistrationStrategy(1));
-        Sld.setPricingStrategy(namehash, childStrat);
+        Sld.setPricingStrategy(uint256(namehash), childStrat);
 
         assertEq(address(Sld.getPricingStrategy(namehash)), childStrat);
         vm.stopPrank();
     }
 
     function testAddRegistrationStrategyToSldNotOwner_fail() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 365;
-
-        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
-        bytes32 parentNamehash = bytes32(id);
+        bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
@@ -1208,7 +1287,7 @@ contract HandshakeSldTests is Test {
         Sld.HandshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(parentNamehash, strat);
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
 
         assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
@@ -1229,19 +1308,14 @@ contract HandshakeSldTests is Test {
             address(0x1337)
         );
         address childStrat = address(new MockRegistrationStrategy(1));
-        vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(namehash, childStrat);
+        vm.expectRevert("ERC721: invalid token ID");
+        Sld.setPricingStrategy(uint256(namehash), childStrat);
 
         vm.stopPrank();
     }
 
     function testAddRegistrationStrategyToTldNotOwner_fail() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 365;
-
-        uint256 id = 70622639689279718371527342103894932928233838121221666359043189029713682937432;
-        bytes32 parentNamehash = bytes32(id);
+        bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
@@ -1257,8 +1331,8 @@ contract HandshakeSldTests is Test {
 
         vm.startPrank(not_parent_address);
         address strat = address(new MockRegistrationStrategy(1));
-        vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(parentNamehash, strat);
+        vm.expectRevert("ERC721: invalid token ID");
+        Sld.setPricingStrategy(uint256(parentNamehash), strat);
     }
 
     function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
@@ -1271,7 +1345,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1285,22 +1359,15 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        //test.test
-        uint256 expectedSldId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked("test")),
-                    keccak256(abi.encodePacked("test"))
-                )
-            )
-        );
+        // test.test
+        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
             expectedSldId,
-            37174255505552296075550689388107631271928910089020902890185083882243638892035
+            uint256(TEST_SLD_NAMEHASH)
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1310,7 +1377,7 @@ contract HandshakeSldTests is Test {
         uint256 setRoyaltyNumber = 10;
 
         vm.prank(notApprovedAddress);
-        vm.expectRevert("not approved or owner of parent domain");
+        vm.expectRevert("ERC721: invalid token ID");
         Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
     }
 
@@ -1319,13 +1386,12 @@ contract HandshakeSldTests is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address sldSldOwner = address(0xababab);
-        address payoutAddress = address(0x22886644);
 
         HandshakeTld tld = Sld.HandshakeTldContract();
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1339,16 +1405,11 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
+        bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
+        // test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
@@ -1358,7 +1419,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             Sld.ownerOf(
-                88982020594716641930034915809615336174528308807841887087431718240342441944320
+                uint256(TEST_SLD_NAMEHASH)
             ),
             sldSldOwner,
             "no owner of child of SLD"
@@ -1366,11 +1427,11 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             expectedSldChildId,
-            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            uint256(TEST_SLD_NAMEHASH),
             "id for child of sld does not return correctly."
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1397,7 +1458,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1411,17 +1472,12 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
+        bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        // test.test.test
+        uint256 expectedSldChildId = uint256(getNamehash("test", sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1430,7 +1486,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             Sld.ownerOf(
-                88982020594716641930034915809615336174528308807841887087431718240342441944320
+                uint256(TEST_SUB_NAMEHASH)
             ),
             sldSldOwner,
             "no owner of child of SLD"
@@ -1438,11 +1494,11 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             expectedSldChildId,
-            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            uint256(TEST_SUB_NAMEHASH),
             "id for child of sld does not return correctly."
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1450,7 +1506,7 @@ contract HandshakeSldTests is Test {
         uint256 setRoyaltyNumber = 10;
 
         vm.prank(tldOwner);
-        vm.expectRevert("not approved or owner of parent domain");
+        vm.expectRevert("ERC721: invalid token ID");
         Sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
     }
 
@@ -1467,7 +1523,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1483,22 +1539,17 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             Sld.ownerOf(
-                37174255505552296075550689388107631271928910089020902890185083882243638892035
+                uint256(TEST_SLD_NAMEHASH)
             ),
             sldOwner,
             "SLD owner not correct"
         );
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
+        bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
+        // test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
@@ -1508,7 +1559,7 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             Sld.ownerOf(
-                88982020594716641930034915809615336174528308807841887087431718240342441944320
+                uint256(TEST_SUB_NAMEHASH)
             ),
             sldSldOwner,
             "no owner of child of SLD"
@@ -1516,11 +1567,11 @@ contract HandshakeSldTests is Test {
 
         assertEq(
             expectedSldChildId,
-            88982020594716641930034915809615336174528308807841887087431718240342441944320,
+            uint256(TEST_SUB_NAMEHASH),
             "id for child of sld does not return correctly."
         );
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1551,7 +1602,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1565,16 +1616,11 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
+        bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
+        // test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
@@ -1582,7 +1628,7 @@ contract HandshakeSldTests is Test {
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1613,7 +1659,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1627,16 +1673,11 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
-
+        bytes32 sldHash = getNamehash("test", parent_hash);
+        
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
+        // test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
@@ -1644,7 +1685,7 @@ contract HandshakeSldTests is Test {
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1683,7 +1724,7 @@ contract HandshakeSldTests is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 parent_hash = bytes32(keccak256(abi.encodePacked(tldName)));
+        bytes32 parent_hash = getTldNamehash(tldName);
 
         addMockRegistrationStrategyToTld(parent_hash);
         addMockCommitIntent(true);
@@ -1697,16 +1738,11 @@ contract HandshakeSldTests is Test {
         vm.prank(sldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
 
-        bytes32 sldHash = keccak256(
-            abi.encodePacked(
-                keccak256(abi.encodePacked("test")),
-                keccak256(abi.encodePacked("test"))
-            )
-        );
+        bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
-        //test.test.test
+        // test.test.test
         uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
@@ -1714,7 +1750,7 @@ contract HandshakeSldTests is Test {
         vm.prank(sldSldOwner);
         Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
 
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(tldName))));
+        uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
@@ -1726,7 +1762,7 @@ contract HandshakeSldTests is Test {
         uint256 payoutAmount = 10;
 
         vm.startPrank(notApprovedAddress);
-        vm.expectRevert("not approved or owner of parent domain");
+        vm.expectRevert("ERC721: invalid token ID");
         Sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
         vm.stopPrank();
     }
@@ -1740,7 +1776,7 @@ contract HandshakeSldTests is Test {
         uint256[] memory registrationLengths = new uint256[](_arrayLength);
         bytes32[][] memory proofs = new bytes32[][](_arrayLength);
 
-        addMockRegistrationStrategyToTld(bytes32(0x0), 0);
+        addMockRegistrationStrategyToTldWithPrice(bytes32(0x0), 0);
         Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
@@ -1830,7 +1866,7 @@ contract HandshakeSldTests is Test {
         registrationLengths[0] = registrationLength;
         proofs[0] = empty_array;
 
-        addMockRegistrationStrategyToTld(parentNamehash, _price);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, _price);
         addMockCommitIntent(true);
 
         address claimant = address(0x6666);
@@ -1891,7 +1927,7 @@ contract HandshakeSldTests is Test {
         proofs[1] = empty_array;
         proofs[2] = empty_array;
 
-        addMockRegistrationStrategyToTld(parentNamehash, _price);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, _price);
         addMockCommitIntent(true);
 
         SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
@@ -1924,7 +1960,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yo"));
+        bytes32 parentNamehash = getTldNamehash("yo");
 
         MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
@@ -1957,7 +1993,7 @@ contract HandshakeSldTests is Test {
         );
 
         bytes32 childHash = getNamehash(label, parentNamehash);
-        Sld.setPricingStrategy(childHash, address(RegistrationStrategy));
+        Sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 
@@ -1965,7 +2001,7 @@ contract HandshakeSldTests is Test {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyo"));
+        bytes32 parentNamehash = getTldNamehash("yoyo");
 
         MockRegistrationStrategy RegistrationStrategy = new MockRegistrationStrategy(10);
 
@@ -1998,8 +2034,8 @@ contract HandshakeSldTests is Test {
         );
         vm.startPrank(address(0x22446666));
         bytes32 childHash = getNamehash(label, parentNamehash);
-        vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(childHash, address(RegistrationStrategy));
+        vm.expectRevert("ERC721: invalid token ID");
+        Sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 
@@ -2007,9 +2043,9 @@ contract HandshakeSldTests is Test {
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yyyttt"));
+        bytes32 parentNamehash = getTldNamehash("yyyttt");
 
-        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345dddd679);
@@ -2066,15 +2102,15 @@ contract HandshakeSldTests is Test {
         secret[1] = 0x0;
         registrationLength[0] = 365;
         registrationLength[1] = 365;
-        parentNamehash[0] = keccak256(abi.encodePacked("testing12345"));
-        parentNamehash[1] = keccak256(abi.encodePacked("testing98765"));
+        parentNamehash[0] = getTldNamehash("testing12345");
+        parentNamehash[1] = getTldNamehash("testing98765");
         proofs[0] = empty_array;
         proofs[1] = empty_array;
         receiver[0] = claimant;
         receiver[1] = claimant;
 
-        addMockRegistrationStrategyToTld(parentNamehash[0], 30); //30 dollars
-        addMockRegistrationStrategyToTld(parentNamehash[1], 30); //30 dollars
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash[0], 30); //30 dollars
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash[1], 30); //30 dollars
 
         address tldOwner = address(0x12345679);
         HandshakeTld tld = Sld.HandshakeTldContract();
@@ -2112,16 +2148,10 @@ contract HandshakeSldTests is Test {
     }
 
     function testPriceOracle2() public {
-        string memory label = "";
-        bytes32 secret = bytes32(0x0);
-        uint256 registrationLength = 365;
         bytes32 parentNamehash = bytes32(0x0);
 
-        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
-
-        bytes32[] memory empty_array;
-        address claimant = address(0x6666);
 
         MockUsdOracle oracle = new MockUsdOracle(183185670000);
 
@@ -2132,11 +2162,11 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("tatata"));
+        bytes32 parentNamehash = getTldNamehash("tatata");
 
         uint256 annualCost = 5456;
 
-        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345dddd679);
@@ -2192,9 +2222,9 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("tatata"));
+        bytes32 parentNamehash = getTldNamehash("tatata");
 
-        addMockRegistrationStrategyToTld(parentNamehash, 1);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, 1);
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345679);
@@ -2232,11 +2262,11 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyo"));
+        bytes32 parentNamehash = getTldNamehash("yoyo");
 
         uint256 annualCost = 2000;
 
-        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();
@@ -2312,11 +2342,11 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("abc"));
+        bytes32 parentNamehash = getTldNamehash("abc");
 
         uint256 annualCost = 2000;
 
-        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         addMockOracle();
@@ -2362,11 +2392,11 @@ contract HandshakeSldTests is Test {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yo"));
+        bytes32 parentNamehash = getTldNamehash("yo");
 
         uint256 annualCost = 2000;
 
-        addMockRegistrationStrategyToTld(parentNamehash, annualCost);
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, annualCost);
         addMockCommitIntent(true);
 
         address tldOwner = address(0x222);
@@ -2438,9 +2468,9 @@ contract HandshakeSldTests is Test {
         string memory label = "test";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = keccak256(abi.encodePacked("yoyoyo"));
+        bytes32 parentNamehash = getTldNamehash("yoyoyo");
 
-        addMockRegistrationStrategyToTld(parentNamehash, 30); //30 dollars
+        addMockRegistrationStrategyToTldWithPrice(parentNamehash, 30); //30 dollars
         addMockCommitIntent(true);
 
         bytes32[] memory empty_array;

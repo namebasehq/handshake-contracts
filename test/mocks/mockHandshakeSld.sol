@@ -8,7 +8,7 @@ contract MockHandshakeSld is IHandshakeSld {
     mapping(uint256 => mapping(address => bool)) IdToAddressToApproved;
 
 
- function isApprovedOrOwnerOfChildOrParent(uint256 _id) external returns (bool){
+ function isApprovedOrOwnerOfChildOrParent(uint256 _id) external view returns (bool){
 
     return IdToAddressToApproved[_id][msg.sender];
  }

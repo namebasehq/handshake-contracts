@@ -7,6 +7,7 @@ import "contracts/SldCommitIntent.sol";
 import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
+import "interfaces/IHandshakeTld.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "structs/SubdomainDetail.sol";
@@ -44,31 +45,17 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
     mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
-    constructor()
-        HandshakeNFT(registry, "SLD", "Handshake SLD")
+    constructor(IHandshakeRegistry _registry, HandshakeTld _tld)
+        HandshakeNFT(_registry, "SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
-        HandshakeTldContract = new HandshakeTld(msg.sender);
-        HandshakeTldContract.transferOwnership(msg.sender);
-
+        HandshakeTldContract = _tld;
         CommitIntent = new SldCommitIntent(msg.sender);
         Validator = new LabelValidator();
     }
 
-    function getPricingStrategy(bytes32 _parentNamehash)
-        public
-        view
-        returns (ISldRegistrationStrategy)
-    {
-        if (
-            address(SldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
-                PRICE_IN_DOLLARS_SELECTOR
-            )
-        ) {
-            return SldDefaultRegistrationStrategy[_parentNamehash];
-        } else {
-            revert MissingRegistrationStrategy();
-        }
+    function setHandshakeTldContract(HandshakeTld _tld) external onlyOwner {
+        HandshakeTldContract = _tld;
     }
 
     //TODO: need to make sure can't reentry this function
@@ -401,15 +388,31 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         Validator = _validator;
     }
 
-    function setPricingStrategy(bytes32 _namehash, address _strategy)
+    function getPricingStrategy(bytes32 _parentNamehash)
         public
-        onlyParentApprovedOrOwner(uint256(_namehash))
+        view
+        returns (ISldRegistrationStrategy)
+    {
+        if (
+            address(SldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
+                PRICE_IN_DOLLARS_SELECTOR
+            )
+        ) {
+            return SldDefaultRegistrationStrategy[_parentNamehash];
+        } else {
+            revert MissingRegistrationStrategy();
+        }
+    }
+
+    function setPricingStrategy(uint256 _id, address _strategy)
+        public
+        onlyParentApprovedOrOwner(_id)
     {
         require(
             _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
-        SldDefaultRegistrationStrategy[_namehash] = ISldRegistrationStrategy(_strategy);
+        SldDefaultRegistrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
@@ -427,10 +430,6 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         require(_addr != address(0), "cannot set to zero address");
         address parentOwner = exists(_id) ? ownerOf(_id) : HandshakeTldContract.ownerOf(_id);
         RoyaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
-    }
-
-    function isApprovedOrOwnerOfChildOrParent(uint256 _id) public returns (bool) {
-        return HandshakeTldContract.isApproved(_id, msg.sender) || isApproved(_id, msg.sender);
     }
 
     function getSingleSubdomainDetails(
@@ -518,19 +517,23 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         ContractRegistrationStrategy = IGlobalRegistrationStrategy(_strategy);
     }
 
-    function getGuarenteedPrices(bytes32 _namehash) external returns (uint48[10] memory _prices) {
+    function getGuarenteedPrices(bytes32 _namehash) external view returns (uint48[10] memory _prices) {
         SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[_namehash];
         return detail.RegistrationPriceSnapshot;
     }
 
-    function getOwnerOfParent(bytes32 _childHash) private returns (address _parent) {
+    function getOwnerOfParent(bytes32 _childHash) private view returns (address _parent) {
         uint256 id = uint256(NamehashToParentMap[_childHash]);
         require(id > 0, "parent does not exist");
         _parent = exists(id) ? ownerOf(id) : HandshakeTldContract.ownerOf(id);
     }
 
+    function isApprovedOrOwnerOfChildOrParent(uint256 _id) public view returns (bool) {
+        return HandshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
+    }
+
     modifier onlyParentApprovedOrOwner(uint256 _id) {
-        require(isApprovedOrOwnerOfChildOrParent(_id), "not approved or owner of parent domain");
+        require(isApprovedOrOwnerOfChildOrParent(_id), "ERC721: invalid token ID");
         _;
     }
 }

@@ -4,14 +4,17 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeRegistry.sol";
+
 import "test/mocks/mockMetadataService.sol";
 import "test/mocks/mockCommitIntent.sol";
 
 contract TestNft is HandshakeNFT {
-    constructor() HandshakeNFT(registry, "TEST", "TEST") {}
+    
+    constructor(HandshakeRegistry _registry) HandshakeNFT(_registry, "TEST", "TEST") {}
 
-    function checkAuthorised(uint256 _id) public isApprovedOrOwner(_id) {
-        //only need an empty method here to test the modifier.
+    function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
+        // only need an empty method here to test the modifier.
     }
 
     function mint(address _addr, uint256 _id) public {
@@ -21,13 +24,15 @@ contract TestNft is HandshakeNFT {
 
 contract HandshakeNftTests is Test {
     using stdStorage for StdStorage;
+    HandshakeRegistry registry;
     TestNft nft;
 
     function setUp() public {
-        nft = new TestNft();
+        registry = new HandshakeRegistry();
+        nft = new TestNft(registry);
     }
 
-    //tests for the isApprovedOrOwner modifier
+    // tests for the onlyApprovedOrOwner modifier
     function testOwnerIsAuthorised() public {
         uint256 id = 11235813;
 
@@ -59,7 +64,7 @@ contract HandshakeNftTests is Test {
         nft.setApprovalForAll(approved_address, false);
 
         vm.startPrank(approved_address);
-        vm.expectRevert("Not approved or owner");
+        vm.expectRevert("not approved or owner");
         nft.checkAuthorised(id);
 
         vm.stopPrank();
@@ -89,7 +94,7 @@ contract HandshakeNftTests is Test {
         nft.approve(address(0), id);
 
         vm.startPrank(approved_address);
-        vm.expectRevert("Not approved or owner");
+        vm.expectRevert("not approved or owner");
         nft.checkAuthorised(id);
 
         vm.stopPrank();
@@ -100,7 +105,7 @@ contract HandshakeNftTests is Test {
 
         nft.mint(address(this), id);
 
-        vm.expectRevert("Not approved or owner");
+        vm.expectRevert("ERC721: invalid token ID");
         nft.checkAuthorised(id + 1);
     }
 
@@ -128,5 +133,5 @@ contract HandshakeNftTests is Test {
         nft.setMetadataContract(IMetadataService(address(notMetadata)));
     }
 
-    //</end> tests for the isApprovedOrOwner modifier
+    //</end> tests for the onlyApprovedOrOwner modifier
 }

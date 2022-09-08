@@ -4,6 +4,8 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
+import { Namehash } from "utils/Namehash.sol";
+import "contracts/HandshakeRegistry.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
@@ -11,24 +13,42 @@ import "interfaces/ISldRegistrationStrategy.sol";
 
 contract HandshakeTldTests is Test {
     using stdStorage for StdStorage;
+    HandshakeRegistry registry;
     HandshakeTld Tld;
     HandshakeSld Sld;
 
+    // test
+    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    // test.test
+    bytes32 constant TEST_SLD_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    // test.test.test
+    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+
     function setUp() public {
-        Tld = new HandshakeTld(address(this));
-        Sld = new HandshakeSld();
+        registry = new HandshakeRegistry();
+        Tld = new HandshakeTld(registry, address(this));
+        Sld = new HandshakeSld(registry, Tld);
+    }
+
+    // TODO: swap param order
+    function getNamehash(string memory _label, bytes32 _parentHash) private pure returns (bytes32) {
+        return Namehash.getNamehash(_label, _parentHash);
+    }
+
+    function getTldNamehash(string memory _label) private pure returns (bytes32) {
+        return Namehash.getTldNamehash(_label);
     }
 
     function testMintFromUnauthorisedAddress() public {
         string memory domain = "test";
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
+        uint256 tldId = uint256(getTldNamehash(domain));
         vm.expectRevert("not authorised");
         Tld.mint(address(0x1339), domain);
     }
 
     function testMintFromAuthoriseAddress() public {
         string memory domain = "test";
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
+        uint256 tldId = uint256(getTldNamehash(domain));
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
 
@@ -38,7 +58,7 @@ contract HandshakeTldTests is Test {
 
     function testMintCheckLabelToHashMapUpdated() public {
         string memory domain = "test";
-        bytes32 namehash = bytes32(keccak256(abi.encodePacked(domain)));
+        bytes32 namehash = getTldNamehash(domain);
         uint256 tldId = uint256(namehash);
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
@@ -50,11 +70,10 @@ contract HandshakeTldTests is Test {
 
     function testUpdateDefaultSldRegistrationStrategyFromTldOwner() public {
         string memory domain = "test";
-        uint256 tldId = uint256(bytes32(keccak256(abi.encodePacked(domain))));
+        uint256 tldId = uint256(getTldNamehash(domain));
         bytes32 tldHash = bytes32(tldId);
         address tldOwnerAddr = address(0x6942);
         MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
-
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
             address(this)
@@ -65,18 +84,17 @@ contract HandshakeTldTests is Test {
         Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
         assertEq(
             tldId,
-            70622639689279718371527342103894932928233838121221666359043189029713682937432,
+            uint256(TEST_TLD_NAMEHASH),
             "parent id not as expected"
         );
 
         emit log_named_address(
             "owner is",
-            Sld.HandshakeTldContract().ownerOf(
-                70622639689279718371527342103894932928233838121221666359043189029713682937432
-            )
+            Sld.HandshakeTldContract().ownerOf(uint256(TEST_TLD_NAMEHASH))
         );
+
         vm.startPrank(tldOwnerAddr);
-        Sld.setPricingStrategy(tldHash, address(sldRegistrationStrategy));
+        Sld.setPricingStrategy(tldId, address(sldRegistrationStrategy));
 
         assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
 
@@ -85,7 +103,7 @@ contract HandshakeTldTests is Test {
 
     function testUpdateDefaultSldRegistrationStrategyFromNotTldOwner() public {
         string memory domain = "test";
-        bytes32 tldHash = bytes32(keccak256(abi.encodePacked(domain)));
+        bytes32 tldHash = getTldNamehash(domain);
         uint256 tldId = uint256(tldHash);
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
@@ -104,8 +122,8 @@ contract HandshakeTldTests is Test {
         stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
             address(Sld.HandshakeTldContract())
         );
-        vm.expectRevert("not approved or owner of parent domain");
-        Sld.setPricingStrategy(tldHash, sldRegistrationStrategy);
+        vm.expectRevert("ERC721: invalid token ID");
+        Sld.setPricingStrategy(uint256(tldHash), sldRegistrationStrategy);
         vm.stopPrank();
     }
 

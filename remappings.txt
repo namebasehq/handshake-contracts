@@ -9,4 +9,5 @@ ens/=lib/ens-contracts/contracts/
 contracts/=src/contracts/
 interfaces/=src/interfaces/
 structs/=src/structs/
+utils/=src/utils/
 test/=test/
