@@ -18,7 +18,7 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
     address public RoyaltyPayoutAddress;
     uint256 public RoyaltyPayoutAmount;
 
-    constructor(address _owner) HandshakeERC721("HTLD", "Handshake Top Level Domain") {
+    constructor(address _owner) HandshakeNFT("TLD", "Top Level Domain") {
         ClaimManager = new TldClaimManager(_owner);
         
     }

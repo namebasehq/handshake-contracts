@@ -32,7 +32,7 @@ contract HandshakeSldTests is Test {
 
     function setUp() public {
         registry = new HandshakeRegistry();
-        Tld = new HandshakeTld(registry, address(this));
+        Tld = new HandshakeTld(address(this));
         Sld = new HandshakeSld(registry, Tld);
         addMockValidatorToSld();
         addMockOracle();
@@ -294,7 +294,7 @@ contract HandshakeSldTests is Test {
         address myAddress = address(0xbeef);
 
         vm.prank(myAddress);
-        HandshakeTld tempTld = new HandshakeTld(registry, myAddress);
+        HandshakeTld tempTld = new HandshakeTld(myAddress);
         HandshakeSld tempSld = new HandshakeSld(registry, tempTld);
 
         assertEq(Ownable(tempSld.HandshakeTldContract()).owner(), myAddress);

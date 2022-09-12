@@ -22,11 +22,11 @@ abstract contract HandshakeNFT is ERC721, Ownable {
     // a map of string labels
     mapping(bytes32 => string) public NamehashToLabelMap;
 
-    IHandshakeRegistry public registry;
+    //IHandshakeRegistry public registry;
     IMetadataService public Metadata;
 
-    constructor(IHandshakeRegistry _registry, string memory _symbol, string memory _name) ERC721(_symbol, _name) {
-        registry = _registry;
+    constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {
+        //registry = _registry;
     }
 
     function tokenURI(uint256 _id) public view override returns (string memory) {

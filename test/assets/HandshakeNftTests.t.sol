@@ -11,7 +11,7 @@ import "test/mocks/mockCommitIntent.sol";
 
 contract TestNft is HandshakeNFT {
     
-    constructor(HandshakeRegistry _registry) HandshakeNFT(_registry, "TEST", "TEST") {}
+    constructor(HandshakeRegistry _registry) HandshakeNFT("TEST", "TEST") {}
 
     function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
         // only need an empty method here to test the modifier.

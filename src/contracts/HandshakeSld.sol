@@ -47,7 +47,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor(IHandshakeRegistry _registry, HandshakeTld _tld)
-        HandshakeNFT(_registry, "SLD", "Handshake SLD")
+        HandshakeNFT("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
         HandshakeTldContract = _tld;

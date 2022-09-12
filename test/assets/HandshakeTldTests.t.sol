@@ -26,7 +26,7 @@ contract HandshakeTldTests is Test {
 
     function setUp() public {
         registry = new HandshakeRegistry();
-        Tld = new HandshakeTld(registry, address(this));
+        Tld = new HandshakeTld(address(this));
         Sld = new HandshakeSld(registry, Tld);
     }
 
