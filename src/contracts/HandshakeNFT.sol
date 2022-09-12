@@ -87,7 +87,7 @@ abstract contract HandshakeNFT is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to be transferred
      * @return bool whether the spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
-    function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId) public view virtual returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 

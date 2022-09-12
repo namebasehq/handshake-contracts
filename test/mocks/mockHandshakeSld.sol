@@ -13,6 +13,10 @@ contract MockHandshakeSld is IHandshakeSld {
     return IdToAddressToApproved[_id][msg.sender];
  }
 
+   function isApprovedOrOwner(address spender, uint256 tokenId) public override view returns (bool) { 
+        return IdToAddressToApproved[tokenId][spender];
+    }
+
  function addMapping(uint256 _id, address _addr, bool _approved) public {
     IdToAddressToApproved[_id][_addr] = _approved;
  }

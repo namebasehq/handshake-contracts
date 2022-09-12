@@ -536,6 +536,10 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         return HandshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
     }
 
+    function isApprovedOrOwner(address spender, uint256 tokenId) public override(HandshakeNFT,IHandshakeSld) view returns (bool) { 
+        super.isApprovedOrOwner(spender, tokenId);
+    }
+
     modifier onlyParentApprovedOrOwner(uint256 _id) {
         require(isApprovedOrOwnerOfChildOrParent(_id), "ERC721: invalid token ID");
         _;
