@@ -17,6 +17,7 @@ import "contracts/UsdPriceOracle.sol";
 import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationStrategy.sol";
 import "contracts/PaymentManager.sol";
+import {console} from "forge-std/console.sol";
 
 
 contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManager {
@@ -263,7 +264,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         );
 
         //refund any excess, can't reentry as token will already exist
-
+        
         purchaseSld(
             _label,
             _secret,
@@ -271,7 +272,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
             _parentNamehash,
             _recipient == address(0) ? msg.sender : _recipient
         );
-
+        
         addRegistrationDetails(
             getNamehash(_label, _parentNamehash),
             domainDollarCost,
@@ -280,14 +281,14 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
             _parentNamehash,
             _label
         );
-
+        
         uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) / DECIMAL_MULTIPLIER;
 
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
-
+        console.log('here we go');
         distributePrimaryFunds(getOwnerOfParent(getNamehash(_label, _parentNamehash)), priceInWei);
     }
 
@@ -301,6 +302,8 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         require(Validator.isValidLabel(_label), "invalid name");
 
         bytes32 namehash = getNamehash(_label, _parentNamehash);
+        console.log('actual namehash');
+        console.log(uint256(namehash));
         require(CommitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
         require(canRegister(namehash), "Subdomain already registered");
 
@@ -529,6 +532,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
     }
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) public view returns (bool) {
+
         return HandshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
     }
 
