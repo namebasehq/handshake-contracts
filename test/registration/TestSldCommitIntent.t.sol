@@ -7,7 +7,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "interfaces/ICommitIntent.sol";
 import "contracts/SldCommitIntent.sol";
 
-contract SldCommitIntentTests is Test {
+contract TestSldCommitIntent is Test {
     ICommitIntent internal intent;
 
     function setUp() public {

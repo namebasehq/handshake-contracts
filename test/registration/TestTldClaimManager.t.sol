@@ -8,7 +8,7 @@ import "interfaces/ITldClaimManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
 
-contract TldClaimManagerTests is Test {
+contract TestTldClaimManager is Test {
     ITldClaimManager internal manager;
     HandshakeTld internal nft;
 

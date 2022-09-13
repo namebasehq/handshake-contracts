@@ -5,8 +5,8 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "contracts/HandshakeNFT.sol";
 
-import "test/mocks/mockMetadataService.sol";
-import "test/mocks/mockCommitIntent.sol";
+import "test/mocks/MockMetadataService.sol";
+import "test/mocks/MockCommitIntent.sol";
 
 contract TestNft is HandshakeNFT {
     
@@ -21,7 +21,7 @@ contract TestNft is HandshakeNFT {
     }
 }
 
-contract HandshakeNftTests is Test {
+contract TestHandshakeNft is Test {
     using stdStorage for StdStorage;
     TestNft nft;
 

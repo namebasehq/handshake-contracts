@@ -7,15 +7,15 @@ import { Namehash } from "utils/Namehash.sol";
 import "contracts/HandshakeSld.sol";
 import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
-import "test/mocks/mockClaimManager.sol";
-import "test/mocks/mockCommitIntent.sol";
-import "test/mocks/mockLabelValidator.sol";
-import "test/mocks/mockRegistrationStrategy.sol";
-import "test/mocks/mockUsdOracle.sol";
-import "test/mocks/mockGlobalRegistrationStrategy.sol";
+import "test/mocks/MockClaimManager.sol";
+import "test/mocks/MockCommitIntent.sol";
+import "test/mocks/MockLabelValidator.sol";
+import "test/mocks/MockRegistrationStrategy.sol";
+import "test/mocks/MockUsdOracle.sol";
+import "test/mocks/MockGlobalRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract HandshakeSldTests is Test {
+contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;

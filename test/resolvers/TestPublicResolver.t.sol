@@ -6,13 +6,13 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "contracts/PublicResolver.sol";
 
-abstract contract ResolverTests is Test {
+contract TestPublicResolver is Test {
     address constant tldContract = address(0x996633);
     address constant sldContract = address(0x336699);
 
     PublicResolver resolver;
 
-    function setUp() virtual public {
+    function setUp() public {
         resolver = new PublicResolver(tldContract, sldContract);
     }
 

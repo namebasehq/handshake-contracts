@@ -5,9 +5,9 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "contracts/DefaultRegistrationStrategy.sol";
-import "test/mocks/mockHandshakeSld.sol";
+import "test/mocks/MockHandshakeSld.sol";
 
-contract DefaultRegistrationTests is Test {
+contract TestDefaultRegistrationStrategy is Test {
     using stdStorage for StdStorage;
 
     DefaultRegistrationStrategy strategy;
