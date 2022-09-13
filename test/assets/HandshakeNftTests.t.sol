@@ -4,14 +4,13 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "contracts/HandshakeNFT.sol";
-import "contracts/HandshakeRegistry.sol";
 
 import "test/mocks/mockMetadataService.sol";
 import "test/mocks/mockCommitIntent.sol";
 
 contract TestNft is HandshakeNFT {
     
-    constructor(HandshakeRegistry _registry) HandshakeNFT("TEST", "TEST") {}
+    constructor() HandshakeNFT("TEST", "TEST") {}
 
     function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
         // only need an empty method here to test the modifier.
@@ -24,12 +23,10 @@ contract TestNft is HandshakeNFT {
 
 contract HandshakeNftTests is Test {
     using stdStorage for StdStorage;
-    HandshakeRegistry registry;
     TestNft nft;
 
     function setUp() public {
-        registry = new HandshakeRegistry();
-        nft = new TestNft(registry);
+        nft = new TestNft();
     }
 
     // tests for the onlyApprovedOrOwner modifier

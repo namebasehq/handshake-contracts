@@ -10,6 +10,6 @@ pragma solidity ^0.8.15;
 // contract OwnedResolverTests is ResolverTests {
 
 //     function setUp() override public {
-//         resolver = new OwnedResolver(registry, tldContract, sldContract);
+//         resolver = new OwnedResolver(tldContract, sldContract);
 //     }
 // }

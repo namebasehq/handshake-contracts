@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import "contracts/HandshakeNFT.sol";
 import "contracts/HandshakeTld.sol";
 import "contracts/SldCommitIntent.sol";
-import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
@@ -46,7 +45,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
     mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
-    constructor(IHandshakeRegistry _registry, HandshakeTld _tld)
+    constructor(HandshakeTld _tld)
         HandshakeNFT("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {

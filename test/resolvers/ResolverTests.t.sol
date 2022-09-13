@@ -5,20 +5,15 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "contracts/PublicResolver.sol";
-import "contracts/HandshakeRegistry.sol";
-import "interfaces/IHandshakeRegistry.sol";
 
 abstract contract ResolverTests is Test {
-    // TODO: get actual registry contract address
-    IHandshakeRegistry registry;
-    address constant registryContract = address(0x336699);
     address constant tldContract = address(0x996633);
     address constant sldContract = address(0x336699);
 
     PublicResolver resolver;
 
     function setUp() virtual public {
-        resolver = new PublicResolver(registry, tldContract, sldContract);
+        resolver = new PublicResolver(tldContract, sldContract);
     }
 
     function testUpdateTextFromAuthorisedAddressSLD() public {

@@ -7,11 +7,9 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "interfaces/ITldClaimManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
-import "contracts/HandshakeRegistry.sol";
 
 contract TldClaimManagerTests is Test {
     ITldClaimManager internal manager;
-    HandshakeRegistry registry;
     HandshakeTld internal nft;
 
     function setUp() public {

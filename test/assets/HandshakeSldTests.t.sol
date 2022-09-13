@@ -5,7 +5,6 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import { Namehash } from "utils/Namehash.sol";
 import "contracts/HandshakeSld.sol";
-import "contracts/HandshakeRegistry.sol";
 import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
 import "test/mocks/mockClaimManager.sol";
@@ -20,7 +19,6 @@ contract HandshakeSldTests is Test {
     error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;
-    IHandshakeRegistry registry;
     HandshakeTld Tld;
     HandshakeSld Sld;
     ITldClaimManager ClaimManager;
@@ -34,9 +32,8 @@ contract HandshakeSldTests is Test {
 
     function setUp() public {
         ClaimManager = new MockClaimManager();
-        registry = new HandshakeRegistry();
         Tld = new HandshakeTld(ClaimManager);
-        Sld = new HandshakeSld(registry, Tld);
+        Sld = new HandshakeSld(Tld);
         addMockValidatorToSld();
         addMockOracle();
     }

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "interfaces/IHandshakeRegistry.sol";
 import "ens/resolvers/profiles/ABIResolver.sol";
 import "ens/resolvers/profiles/AddrResolver.sol";
 import "ens/resolvers/profiles/ContentHashResolver.sol";
@@ -24,12 +23,10 @@ contract PublicResolver is
     TextResolver
 {
 
-    IHandshakeRegistry immutable registry;
     address immutable tldContract;
     address immutable sldContract;
 
-    constructor(IHandshakeRegistry _registry, address _tldContract, address _sldContract) {
-        registry = _registry;
+    constructor(address _tldContract, address _sldContract) {
         tldContract = _tldContract;
         sldContract = _sldContract;
     }

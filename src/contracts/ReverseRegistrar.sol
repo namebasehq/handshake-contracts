@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/IReverseRegistrar.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -14,17 +13,13 @@ bytes32 constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967f
 // namehash('addr.reverse')
 
 contract ReverseRegistrar is Ownable, IReverseRegistrar {
-    IHandshakeRegistry public immutable registry;
     NameResolver public defaultResolver;
 
     event ReverseClaimed(address indexed addr, bytes32 indexed node);
 
-    /**
-     * @param _registry The address of the registry.
-     */
-    constructor(IHandshakeRegistry _registry) {
-        registry = _registry;
-    }
+    // constructor() {
+    //     registry = _registry;
+    // }
 
     modifier authorised(address addr) {
         require(

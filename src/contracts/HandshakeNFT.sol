@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "interfaces/IHandshakeRegistry.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 
@@ -22,11 +21,10 @@ abstract contract HandshakeNFT is ERC721, Ownable {
     // a map of string labels
     mapping(bytes32 => string) public NamehashToLabelMap;
 
-    //IHandshakeRegistry public registry;
     IMetadataService public Metadata;
 
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {
-        //registry = _registry;
+
     }
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
