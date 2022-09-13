@@ -8,7 +8,7 @@ import "interfaces/ICommitIntent.sol";
 import "contracts/GlobalRegistrationRules.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 
-contract GlobalRegistrationTests is Test {
+contract TestGlobalRegistrationRules is Test {
     IGlobalRegistrationRules rules;
 
     function setUp() public {

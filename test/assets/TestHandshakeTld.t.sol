@@ -5,13 +5,13 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import { Namehash } from "utils/Namehash.sol";
-import "test/mocks/mockRegistrationStrategy.sol";
-import "test/mocks/mockClaimManager.sol";
+import "test/mocks/MockRegistrationStrategy.sol";
+import "test/mocks/MockClaimManager.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 
-contract HandshakeTldTests is Test {
+contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
     HandshakeTld Tld;
     HandshakeSld Sld;

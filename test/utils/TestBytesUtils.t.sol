@@ -7,7 +7,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "utils/RRUtils.sol";
 import "utils/BytesUtils.sol";
 
-contract BytesUtilsTests is Test{
+contract TestBytesUtils is Test{
   using BytesUtils for *;
 
   function setUp() virtual public {

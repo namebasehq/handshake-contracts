@@ -7,7 +7,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "utils/BytesUtils.sol";
 import { NameEncoder } from "utils/NameEncoder.sol";
 
-contract NameEncoderTests is Test {
+contract TestNameEncoder is Test {
     using NameEncoder for string;
     using BytesUtils for bytes;
 

@@ -7,7 +7,7 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "interfaces/ICommitIntent.sol";
 import "contracts/LabelValidator.sol";
 
-contract LabelValidatorTests is Test {
+contract TestLabelValidator is Test {
     ILabelValidator validator;
 
     function setUp() public {

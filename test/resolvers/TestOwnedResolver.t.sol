@@ -7,7 +7,7 @@ pragma solidity ^0.8.15;
 // import "contracts/OwnedResolver.sol";
 // import "test/resolvers/ResolverTests.t.sol";
 
-// contract OwnedResolverTests is ResolverTests {
+// contract TestOwnedResolver is Test {
 
 //     function setUp() override public {
 //         resolver = new OwnedResolver(tldContract, sldContract);
