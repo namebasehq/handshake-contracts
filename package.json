@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@chainlink/contracts": "^0.4.2",
-    "@openzeppelin/contracts": "^4.7.0"
+    "@openzeppelin/contracts": "^4.7.0",
+    "@ensdomains/ens-contracts": "github:ensdomains/ens-contracts",
+    "@ensdomains/buffer": "github:ensdomains/buffer"
   },
   "devDependencies": {
     "keccak256": "^1.0.6",
