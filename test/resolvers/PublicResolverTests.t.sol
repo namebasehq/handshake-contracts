@@ -10,7 +10,6 @@ import "test/resolvers/ResolverTests.t.sol";
 contract PublicResolverTests is ResolverTests {
 
     function setUp() override public {
-        registry = new HandshakeRegistry();
-        resolver = new PublicResolver(registry, tldContract, sldContract);
+        resolver = new PublicResolver(tldContract, sldContract);
     }
 }

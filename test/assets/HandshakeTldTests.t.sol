@@ -5,7 +5,6 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import { Namehash } from "utils/Namehash.sol";
-import "contracts/HandshakeRegistry.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
 import "test/mocks/mockClaimManager.sol";
 import "interfaces/ITldClaimManager.sol";
@@ -14,7 +13,6 @@ import "interfaces/ISldRegistrationStrategy.sol";
 
 contract HandshakeTldTests is Test {
     using stdStorage for StdStorage;
-    HandshakeRegistry registry;
     HandshakeTld Tld;
     HandshakeSld Sld;
 
@@ -29,9 +27,8 @@ contract HandshakeTldTests is Test {
 
     function setUp() public {
         ClaimManager = new MockClaimManager();
-        registry = new HandshakeRegistry();
         Tld = new HandshakeTld(ClaimManager);
-        Sld = new HandshakeSld(registry, Tld);
+        Sld = new HandshakeSld(Tld);
     }
 
     // TODO: swap param order

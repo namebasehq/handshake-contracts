@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 
 import "contracts/HandshakeNFT.sol";
-import "contracts/HandshakeRegistry.sol";
 import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
