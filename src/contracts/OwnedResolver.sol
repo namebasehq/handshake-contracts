@@ -2,15 +2,15 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "ens/resolvers/profiles/ABIResolver.sol";
-import "ens/resolvers/profiles/AddrResolver.sol";
-import "ens/resolvers/profiles/ContentHashResolver.sol";
-import "ens/resolvers/profiles/DNSResolver.sol";
-import "ens/resolvers/profiles/InterfaceResolver.sol";
-import "ens/resolvers/profiles/NameResolver.sol";
-import "ens/resolvers/profiles/PubkeyResolver.sol";
-import "ens/resolvers/profiles/TextResolver.sol";
-import "ens/resolvers/Multicallable.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ABIResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/AddrResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ContentHashResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/DNSResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/InterfaceResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/NameResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/PubkeyResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/TextResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/Multicallable.sol";
 
 /**
  * A simple resolver that only allows the owner of a node to set its address.

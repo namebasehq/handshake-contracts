@@ -2,17 +2,17 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "ens/resolvers/profiles/IABIResolver.sol";
-import "ens/resolvers/profiles/IAddressResolver.sol";
-import "ens/resolvers/profiles/IAddrResolver.sol";
-import "ens/resolvers/profiles/IContentHashResolver.sol";
-import "ens/resolvers/profiles/IDNSRecordResolver.sol";
-import "ens/resolvers/profiles/IDNSZoneResolver.sol";
-import "ens/resolvers/profiles/IInterfaceResolver.sol";
-import "ens/resolvers/profiles/INameResolver.sol";
-import "ens/resolvers/profiles/IPubkeyResolver.sol";
-import "ens/resolvers/profiles/ITextResolver.sol";
-import "ens/resolvers/profiles/IExtendedResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IABIResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IDNSRecordResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IDNSZoneResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IInterfaceResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IPubkeyResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 
 /**
  * A generic resolver interface which includes all the functions including the ones deprecated
