@@ -8,6 +8,7 @@ import "contracts/HandshakeSld.sol";
 import "contracts/HandshakeRegistry.sol";
 import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
+import "test/mocks/mockClaimManager.sol";
 import "test/mocks/mockCommitIntent.sol";
 import "test/mocks/mockLabelValidator.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
@@ -22,6 +23,7 @@ contract HandshakeSldTests is Test {
     IHandshakeRegistry registry;
     HandshakeTld Tld;
     HandshakeSld Sld;
+    ITldClaimManager ClaimManager;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
@@ -31,8 +33,9 @@ contract HandshakeSldTests is Test {
     bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
+        ClaimManager = new MockClaimManager();
         registry = new HandshakeRegistry();
-        Tld = new HandshakeTld(address(this));
+        Tld = new HandshakeTld(ClaimManager);
         Sld = new HandshakeSld(registry, Tld);
         addMockValidatorToSld();
         addMockOracle();
@@ -287,21 +290,6 @@ contract HandshakeSldTests is Test {
 
     function testOwnerOfCommitIntentSetCorrectly() public {
         assertEq(address(this), Ownable(address(Sld.CommitIntent())).owner());
-    }
-
-    function testOwnerOfChildContractsSetCorrectly() public {
-        //this is the deployer of the contract!!
-        address myAddress = address(0xbeef);
-
-        vm.prank(myAddress);
-        HandshakeTld tempTld = new HandshakeTld(myAddress);
-        HandshakeSld tempSld = new HandshakeSld(registry, tempTld);
-
-        assertEq(Ownable(tempSld.HandshakeTldContract()).owner(), myAddress);
-        assertEq(
-            Ownable(address(tempSld.HandshakeTldContract().ClaimManager())).owner(),
-            myAddress
-        );
     }
 
     function testMintSldFromAuthorisedWallet() public {

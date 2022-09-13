@@ -7,6 +7,7 @@ import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import { Namehash } from "utils/Namehash.sol";
 import "contracts/HandshakeRegistry.sol";
 import "test/mocks/mockRegistrationStrategy.sol";
+import "test/mocks/mockClaimManager.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
@@ -17,6 +18,8 @@ contract HandshakeTldTests is Test {
     HandshakeTld Tld;
     HandshakeSld Sld;
 
+    ITldClaimManager ClaimManager;
+
     // test
     bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
@@ -25,8 +28,9 @@ contract HandshakeTldTests is Test {
     bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
+        ClaimManager = new MockClaimManager();
         registry = new HandshakeRegistry();
-        Tld = new HandshakeTld(address(this));
+        Tld = new HandshakeTld(ClaimManager);
         Sld = new HandshakeSld(registry, Tld);
     }
 

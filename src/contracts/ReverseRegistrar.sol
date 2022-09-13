@@ -29,7 +29,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
     modifier authorised(address addr) {
         require(
             addr == msg.sender ||
-                registry.isApprovedForAll(addr, msg.sender) ||
+                //registry.isApprovedForAll(addr, msg.sender) ||
                 ownsContract(addr),
             "ReverseRegistrar: Caller is not a controller or authorised by address or the address itself"
         );
@@ -69,7 +69,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
             abi.encodePacked(ADDR_REVERSE_NODE, labelHash)
         );
         emit ReverseClaimed(addr, reverseNode);
-        registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
+       // registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
         return reverseNode;
     }
 

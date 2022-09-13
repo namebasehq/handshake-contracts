@@ -16,8 +16,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-    constructor(address _owner) {
-        transferOwnership(_owner);
+    constructor() {
     }
 
     //provide this as a public function in case we want to query it from the UI

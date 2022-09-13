@@ -41,8 +41,8 @@ contract PublicResolver is
         ) {
             return true;
         }
-        address owner = registry.owner(node);
-        return owner == msg.sender || registry.isApprovedForAll(owner, msg.sender);
+        address owner = address(0);
+        return owner == msg.sender;
     }
 
     /**
