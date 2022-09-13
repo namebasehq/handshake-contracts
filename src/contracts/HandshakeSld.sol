@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeNft.sol";
 import "contracts/HandshakeTld.sol";
 import "contracts/SldCommitIntent.sol";
 import "interfaces/ICommitIntent.sol";
@@ -19,7 +19,7 @@ import "contracts/PaymentManager.sol";
 import {console} from "forge-std/console.sol";
 
 
-contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManager {
+contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
     
     HandshakeTld public HandshakeTldContract;
@@ -46,7 +46,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
     constructor(HandshakeTld _tld)
-        HandshakeNFT("SLD", "Handshake SLD")
+        HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
         HandshakeTldContract = _tld;
@@ -535,7 +535,7 @@ contract HandshakeSld is HandshakeNFT, IHandshakeSld, HasUsdOracle, PaymentManag
         return HandshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) public override(HandshakeNFT,IHandshakeSld) view returns (bool) { 
+    function isApprovedOrOwner(address spender, uint256 tokenId) public override(HandshakeNft,IHandshakeSld) view returns (bool) { 
         super.isApprovedOrOwner(spender, tokenId);
     }
 

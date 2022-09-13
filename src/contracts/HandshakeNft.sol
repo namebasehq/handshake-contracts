@@ -12,7 +12,7 @@ import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 
 // base class for both SLD and TLDs
-abstract contract HandshakeNFT is ERC721, Ownable {
+abstract contract HandshakeNft is ERC721, Ownable {
     using ERC165Checker for address;
 
     // token uri for metadata service uses namehash as the input value
