@@ -2,16 +2,16 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/ISldRegistrationStrategy.sol";
-import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeNft.sol";
 
 contract SldRegistrationStrategy is ISldRegistrationStrategy {
     mapping(bytes32 => uint256) public FixedPrice;
     address public AuthorisedAddress;
 
-    HandshakeNFT public NftContract;
+    HandshakeNft public NftContract;
     bytes32 public ParentHash;
 
-    constructor(bytes32 _namehash, HandshakeNFT _nft) {
+    constructor(bytes32 _namehash, HandshakeNft _nft) {
         NftContract = _nft;
         ParentHash = _namehash;
     }

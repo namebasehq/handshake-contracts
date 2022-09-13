@@ -3,13 +3,13 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 
-import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeNft.sol";
 import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract HandshakeTld is HandshakeNFT, IHandshakeTld {
+contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
     ITldClaimManager public ClaimManager;
     
@@ -17,7 +17,7 @@ contract HandshakeTld is HandshakeNFT, IHandshakeTld {
     address public RoyaltyPayoutAddress;
     uint256 public RoyaltyPayoutAmount;
 
-    constructor(ITldClaimManager _claimManager) HandshakeNFT("TLD", "Top Level Domain") {
+    constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
         ClaimManager = _claimManager;
         
     }

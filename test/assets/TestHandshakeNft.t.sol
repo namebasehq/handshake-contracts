@@ -3,14 +3,14 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import "contracts/HandshakeNFT.sol";
+import "contracts/HandshakeNft.sol";
 
 import "test/mocks/MockMetadataService.sol";
 import "test/mocks/MockCommitIntent.sol";
 
-contract TestNft is HandshakeNFT {
+contract TestNft is HandshakeNft {
     
-    constructor() HandshakeNFT("TEST", "TEST") {}
+    constructor() HandshakeNft("HNSNFT", "HandshakeNFT") {}
 
     function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
         // only need an empty method here to test the modifier.
