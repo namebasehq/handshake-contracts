@@ -22,7 +22,7 @@ contract TestTldClaimManager is Test {
         address allowed_address = address(0x134567);
         manager.updateAllowedTldManager(allowed_address, true);
 
-        assertTrue(manager.AllowedTldManager(allowed_address));
+        assertTrue(manager.allowedTldManager(allowed_address));
     }
 
     function testAddTldManagerWalletFromNotContractOwner() public {

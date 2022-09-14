@@ -32,7 +32,7 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setLengthCost(namehash, prices);
 
         for (uint256 i; i < prices.length; i++) {
-            assertEq(strategy.LengthCost(namehash, i), prices[i]);
+            assertEq(strategy.lengthCost(namehash, i), prices[i]);
         }
     }
 
@@ -104,7 +104,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
-        assertEq(strategy.PremiumNames(full_hash), price);
+        assertEq(strategy.premiumNames(full_hash), price);
     }
 
     function testSetPremiumNameFromNotApprovedAddress_fail() public {
@@ -126,7 +126,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
-        assertEq(strategy.PremiumNames(full_hash), 0);
+        assertEq(strategy.premiumNames(full_hash), 0);
     }
 
     function testSetReservedNameFromNotApprovedAddress_fail() public {
@@ -148,7 +148,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
-        assertEq(strategy.ReservedNames(full_hash), address(0));
+        assertEq(strategy.reservedNames(full_hash), address(0));
     }
 
     function testSetMultiplePremiumNameAndClaim_pass() public {
@@ -181,9 +181,9 @@ contract TestDefaultRegistrationStrategy is Test {
         bytes32 full_hash2 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash));
         bytes32 full_hash3 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash));
 
-        assertEq(strategy.PremiumNames(full_hash), price);
-        assertEq(strategy.PremiumNames(full_hash2), price2);
-        assertEq(strategy.PremiumNames(full_hash3), price3);
+        assertEq(strategy.premiumNames(full_hash), price);
+        assertEq(strategy.premiumNames(full_hash2), price2);
+        assertEq(strategy.premiumNames(full_hash3), price3);
     }
 
     function testSetReservedNameAndClaim_pass() public {
@@ -203,7 +203,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
-        assertEq(strategy.ReservedNames(full_hash), claimer);
+        assertEq(strategy.reservedNames(full_hash), claimer);
     }
 
     function testSetMultipleReservedNamesAndClaim_pass() public {
@@ -235,9 +235,9 @@ contract TestDefaultRegistrationStrategy is Test {
         bytes32 full_hash2 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash));
         bytes32 full_hash3 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash));
 
-        assertEq(strategy.ReservedNames(full_hash), claimer);
-        assertEq(strategy.ReservedNames(full_hash2), claimer2);
-        assertEq(strategy.ReservedNames(full_hash3), claimer3);
+        assertEq(strategy.reservedNames(full_hash), claimer);
+        assertEq(strategy.reservedNames(full_hash2), claimer2);
+        assertEq(strategy.reservedNames(full_hash3), claimer3);
     }
 
     function testSetMultipleReservedNamesNotMatchingArrays_fail() public {
@@ -301,7 +301,7 @@ contract TestDefaultRegistrationStrategy is Test {
         uint256 price = 50;
         stdstore
             .target(address(strategy))
-            .sig("PremiumNames(bytes32)")
+            .sig("premiumNames(bytes32)")
             .with_key(full_namehash)
             .checked_write(price);
 
@@ -330,7 +330,7 @@ contract TestDefaultRegistrationStrategy is Test {
         address addr = address(0x335577);
         stdstore
             .target(address(strategy))
-            .sig("ReservedNames(bytes32)")
+            .sig("reservedNames(bytes32)")
             .with_key(full_namehash)
             .checked_write(addr);
 

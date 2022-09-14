@@ -22,17 +22,17 @@ import {console} from "forge-std/console.sol";
 contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
     
-    HandshakeTld public HandshakeTldContract;
-    ICommitIntent public CommitIntent;
-    ILabelValidator public Validator;
+    HandshakeTld public handshakeTldContract;
+    ICommitIntent public commitIntent;
+    ILabelValidator public validator;
 
-    IGlobalRegistrationRules public ContractRegistrationStrategy;
+    IGlobalRegistrationRules public contractRegistrationStrategy;
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
     //moved this from tld contract so we can have subdomains of subdomains.
-    mapping(bytes32 => ISldRegistrationStrategy) public SldDefaultRegistrationStrategy;
-    mapping(bytes32 => SubdomainRegistrationDetail) public SubdomainRegistrationHistory;
+    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
+    mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
 
     error MissingRegistrationStrategy();
 
@@ -40,27 +40,27 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
         bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
-    mapping(bytes32 => bytes32) public NamehashToParentMap;
+    mapping(bytes32 => bytes32) public namehashToParentMap;
 
-    mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
-    mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
+    mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
+    mapping(bytes32 => mapping(address => address)) public royaltyPayoutAddressMap;
 
     constructor(HandshakeTld _tld, ICommitIntent _commitIntent)
         HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
-        HandshakeTldContract = _tld;
-        CommitIntent = _commitIntent;
-        Validator = new LabelValidator();
+        handshakeTldContract = _tld;
+        commitIntent = _commitIntent;
+        validator = new LabelValidator();
     }
 
     function setHandshakeTldContract(HandshakeTld _tld) external onlyOwner {
-        HandshakeTldContract = _tld;
+        handshakeTldContract = _tld;
     }
 
     //TODO: need to make sure can't reentry this function
     function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {
-        SubdomainRegistrationDetail memory history = SubdomainRegistrationHistory[_subdomainHash];
+        SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[_subdomainHash];
 
         require(
             history.RegistrationTime + (history.RegistrationLength * 86400) > block.timestamp,
@@ -75,7 +75,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
 
         history.RegistrationLength += uint72(_registrationLength);
 
-        SubdomainRegistrationHistory[_subdomainHash].RegistrationLength = history
+        subdomainRegistrationHistory[_subdomainHash].RegistrationLength = history
             .RegistrationLength;
 
         //process the funds
@@ -160,7 +160,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         );
 
         require(
-            ContractRegistrationStrategy.canRegister(
+            contractRegistrationStrategy.canRegister(
                 msg.sender,
                 _parentNamehash,
                 _label,
@@ -209,7 +209,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         );
 
         require(
-            ContractRegistrationStrategy.canRegister(
+            contractRegistrationStrategy.canRegister(
                 msg.sender,
                 _parentNamehash,
                 _label,
@@ -298,12 +298,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         bytes32 _parentNamehash,
         address _recipient
     ) private returns (uint256) {
-        require(Validator.isValidLabel(_label), "invalid name");
+        require(validator.isValidLabel(_label), "invalid name");
 
         bytes32 namehash = getNamehash(_label, _parentNamehash);
         console.log('actual namehash');
         console.log(uint256(namehash));
-        require(CommitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
+        require(commitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
         require(canRegister(namehash), "Subdomain already registered");
 
         uint256 id = uint256(namehash);
@@ -316,8 +316,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
 
         _safeMint(_recipient == address(0) ? msg.sender : _recipient, id);
 
-        NamehashToLabelMap[namehash] = _label;
-        NamehashToParentMap[namehash] = _parentNamehash;
+        namehashToLabelMap[namehash] = _label;
+        namehashToParentMap[namehash] = _parentNamehash;
     }
 
     function addRegistrationDetails(
@@ -350,16 +350,16 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             uint24(_price),
             arr
         );
-        SubdomainRegistrationHistory[_namehash] = details;
+        subdomainRegistrationHistory[_namehash] = details;
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
-        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[_namehash];
+        SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
         return detail.RegistrationTime + (detail.RegistrationLength * 86400) < block.timestamp;
     }
 
     function getWeiValueOfDollar() public view returns (uint256) {
-        uint256 price = UsdOracle.getPrice();
+        uint256 price = usdOracle.getPrice();
 
         return (1 ether * 100000000) / price;
     }
@@ -370,24 +370,24 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         override
         returns (address receiver, uint256 royaltyAmount)
     {
-        bytes32 parentNamehash = NamehashToParentMap[bytes32(tokenId)];
+        bytes32 parentNamehash = namehashToParentMap[bytes32(tokenId)];
         uint256 parentId = uint256(parentNamehash);
 
         address owner = exists(parentId)
             ? ownerOf(parentId)
-            : HandshakeTldContract.ownerOf(parentId);
+            : handshakeTldContract.ownerOf(parentId);
 
-        receiver = RoyaltyPayoutAddressMap[parentNamehash][owner] == address(0)
+        receiver = royaltyPayoutAddressMap[parentNamehash][owner] == address(0)
             ? owner
-            : RoyaltyPayoutAddressMap[parentNamehash][owner];
+            : royaltyPayoutAddressMap[parentNamehash][owner];
 
-        royaltyAmount = RoyaltyPayoutAmountMap[parentNamehash] == 0
+        royaltyAmount = royaltyPayoutAmountMap[parentNamehash] == 0
             ? 0
-            : ((salePrice / 100) * RoyaltyPayoutAmountMap[parentNamehash]);
+            : ((salePrice / 100) * royaltyPayoutAmountMap[parentNamehash]);
     }
 
     function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
-        Validator = _validator;
+        validator = _validator;
     }
 
     function getPricingStrategy(bytes32 _parentNamehash)
@@ -396,11 +396,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         returns (ISldRegistrationStrategy)
     {
         if (
-            address(SldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
+            address(sldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
                 PRICE_IN_DOLLARS_SELECTOR
             )
         ) {
-            return SldDefaultRegistrationStrategy[_parentNamehash];
+            return sldDefaultRegistrationStrategy[_parentNamehash];
         } else {
             revert MissingRegistrationStrategy();
         }
@@ -414,7 +414,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
-        SldDefaultRegistrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
+        sldDefaultRegistrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
@@ -422,7 +422,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         onlyParentApprovedOrOwner(_id)
     {
         require(_amount <= 10, "10% maximum royalty on SLD");
-        RoyaltyPayoutAmountMap[bytes32(_id)] = _amount;
+        royaltyPayoutAmountMap[bytes32(_id)] = _amount;
     }
 
     function setRoyaltyPayoutAddress(uint256 _id, address _addr)
@@ -430,8 +430,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         onlyParentApprovedOrOwner(_id)
     {
         require(_addr != address(0), "cannot set to zero address");
-        address parentOwner = exists(_id) ? ownerOf(_id) : HandshakeTldContract.ownerOf(_id);
-        RoyaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
+        address parentOwner = exists(_id) ? ownerOf(_id) : handshakeTldContract.ownerOf(_id);
+        royaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
     }
 
     function getSingleSubdomainDetails(
@@ -452,7 +452,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _registrationLength
         );
 
-        uint256 royaltyAmount = RoyaltyPayoutAmountMap[parentHash];
+        uint256 royaltyAmount = royaltyPayoutAmountMap[parentHash];
 
         SubdomainDetail memory detail = SubdomainDetail(
             uint256(getNamehash(_label, parentHash)),
@@ -502,11 +502,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
 
     function setHandshakeWalletAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
-        HandshakeWalletPayoutAddress = _addr;
+        handshakeWalletPayoutAddress = _addr;
     }
 
     function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
-        UsdOracle = _oracle;
+        usdOracle = _oracle;
         emit NewUsdOracle(address(_oracle));
     }
 
@@ -516,23 +516,23 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             "IGlobalRegistrationRules interface not supported"
         );
 
-        ContractRegistrationStrategy = IGlobalRegistrationRules(_strategy);
+        contractRegistrationStrategy = IGlobalRegistrationRules(_strategy);
     }
 
     function getGuarenteedPrices(bytes32 _namehash) external view returns (uint48[10] memory _prices) {
-        SubdomainRegistrationDetail memory detail = SubdomainRegistrationHistory[_namehash];
+        SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
         return detail.RegistrationPriceSnapshot;
     }
 
     function getOwnerOfParent(bytes32 _childHash) private view returns (address _parent) {
-        uint256 id = uint256(NamehashToParentMap[_childHash]);
+        uint256 id = uint256(namehashToParentMap[_childHash]);
         require(id > 0, "parent does not exist");
-        _parent = exists(id) ? ownerOf(id) : HandshakeTldContract.ownerOf(id);
+        _parent = exists(id) ? ownerOf(id) : handshakeTldContract.ownerOf(id);
     }
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) public view returns (bool) {
 
-        return HandshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
+        return handshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) public override(HandshakeNft,IHandshakeSld) view returns (bool) { 

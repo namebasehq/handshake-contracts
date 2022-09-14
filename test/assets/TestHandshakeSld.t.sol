@@ -17,19 +17,19 @@ import "test/mocks/MockCommitIntent.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/ICommitIntent.sol";
 
-contract TestHandshakeSld is Test {
+contract TestHandshakesld is Test {
     error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;
-    HandshakeTld Tld;
-    HandshakeSld Sld;
+    HandshakeTld tld;
+    HandshakeSld sld;
     ITldClaimManager claimManager;
     ICommitIntent commitIntent;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
-    bytes32 constant TEST_SLD_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    bytes32 constant TEST_sld_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
     // test.test.test
     bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
@@ -37,8 +37,8 @@ contract TestHandshakeSld is Test {
 
         commitIntent = new MockCommitIntent(true);
         claimManager = new MockClaimManager();
-        Tld = new HandshakeTld(claimManager);
-        Sld = new HandshakeSld(Tld, commitIntent);
+        tld = new HandshakeTld(claimManager);
+        sld = new HandshakeSld(tld, commitIntent);
         addMockValidatorToSld();
         addMockOracle();
     }
@@ -93,16 +93,16 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(parent_address);
 
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
-        Sld.HandshakeTldContract().mint(parent_address, tldLabel);
+        sld.handshakeTldContract().mint(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(uint256(tldNamehash), strat);
-        assertEq(address(Sld.getPricingStrategy(tldNamehash)), strat);
+        sld.setPricingStrategy(uint256(tldNamehash), strat);
+        assertEq(address(sld.getPricingStrategy(tldNamehash)), strat);
 
-        // check .eth TLD token ID
+        // check .eth tld token ID
         assertEq(tldNamehash, 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae);
         vm.stopPrank();
 
@@ -110,7 +110,7 @@ contract TestHandshakeSld is Test {
 
         bytes32[] memory emptyArr;
 
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             sldLabel,
             bytes32(uint256(0x0)),
             666,
@@ -119,7 +119,7 @@ contract TestHandshakeSld is Test {
             child_address
         );
 
-        // check aox.eth SLD token ID
+        // check aox.eth sld token ID
         assertEq(sldNamehash, 0x81f536edca1dbdb9582598140d28a86010c4dbb395f128647f1add370d334d89);
 
     }
@@ -161,16 +161,16 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(parent_address);
 
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
-        Sld.HandshakeTldContract().mint(parent_address, tldLabel);
+        sld.handshakeTldContract().mint(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(uint256(tldNamehash), strat);
-        assertEq(address(Sld.getPricingStrategy(tldNamehash)), strat);
+        sld.setPricingStrategy(uint256(tldNamehash), strat);
+        assertEq(address(sld.getPricingStrategy(tldNamehash)), strat);
 
-        // check .test TLD token ID
+        // check .test tld token ID
         assertEq(tldNamehash, 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6);
         vm.stopPrank();
 
@@ -178,7 +178,7 @@ contract TestHandshakeSld is Test {
 
         bytes32[] memory emptyArr;
 
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             sldLabel,
             bytes32(uint256(0x0)),
             666,
@@ -187,7 +187,7 @@ contract TestHandshakeSld is Test {
             child_address
         );
 
-        // check test.test SLD token ID
+        // check test.test sld token ID
         assertEq(sldNamehash, 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb);
 
         vm.stopPrank();
@@ -215,7 +215,7 @@ contract TestHandshakeSld is Test {
 
         receiver[0] = _receiver;
 
-        Sld.purchaseMultipleSld{value: _wei}(
+        sld.purchaseMultipleSld{value: _wei}(
             label,
             secret,
             registrationLength,
@@ -229,13 +229,13 @@ contract TestHandshakeSld is Test {
         MockLabelValidator validator = new MockLabelValidator(true);
 
         //update commit intent with mock object
-        stdstore.target(address(Sld)).sig("Validator()").checked_write(address(validator));
+        stdstore.target(address(sld)).sig("validator()").checked_write(address(validator));
     }
 
     function _addMockRegistrationStrategyToTld(MockRegistrationStrategy _strategy, bytes32 _tldNamehash, uint256 _price) private {
         stdstore
-            .target(address(Sld))
-            .sig("SldDefaultRegistrationStrategy(bytes32)")
+            .target(address(sld))
+            .sig("sldDefaultRegistrationStrategy(bytes32)")
             .with_key(_tldNamehash)
             .checked_write(address(_strategy));
     }
@@ -253,45 +253,45 @@ contract TestHandshakeSld is Test {
 
     function addMockOracle() private {
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
-        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+        stdstore.target(address(sld)).sig("usdOracle()").checked_write(address(oracle));
     }
 
     function addMockCommitIntent(bool _returnValue) private {
         MockCommitIntent intent = new MockCommitIntent(_returnValue);
 
         //update commit intent with mock object
-        stdstore.target(address(Sld)).sig("CommitIntent()").checked_write(address(intent));
+        stdstore.target(address(sld)).sig("commitIntent()").checked_write(address(intent));
     }
 
     function testUpdateLabelValidatorWithOwnerWalletExpectSuccess() public {
         MockLabelValidator validator = new MockLabelValidator(false);
-        Sld.updateLabelValidator(validator);
-        assertEq(address(Sld.Validator()), address(validator));
+        sld.updateLabelValidator(validator);
+        assertEq(address(sld.validator()), address(validator));
     }
 
     function testUpdateLabelValidatorWithNotOwnerWalletExpectFail() public {
         //assign
         MockLabelValidator validator = new MockLabelValidator(false);
-        address currentValidatorAddress = address(Sld.Validator());
+        address currentValidatorAddress = address(sld.validator());
         address otherWallet = address(0x224466);
 
         //act
         vm.startPrank(otherWallet);
         vm.expectRevert("Ownable: caller is not the owner");
-        Sld.updateLabelValidator(validator);
+        sld.updateLabelValidator(validator);
 
         //assert
         //should not have changed
-        assertEq(currentValidatorAddress, address(Sld.Validator()));
+        assertEq(currentValidatorAddress, address(sld.validator()));
         vm.stopPrank();
     }
 
     function testOwnerOfTldContractSetCorrectly() public {
-        assertEq(address(this), Ownable(address(Sld.HandshakeTldContract())).owner());
+        assertEq(address(this), Ownable(address(sld.handshakeTldContract())).owner());
     }
 
 
-    function testMintSldFromAuthorisedWallet() public {
+    function testMintsldFromAuthorisedWallet() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -302,8 +302,8 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345dddd679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x646464));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x646464));
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
@@ -316,7 +316,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -326,10 +326,10 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
-    function testMintSldFromAuthorisedWalletRepurchaseWhenExpired() public {
+    function testMintsldFromAuthorisedWalletRepurchaseWhenExpired() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -343,8 +343,8 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345dddd679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x646464));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x646464));
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
@@ -354,7 +354,7 @@ contract TestHandshakeSld is Test {
         vm.stopPrank();
 
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -364,7 +364,7 @@ contract TestHandshakeSld is Test {
         );
         vm.warp(block.timestamp + 0 + (86400 * registrationLength));
         vm.expectRevert("Subdomain already registered");
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -374,7 +374,7 @@ contract TestHandshakeSld is Test {
         );
 
         vm.warp(block.timestamp + 1);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -384,10 +384,10 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
-    function testMintSldFromAuthorisedWalletWithMissingRegistrationStrategy() public {
+    function testMintsldFromAuthorisedWalletWithMissingRegistrationStrategy() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -402,7 +402,7 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(claimant);
         vm.expectRevert(MissingRegistrationStrategy.selector);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -412,10 +412,10 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 0);
+        assertEq(sld.balanceOf(claimant), 0);
     }
 
-    function testMintDuplicateSldFromAuthorisedWallet() public {
+    function testMintDuplicatesldFromAuthorisedWallet() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -426,7 +426,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -439,7 +439,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -448,7 +448,7 @@ contract TestHandshakeSld is Test {
             claimant
         );
         vm.expectRevert("Subdomain already registered");
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -458,7 +458,7 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
     function testCheckParentNamehashIsCorrectAfterMint() public {
@@ -472,7 +472,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -486,7 +486,7 @@ contract TestHandshakeSld is Test {
 
         bytes32[] memory empty_array;
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -497,7 +497,7 @@ contract TestHandshakeSld is Test {
 
         bytes32 full_hash = getNamehash(label, parentNamehash);
 
-        assertEq(parentNamehash, Sld.NamehashToParentMap(full_hash));
+        assertEq(parentNamehash, sld.namehashToParentMap(full_hash));
     }
 
     function testCheckLabelToNamehashIsCorrectAfterMint() public {
@@ -511,7 +511,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -525,7 +525,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -536,10 +536,10 @@ contract TestHandshakeSld is Test {
 
         bytes32 full_hash = getNamehash(label, parentNamehash);
 
-        assertEq(label, Sld.NamehashToLabelMap(full_hash));
+        assertEq(label, sld.namehashToLabelMap(full_hash));
     }
 
-    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail() public {
+    function testMultiPurchasesldWithIncorrectArrayLengths_expectFail() public {
         string[] memory label = new string[](3);
         bytes32[] memory secret = new bytes32[](3);
         uint256[] memory registrationLength = new uint256[](3);
@@ -548,10 +548,10 @@ contract TestHandshakeSld is Test {
         address[] memory receiver = new address[](2);
 
         vm.expectRevert("all arrays should be the same length");
-        Sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
+        sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
     }
 
-    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail_2() public {
+    function testMultiPurchasesldWithIncorrectArrayLengths_expectFail_2() public {
         string[] memory label = new string[](2);
         bytes32[] memory secret = new bytes32[](3);
         uint256[] memory registrationLength = new uint256[](3);
@@ -560,10 +560,10 @@ contract TestHandshakeSld is Test {
         address[] memory receiver = new address[](3);
 
         vm.expectRevert("all arrays should be the same length");
-        Sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
+        sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
     }
 
-    function testMultiPurchaseSld() public {
+    function testMultiPurchasesld() public {
         string[] memory label = new string[](2);
         bytes32[] memory secret = new bytes32[](2);
         uint256[] memory registrationLength = new uint256[](2);
@@ -586,7 +586,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -597,7 +597,7 @@ contract TestHandshakeSld is Test {
         vm.stopPrank();
 
         addMockCommitIntent(true);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
         address claimant = address(0x6666);
         address[] memory receiver = new address[](2);
 
@@ -605,15 +605,15 @@ contract TestHandshakeSld is Test {
         receiver[1] = address(0x2345);
 
         vm.startPrank(claimant);
-        Sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
+        sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(receiver[0]), 1);
-        assertEq(Sld.balanceOf(receiver[1]), 1);
-        assertEq(Sld.balanceOf(claimant), 0);
+        assertEq(sld.balanceOf(receiver[0]), 1);
+        assertEq(sld.balanceOf(receiver[1]), 1);
+        assertEq(sld.balanceOf(claimant), 0);
     }
 
-    function testMultiPurchaseSldWithZeroAddressInReceiver() public {
+    function testMultiPurchasesldWithZeroAddressInReceiver() public {
         string[] memory label = new string[](2);
         bytes32[] memory secret = new bytes32[](2);
         uint256[] memory registrationLength = new uint256[](2);
@@ -634,10 +634,10 @@ contract TestHandshakeSld is Test {
         addMockRegistrationStrategyToTld(parentNamehash[0]);
         addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -658,14 +658,14 @@ contract TestHandshakeSld is Test {
         //receiver[1] = address(0x2345);
 
         vm.startPrank(claimant);
-        Sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
+        sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(receiver[0]), 1);
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(receiver[0]), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
-    function testPurchaseSldToZeroAddress_expectSendToMsgSender() public {
+    function testPurchasesldToZeroAddress_expectSendToMsgSender() public {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -678,7 +678,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -690,7 +690,7 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(claimant);
 
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -700,10 +700,10 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
-    function testPurchaseSldToOtherAddress() public {
+    function testPurchasesldToOtherAddress() public {
         string memory label = "testit";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -713,7 +713,7 @@ contract TestHandshakeSld is Test {
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -727,7 +727,7 @@ contract TestHandshakeSld is Test {
         address receiver = address(0x8888);
 
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -737,11 +737,11 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(receiver), 1);
-        assertEq(Sld.balanceOf(claimant), 0);
+        assertEq(sld.balanceOf(receiver), 1);
+        assertEq(sld.balanceOf(claimant), 0);
     }
 
-    function testMultiPurchaseSldToOtherAddressWithMissingRegistrationStrategy_expectFail() public {
+    function testMultiPurchasesldToOtherAddressWithMissingRegistrationStrategy_expectFail() public {
         string[] memory label = new string[](2);
         bytes32[] memory secret = new bytes32[](2);
         uint256[] memory registrationLength = new uint256[](2);
@@ -760,13 +760,13 @@ contract TestHandshakeSld is Test {
         parentNamehash[1] = getTldNamehash("you");
 
         addMockRegistrationStrategyToTld(parentNamehash[0]);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
         //commented this out for the test
         //addMockRegistrationStrategyToTld(parentNamehash[1]);
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -786,7 +786,7 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(claimant);
         vm.expectRevert(MissingRegistrationStrategy.selector);
-        Sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
+        sld.purchaseMultipleSld(label, secret, registrationLength, parentNamehash, receiver);
         vm.stopPrank();
     }
 
@@ -796,7 +796,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -812,22 +812,22 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(parent_hash);
         assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
         console.log('yoyoyoyo');
         vm.prank(tldOwner);
-        Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = Sld.royaltyInfo(expectedSldId, 100);
+        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
         vm.stopPrank();
     }
@@ -838,7 +838,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -854,21 +854,21 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
-        (address _addr, ) = Sld.royaltyInfo(expectedSldId, 100);
+        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, tldOwner);
         vm.stopPrank();
     }
@@ -879,7 +879,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -895,14 +895,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -910,14 +910,14 @@ contract TestHandshakeSld is Test {
         assertEq(tldId, uint256(parent_hash));
 
         vm.startPrank(tldOwner);
-        Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = Sld.royaltyInfo(expectedSldId, 100);
+        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
 
         address newOwner = address(0x66);
 
-        Sld.HandshakeTldContract().safeTransferFrom(tldOwner, newOwner, tldId);
-        (address _addr2, ) = Sld.royaltyInfo(expectedSldId, 100);
+        sld.handshakeTldContract().safeTransferFrom(tldOwner, newOwner, tldId);
+        (address _addr2, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr2, newOwner);
 
         vm.stopPrank();
@@ -929,7 +929,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -945,14 +945,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -962,12 +962,12 @@ contract TestHandshakeSld is Test {
         address approvedAddress = address(0x2299);
 
         vm.startPrank(tldOwner); //need to start/stop prank as this is a chained call
-        Sld.HandshakeTldContract().setApprovalForAll(approvedAddress, true);
+        sld.handshakeTldContract().setApprovalForAll(approvedAddress, true);
         vm.stopPrank();
 
         vm.prank(approvedAddress);
-        Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = Sld.royaltyInfo(expectedSldId, 100);
+        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
         vm.stopPrank();
     }
@@ -978,7 +978,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -994,14 +994,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -1012,7 +1012,7 @@ contract TestHandshakeSld is Test {
 
         vm.prank(notApprovedAddress);
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
     }
 
     function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress() public {
@@ -1021,7 +1021,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1037,14 +1037,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -1055,8 +1055,8 @@ contract TestHandshakeSld is Test {
         uint256 setRoyaltyNumber = 3;
 
         vm.prank(tldOwner);
-        Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
-        (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldId, 3000);
+        sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
+        (, uint256 royaltyAmount) = sld.royaltyInfo(expectedsldId, 3000);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
         vm.stopPrank();
     }
@@ -1067,7 +1067,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1083,10 +1083,10 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1095,10 +1095,10 @@ contract TestHandshakeSld is Test {
         vm.startPrank(tldOwner);
 
         //not expecting fail from this one
-        Sld.setRoyaltyPayoutAmount(tldId, 10);
+        sld.setRoyaltyPayoutAmount(tldId, 10);
 
         vm.expectRevert("10% maximum royalty on SLD");
-        Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
+        sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
     }
 
     function testRoyaltyPaymentAmountNotSetForTldFromTldOwnerAddress() public {
@@ -1107,7 +1107,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1123,14 +1123,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -1139,7 +1139,7 @@ contract TestHandshakeSld is Test {
 
         uint256 expectedRoyaltyAmount = 0;
 
-        (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldId, 100);
+        (, uint256 royaltyAmount) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
         vm.stopPrank();
     }
@@ -1150,7 +1150,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1166,14 +1166,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -1183,16 +1183,16 @@ contract TestHandshakeSld is Test {
         address approvedAddress = address(0x2299);
 
         vm.startPrank(tldOwner); //need to start/stop prank as this is a chained call
-        Sld.HandshakeTldContract().setApprovalForAll(approvedAddress, true);
+        sld.handshakeTldContract().setApprovalForAll(approvedAddress, true);
         vm.stopPrank();
 
         uint256 expectedRoyaltyAmount = 1;
         uint256 setRoyaltyNumber = 1;
 
         vm.prank(approvedAddress);
-        Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
-        emit log_named_uint("royalty amount set", Sld.RoyaltyPayoutAmountMap(parent_hash));
-        (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldId, 100);
+        sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
+        emit log_named_uint("royalty amount set", sld.royaltyPayoutAmountMap(parent_hash));
+        (, uint256 royaltyAmount) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
 
@@ -1202,40 +1202,40 @@ contract TestHandshakeSld is Test {
 
         string memory domain = "test";
         address parent_address = address(0x12345678);
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
 
         vm.startPrank(parent_address);
-        Sld.HandshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(1));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setPricingStrategy(uint256(parentNamehash), strat);
 
-        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
     }
 
-    function ignoreAddRegistrationStrategyToSldDomain_pass() public {
+    function ignoreAddRegistrationStrategyTosldDomain_pass() public {
         bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
         address parent_address = address(0x12345678);
         address child_address = address(0x22446688);
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
 
         vm.startPrank(parent_address);
-        Tld.mint(parent_address, domain);
+        tld.mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setPricingStrategy(uint256(parentNamehash), strat);
 
-        emit log_named_address("usd address", address(Sld.UsdOracle()));
-        emit log_named_uint("usd value", Sld.UsdOracle().getPrice());
+        emit log_named_address("usd address", address(sld.usdOracle()));
+        emit log_named_uint("usd value", sld.usdOracle().getPrice());
 
-        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
 
         vm.startPrank(child_address);
@@ -1244,7 +1244,7 @@ contract TestHandshakeSld is Test {
         bytes32 namehash = getNamehash("test", parentNamehash);
         console.log('expected namehash');
         console.log(uint256(namehash));
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             "test",
             bytes32(parentNamehash),
             666,
@@ -1255,30 +1255,30 @@ contract TestHandshakeSld is Test {
 
         console.log("yoyoyoyo");
         address childStrat = address(new MockRegistrationStrategy(1));
-        Sld.setPricingStrategy(uint256(namehash), childStrat);
+        sld.setPricingStrategy(uint256(namehash), childStrat);
 
-        assertEq(address(Sld.getPricingStrategy(namehash)), childStrat);
+        assertEq(address(sld.getPricingStrategy(namehash)), childStrat);
         vm.stopPrank();
     }
 
-    function ignoretestAddRegistrationStrategyToSldNotOwner_fail() public {
+    function ignoretestAddRegistrationStrategyTosldNotOwner_fail() public {
         bytes32 parentNamehash = TEST_TLD_NAMEHASH;
         addMockCommitIntent(true);
 
         string memory domain = "test";
         address parent_address = address(0x12345678);
         address child_address = address(0x22446688);
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
 
         vm.startPrank(parent_address);
-        Sld.HandshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().mint(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setPricingStrategy(uint256(parentNamehash), strat);
 
-        assertEq(address(Sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
         vm.stopPrank();
 
         vm.startPrank(child_address);
@@ -1288,7 +1288,7 @@ contract TestHandshakeSld is Test {
         bytes32 namehash = getNamehash("test", parentNamehash);
 
         //we mint to other address 0x1337
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             "test",
             bytes32(uint256(0x0)),
             666,
@@ -1298,7 +1298,7 @@ contract TestHandshakeSld is Test {
         );
         address childStrat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setPricingStrategy(uint256(namehash), childStrat);
+        sld.setPricingStrategy(uint256(namehash), childStrat);
 
         vm.stopPrank();
     }
@@ -1310,18 +1310,18 @@ contract TestHandshakeSld is Test {
         string memory domain = "test";
         address parent_address = address(0x12345678);
         address not_parent_address = address(0x222222);
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
 
         vm.startPrank(parent_address);
-        Sld.HandshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().mint(parent_address, domain);
         vm.stopPrank();
 
         vm.startPrank(not_parent_address);
         address strat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setPricingStrategy(uint256(parentNamehash), strat);
     }
 
     function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
@@ -1330,7 +1330,7 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1346,14 +1346,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedSldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
 
         assertEq(
-            expectedSldId,
-            uint256(TEST_SLD_NAMEHASH)
+            expectedsldId,
+            uint256(TEST_sld_NAMEHASH)
         );
 
         uint256 tldId = uint256(getTldNamehash(tldName));
@@ -1367,16 +1367,16 @@ contract TestHandshakeSld is Test {
 
         vm.prank(notApprovedAddress);
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
+        sld.setRoyaltyPayoutAmount(tldId, setRoyaltyNumber);
     }
 
-    function ignoretestSetRoyaltyPaymentAddressForSldChildFromSldOwnerAddress() public {
+    function ignoretestSetRoyaltyPaymentAddressForsldChildFromsldOwnerAddress() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1392,31 +1392,31 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         assertEq(
-            Sld.ownerOf(
-                uint256(TEST_SLD_NAMEHASH)
+            sld.ownerOf(
+                uint256(TEST_sld_NAMEHASH)
             ),
-            sldSldOwner,
-            "no owner of child of SLD"
+            sldsldOwner,
+            "no owner of child of sld"
         );
 
         assertEq(
-            expectedSldChildId,
-            uint256(TEST_SLD_NAMEHASH),
+            expectedsldChildId,
+            uint256(TEST_sld_NAMEHASH),
             "id for child of sld does not return correctly."
         );
 
@@ -1430,20 +1430,20 @@ contract TestHandshakeSld is Test {
         uint256 setRoyaltyNumber = 2;
 
         vm.prank(sldOwner);
-        Sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
+        sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
 
-        (, uint256 royaltyAmount) = Sld.royaltyInfo(expectedSldChildId, 200);
+        (, uint256 royaltyAmount) = sld.royaltyInfo(expectedsldChildId, 200);
         assertEq(royaltyAmount, expectedRoyaltyAmount);
     }
 
-    function testSetSldRoyaltyPaymentAddressForSldChildFromTldOwnerAddress_expectFail() public {
+    function testSetsldRoyaltyPaymentAddressForsldChildFromTldOwnerAddress_expectFail() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1459,30 +1459,30 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash("test", sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash("test", sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         assertEq(
-            Sld.ownerOf(
+            sld.ownerOf(
                 uint256(TEST_SUB_NAMEHASH)
             ),
-            sldSldOwner,
-            "no owner of child of SLD"
+            sldsldOwner,
+            "no owner of child of sld"
         );
 
         assertEq(
-            expectedSldChildId,
+            expectedsldChildId,
             uint256(TEST_SUB_NAMEHASH),
             "id for child of sld does not return correctly."
         );
@@ -1496,18 +1496,18 @@ contract TestHandshakeSld is Test {
 
         vm.prank(tldOwner);
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
+        sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
     }
 
 
-    function ignoretestSetRoyaltyPaymentAddressForSldChildrenFromSldOwner() public {
+    function ignoretestSetRoyaltyPaymentAddressForsldChildrenFromsldOwner() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1523,14 +1523,14 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         assertEq(
-            Sld.ownerOf(
-                uint256(TEST_SLD_NAMEHASH)
+            sld.ownerOf(
+                uint256(TEST_sld_NAMEHASH)
             ),
             sldOwner,
-            "SLD owner not correct"
+            "sld owner not correct"
         );
 
         bytes32 sldHash = getNamehash("test", parent_hash);
@@ -1538,23 +1538,23 @@ contract TestHandshakeSld is Test {
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         assertEq(
-            Sld.ownerOf(
+            sld.ownerOf(
                 uint256(TEST_SUB_NAMEHASH)
             ),
-            sldSldOwner,
-            "no owner of child of SLD"
+            sldsldOwner,
+            "no owner of child of sld"
         );
 
         assertEq(
-            expectedSldChildId,
+            expectedsldChildId,
             uint256(TEST_SUB_NAMEHASH),
             "id for child of sld does not return correctly."
         );
@@ -1563,31 +1563,31 @@ contract TestHandshakeSld is Test {
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
+        bytes32 parentNamehash = sld.namehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         emit log_named_uint("parent id is :", parentId);
         emit log_named_uint("expected parent id is :", tldId);
 
         vm.startPrank(sldOwner);
-        Sld.setRoyaltyPayoutAddress(sldId, payoutAddress);
+        sld.setRoyaltyPayoutAddress(sldId, payoutAddress);
 
-        (address _addr, ) = Sld.royaltyInfo(expectedSldChildId, 100);
+        (address _addr, ) = sld.royaltyInfo(expectedsldChildId, 100);
         assertEq(_addr, payoutAddress);
         vm.stopPrank();
     }
 
     //no longer need royalty payments for slds
-    function ignoretestSetRoyaltyPaymentAddressThenTransferSldParentNft_AddressShouldResetToNewOwner()
+    function ignoretestSetRoyaltyPaymentAddressThenTransfersldParentNft_AddressShouldResetToNewOwner()
         public
     {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1603,48 +1603,48 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
+        bytes32 parentNamehash = sld.namehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address newOwnerAddress = address(0xbada55);
 
         vm.startPrank(sldOwner);
-        Sld.setRoyaltyPayoutAddress(sldId, payoutAddress);
-        Sld.safeTransferFrom(sldOwner, newOwnerAddress, sldId);
+        sld.setRoyaltyPayoutAddress(sldId, payoutAddress);
+        sld.safeTransferFrom(sldOwner, newOwnerAddress, sldId);
 
-        (address _addr, ) = Sld.royaltyInfo(expectedSldChildId, 100);
+        (address _addr, ) = sld.royaltyInfo(expectedsldChildId, 100);
 
         //this should change to the new owner address
         assertEq(_addr, newOwnerAddress);
         vm.stopPrank();
     }
 
-    function ignoretestSetRoyaltyPaymentAmountForSldParentFromSldParentOwnerApprovedAddress() public {
+    function ignoretestSetRoyaltyPaymentAmountForsldParentFromsldParentOwnerApprovedAddress() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1660,56 +1660,56 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         bytes32 sldHash = getNamehash("test", parent_hash);
         
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
+        bytes32 parentNamehash = sld.namehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address approvedAddress = address(0xbada55);
 
         vm.prank(sldOwner);
-        Sld.setApprovalForAll(approvedAddress, true);
+        sld.setApprovalForAll(approvedAddress, true);
 
         uint256 payoutAmount = 10;
 
         vm.startPrank(approvedAddress);
-        Sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
+        sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
 
-        assertEq(Sld.ownerOf(expectedSldChildId), sldSldOwner, "invalid child of SLD owner");
+        assertEq(sld.ownerOf(expectedsldChildId), sldsldOwner, "invalid child of sld owner");
 
-        (, uint256 amount) = Sld.royaltyInfo(expectedSldChildId, 100);
+        (, uint256 amount) = sld.royaltyInfo(expectedsldChildId, 100);
 
         //this should change to the new owner address
         assertEq(amount, 10);
         vm.stopPrank();
     }
 
-    function testSetRoyaltyPaymentAmountForSldParentFromNotSldParentOwnerAddress_ExpectFail()
+    function testSetRoyaltyPaymentAmountForsldParentFromNotsldParentOwnerAddress_ExpectFail()
         public
     {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address sldSldOwner = address(0xababab);
+        address sldsldOwner = address(0xababab);
         address payoutAddress = address(0x22886644);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         bytes32[] memory emptyArr;
 
@@ -1725,25 +1725,25 @@ contract TestHandshakeSld is Test {
         tld.mint(tldOwner, tldName);
 
         vm.prank(sldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
 
         bytes32 sldHash = getNamehash("test", parent_hash);
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedSldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
 
         addMockRegistrationStrategyToTld(sldHash);
 
-        vm.prank(sldSldOwner);
-        Sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldSldOwner);
+        vm.prank(sldsldOwner);
+        sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
         assertEq(tldId, uint256(parent_hash));
 
-        bytes32 parentNamehash = Sld.NamehashToParentMap(sldHash);
+        bytes32 parentNamehash = sld.namehashToParentMap(sldHash);
         uint256 parentId = uint256(parentNamehash);
 
         address notApprovedAddress = address(0xbada55);
@@ -1752,7 +1752,7 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(notApprovedAddress);
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
+        sld.setRoyaltyPayoutAmount(sldId, payoutAmount);
         vm.stopPrank();
     }
 
@@ -1766,7 +1766,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](_arrayLength);
 
         addMockRegistrationStrategyToTldWithPrice(bytes32(0x0), 0);
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsParentIdsDifferent()
@@ -1779,7 +1779,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](5);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsLabelsDifferent()
@@ -1792,7 +1792,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](5);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRegistrationLengthsDifferent()
@@ -1805,7 +1805,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](5);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsProofsDifferent()
@@ -1818,7 +1818,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](4);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRecipientsDifferent()
@@ -1831,7 +1831,7 @@ contract TestHandshakeSld is Test {
         bytes32[][] memory proofs = new bytes32[][](4);
 
         vm.expectRevert("array lengths are different");
-        Sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
+        sld.getSubdomainDetails(recipients, parentIds, labels, registrationLengths, proofs);
     }
 
     function testGetSubdomainDetails_single() public {
@@ -1860,7 +1860,7 @@ contract TestHandshakeSld is Test {
 
         address claimant = address(0x6666);
 
-        SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
+        SubdomainDetail[] memory dets = sld.getSubdomainDetails(
             recipients,
             parentIds,
             labels,
@@ -1919,7 +1919,7 @@ contract TestHandshakeSld is Test {
         addMockRegistrationStrategyToTldWithPrice(parentNamehash, _price);
         addMockCommitIntent(true);
 
-        SubdomainDetail[] memory dets = Sld.getSubdomainDetails(
+        SubdomainDetail[] memory dets = sld.getSubdomainDetails(
             recipients,
             parentIds,
             labels,
@@ -1945,7 +1945,7 @@ contract TestHandshakeSld is Test {
         }
     }
 
-    function ignoretestUpdateRegistrationStrategyFromSldOwner() public {
+    function ignoretestUpdateRegistrationStrategyFromsldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1958,7 +1958,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -1972,7 +1972,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         vm.startPrank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -1982,11 +1982,11 @@ contract TestHandshakeSld is Test {
         );
 
         bytes32 childHash = getNamehash(label, parentNamehash);
-        Sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
+        sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 
-    function testUpdateRegistrationStrategyFromNotSldOwner() public {
+    function testUpdateRegistrationStrategyFromNotsldOwner() public {
         string memory label = "testing123";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -1999,7 +1999,7 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2013,7 +2013,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         vm.prank(claimant);
-        Sld.purchaseSingleDomain(
+        sld.purchaseSingleDomain(
             label,
             secret,
             registrationLength,
@@ -2024,7 +2024,7 @@ contract TestHandshakeSld is Test {
         vm.startPrank(address(0x22446666));
         bytes32 childHash = getNamehash(label, parentNamehash);
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
+        sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 
@@ -2039,8 +2039,8 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345dddd679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x646464));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x646464));
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
@@ -2054,11 +2054,11 @@ contract TestHandshakeSld is Test {
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
 
-        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+        stdstore.target(address(sld)).sig("usdOracle()").checked_write(address(oracle));
 
         hoax(claimant, 1 ether);
 
-        Sld.purchaseSingleDomain{value: 1 ether}(
+        sld.purchaseSingleDomain{value: 1 ether}(
             label,
             secret,
             registrationLength,
@@ -2068,7 +2068,7 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
         assertEq(claimant.balance, 1 ether - 15000000000000000);
 
         // if it's $30 then we get 0.985 ether refunded (0.015 cost price @ $2000 ether)
@@ -2102,8 +2102,8 @@ contract TestHandshakeSld is Test {
         addMockRegistrationStrategyToTldWithPrice(parentNamehash[1], 30); //30 dollars
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x464646));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x464646));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2114,14 +2114,14 @@ contract TestHandshakeSld is Test {
         vm.stopPrank();
 
         addMockCommitIntent(true);
-        Sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
+        sld.setGlobalRegistrationStrategy(address(new MockGlobalRegistrationStrategy(true)));
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
 
-        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+        stdstore.target(address(sld)).sig("usdOracle()").checked_write(address(oracle));
 
         hoax(claimant, 1 ether);
-        Sld.purchaseMultipleSld{value: 1 ether}(
+        sld.purchaseMultipleSld{value: 1 ether}(
             label,
             secret,
             registrationLength,
@@ -2130,7 +2130,7 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 2);
+        assertEq(sld.balanceOf(claimant), 2);
         assertEq(claimant.balance, 1 ether - 30000000000000000);
 
         // if it's $30 then we get 0.985 ether refunded (0.015 cost price @ $2000 ether)
@@ -2144,7 +2144,7 @@ contract TestHandshakeSld is Test {
 
         MockUsdOracle oracle = new MockUsdOracle(183185670000);
 
-        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+        stdstore.target(address(sld)).sig("usdOracle()").checked_write(address(oracle));
     }
 
     function testMintSingleDomainCheckCheckHistory() public {
@@ -2160,8 +2160,8 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345dddd679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x646464));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x646464));
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
@@ -2176,7 +2176,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         hoax(claimant, 1000 ether);
-        Sld.purchaseSingleDomain{value: 1000 ether}(
+        sld.purchaseSingleDomain{value: 1000 ether}(
             label,
             secret,
             registrationLength,
@@ -2186,21 +2186,21 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        uint256 weiValue = Sld.getWeiValueOfDollar();
+        uint256 weiValue = sld.getWeiValueOfDollar();
 
         emit log_named_uint("wei value", weiValue);
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
 
         bytes32 namehash = getNamehash(label, parentNamehash);
 
-        (uint80 RegistrationTime, uint80 regLength, uint96 regPrice) = Sld
-            .SubdomainRegistrationHistory(namehash);
+        (uint80 RegistrationTime, uint80 regLength, uint96 regPrice) = sld
+            .subdomainRegistrationHistory(namehash);
 
         assertEq(regLength, registrationLength, "registration length incorrect");
         assertEq(regPrice, annualCost * 1000, "registration price incorrect");
 
-        uint48[10] memory prices = Sld.getGuarenteedPrices(namehash);
+        uint48[10] memory prices = sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < prices.length; i++) {
             assertEq(prices[i] / 1000, (i + 1) * annualCost, "annual cost incorrect");
@@ -2217,9 +2217,9 @@ contract TestHandshakeSld is Test {
         addMockCommitIntent(true);
 
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
-        Sld.setHandshakeWalletAddress(address(0x999999));
+        sld.setHandshakeWalletAddress(address(0x999999));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2232,7 +2232,7 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
 
         hoax(claimant, 0.0005 ether);
-        Sld.purchaseSingleDomain{value: 0.0005 ether}(
+        sld.purchaseSingleDomain{value: 0.0005 ether}(
             label,
             secret,
             registrationLength,
@@ -2244,10 +2244,10 @@ contract TestHandshakeSld is Test {
 
         assertEq(claimant.balance, 0);
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
     }
 
-    function testRenewSubdomainFromSldOwner_pass() public {
+    function testRenewSubdomainFromsldOwner_pass() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
@@ -2264,8 +2264,8 @@ contract TestHandshakeSld is Test {
         address claimant = address(0x6666);
         address tldOwner = address(0x464646);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x57595351));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x57595351));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2276,7 +2276,7 @@ contract TestHandshakeSld is Test {
         vm.warp(6688);
 
         hoax(claimant, 2 ether);
-        Sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
+        sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
             label,
             secret,
             registrationLength,
@@ -2288,15 +2288,15 @@ contract TestHandshakeSld is Test {
 
         bytes32 namehash = getNamehash(label, parentNamehash);
 
-        (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = Sld
-            .SubdomainRegistrationHistory(namehash);
+        (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = sld
+            .subdomainRegistrationHistory(namehash);
 
         emit log_named_uint("registration time", RegistrationTime);
         emit log_named_uint("registration length", RegistrationLength);
         emit log_named_uint("registration price", RegistrationPrice);
-        emit log_named_uint("wei value of dollar", Sld.getWeiValueOfDollar());
+        emit log_named_uint("wei value of dollar", sld.getWeiValueOfDollar());
 
-        uint48[10] memory rates = Sld.getGuarenteedPrices(namehash);
+        uint48[10] memory rates = sld.getGuarenteedPrices(namehash);
 
         /*
         for (uint256 i; i < rates.length; i++) {
@@ -2307,16 +2307,16 @@ contract TestHandshakeSld is Test {
         uint256 newRegLength = 400;
         hoax(claimant, 1.095 ether);
         vm.expectRevert("Price too low");
-        Sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
+        sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
 
         hoax(claimant, 1.096 ether);
-        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
+        sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
 
         (
             uint80 NewRegistrationTime,
             uint80 NewRegistrationLength,
             uint96 NewRegistrationPrice
-        ) = Sld.SubdomainRegistrationHistory(namehash);
+        ) = sld.subdomainRegistrationHistory(namehash);
 
         assertEq(
             NewRegistrationLength,
@@ -2327,7 +2327,7 @@ contract TestHandshakeSld is Test {
 
     function testRenewNoneExistingToken_fail() public {}
 
-    function testRenewExpiredSld_fail() public {
+    function testRenewExpiredsld_fail() public {
         string memory label = "";
         bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365;
@@ -2340,9 +2340,9 @@ contract TestHandshakeSld is Test {
 
         addMockOracle();
 
-        Sld.setHandshakeWalletAddress(address(0x787878));
+        sld.setHandshakeWalletAddress(address(0x787878));
         address tldOwner = address(0x12345679);
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2357,7 +2357,7 @@ contract TestHandshakeSld is Test {
         vm.warp(6688);
 
         hoax(claimant, 1 ether);
-        Sld.purchaseSingleDomain{value: 1 ether}( //should cost 1 ether
+        sld.purchaseSingleDomain{value: 1 ether}( //should cost 1 ether
             label,
             secret,
             registrationLength,
@@ -2374,7 +2374,7 @@ contract TestHandshakeSld is Test {
 
         hoax(claimant, 1.096 ether);
         vm.expectRevert("domain expired");
-        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
+        sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
     }
 
     function testRenewSubdomainFromNotOwner_pass() public {
@@ -2389,8 +2389,8 @@ contract TestHandshakeSld is Test {
         addMockCommitIntent(true);
 
         address tldOwner = address(0x222);
-        HandshakeTld tld = Sld.HandshakeTldContract();
-        Sld.setHandshakeWalletAddress(address(0x124578));
+        HandshakeTld tld = sld.handshakeTldContract();
+        sld.setHandshakeWalletAddress(address(0x124578));
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
@@ -2404,7 +2404,7 @@ contract TestHandshakeSld is Test {
         vm.warp(6688);
 
         hoax(claimant, 2 ether);
-        Sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
+        sld.purchaseSingleDomain{value: 2 ether}( //should cost 2 ether
             label,
             secret,
             registrationLength,
@@ -2416,15 +2416,15 @@ contract TestHandshakeSld is Test {
 
         bytes32 namehash = getNamehash(label, parentNamehash);
 
-        (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = Sld
-            .SubdomainRegistrationHistory(namehash);
+        (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = sld
+            .subdomainRegistrationHistory(namehash);
 
         emit log_named_uint("registration time", RegistrationTime);
         emit log_named_uint("registration length", RegistrationLength);
         emit log_named_uint("registration price", RegistrationPrice);
-        emit log_named_uint("wei value of dollar", Sld.getWeiValueOfDollar());
+        emit log_named_uint("wei value of dollar", sld.getWeiValueOfDollar());
 
-        uint48[10] memory rates = Sld.getGuarenteedPrices(namehash);
+        uint48[10] memory rates = sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < rates.length; i++) {
             emit log_named_uint("rate", rates[i]);
@@ -2435,16 +2435,16 @@ contract TestHandshakeSld is Test {
         uint256 newRegLength = 400;
         hoax(notClaimant, 1.095 ether);
         vm.expectRevert("Price too low");
-        Sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
+        sld.renewSubdomain{value: 1.095 ether}(namehash, newRegLength);
 
         hoax(notClaimant, 1.096 ether);
-        Sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
+        sld.renewSubdomain{value: 1.096 ether}(namehash, newRegLength);
 
         (
             uint80 NewRegistrationTime,
             uint80 NewRegistrationLength,
             uint96 NewRegistrationPrice
-        ) = Sld.SubdomainRegistrationHistory(namehash);
+        ) = sld.subdomainRegistrationHistory(namehash);
 
         assertEq(
             NewRegistrationLength,
@@ -2467,9 +2467,9 @@ contract TestHandshakeSld is Test {
 
         address tldOwner = address(0x12345679);
 
-        HandshakeTld tld = Sld.HandshakeTldContract();
+        HandshakeTld tld = sld.handshakeTldContract();
 
-        Sld.setHandshakeWalletAddress(address(0x888888));
+        sld.setHandshakeWalletAddress(address(0x888888));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -2480,11 +2480,11 @@ contract TestHandshakeSld is Test {
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
 
-        stdstore.target(address(Sld)).sig("UsdOracle()").checked_write(address(oracle));
+        stdstore.target(address(sld)).sig("usdOracle()").checked_write(address(oracle));
 
         hoax(claimant, 1 ether);
 
-        Sld.purchaseSingleDomain{value: 1 ether}(
+        sld.purchaseSingleDomain{value: 1 ether}(
             label,
             secret,
             registrationLength,
@@ -2494,16 +2494,16 @@ contract TestHandshakeSld is Test {
         );
         vm.stopPrank();
 
-        assertEq(Sld.balanceOf(claimant), 1);
+        assertEq(sld.balanceOf(claimant), 1);
 
         emit log_named_uint("tld balance", tldOwner.balance); //14250000000000000
-        emit log_named_uint("handshake balance", Sld.HandshakeWalletPayoutAddress().balance); //750000000000000
+        emit log_named_uint("handshake balance", sld.handshakeWalletPayoutAddress().balance); //750000000000000
 
         assertEq(claimant.balance, 1 ether - 15000000000000000);
         assertEq(tldOwner.balance, 14250000000000000);
-        assertEq(Sld.HandshakeWalletPayoutAddress().balance, 750000000000000);
+        assertEq(sld.handshakeWalletPayoutAddress().balance, 750000000000000);
         assertEq(
-            tldOwner.balance + Sld.HandshakeWalletPayoutAddress().balance + claimant.balance,
+            tldOwner.balance + sld.handshakeWalletPayoutAddress().balance + claimant.balance,
             1 ether
         );
     }
@@ -2511,10 +2511,10 @@ contract TestHandshakeSld is Test {
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
         MockGlobalRegistrationStrategy strategy = new MockGlobalRegistrationStrategy(true);
 
-        Sld.setGlobalRegistrationStrategy(address(strategy));
+        sld.setGlobalRegistrationStrategy(address(strategy));
 
         assertEq(
-            address(Sld.ContractRegistrationStrategy()),
+            address(sld.contractRegistrationStrategy()),
             address(strategy),
             "registration strategy not successfully set"
         );
@@ -2525,34 +2525,34 @@ contract TestHandshakeSld is Test {
 
         vm.prank(address(0x64646464644));
         vm.expectRevert("Ownable: caller is not the owner");
-        Sld.setGlobalRegistrationStrategy(address(strategy));
+        sld.setGlobalRegistrationStrategy(address(strategy));
     }
 
     function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail() public {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(100);
         vm.expectRevert("IGlobalRegistrationRules interface not supported");
-        Sld.setGlobalRegistrationStrategy(address(strategy));
+        sld.setGlobalRegistrationStrategy(address(strategy));
     }
 
     function testSetHandshakeWalletAddressFromContractOwner_pass() public {
         address addr = address(0x2244661122);
-        vm.startPrank(Sld.owner());
-        Sld.setHandshakeWalletAddress(addr);
+        vm.startPrank(sld.owner());
+        sld.setHandshakeWalletAddress(addr);
 
-        assertEq(Sld.HandshakeWalletPayoutAddress(), addr);
+        assertEq(sld.handshakeWalletPayoutAddress(), addr);
     }
 
     function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {
         address addr = address(0);
-        vm.startPrank(Sld.owner());
+        vm.startPrank(sld.owner());
         vm.expectRevert("cannot set to zero address");
-        Sld.setHandshakeWalletAddress(addr);
+        sld.setHandshakeWalletAddress(addr);
     }
 
     function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {
         vm.startPrank(address(0x5555555555));
         address addr = address(0x2244661122);
         vm.expectRevert("Ownable: caller is not the owner");
-        Sld.setHandshakeWalletAddress(addr);
+        sld.setHandshakeWalletAddress(addr);
     }
 }

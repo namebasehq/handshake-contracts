@@ -46,12 +46,12 @@ interface ICommitIntent {
      * Max time in blocks that an SLD is held for.
      * @return _ uint256 number of blocks
      */
-    function MaxBlockWaitForCommit() external view returns (uint256);
+    function maxBlockWaitForCommit() external view returns (uint256);
 
     /**
      * Min time in blocks that an account needs to wait before registering their SLD
      * we do this becauses of potential reorgs
      * @return _ uint256 number of blocks, probably set to 3 or something like that
      */
-    function MinBlockWaitForCommit() external view returns (uint256);
+    function minBlockWaitForCommit() external view returns (uint256);
 }

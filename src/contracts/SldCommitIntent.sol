@@ -13,10 +13,10 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         // 1x 256 bit slots
     }
 
-    mapping(bytes32 => CommitData) private NodeIntentBlockNumber;
+    mapping(bytes32 => CommitData) private nodeIntentBlockNumber;
 
-    uint256 public MaxBlockWaitForCommit = 30;
-    uint256 public MinBlockWaitForCommit = 3;
+    uint256 public maxBlockWaitForCommit = 30;
+    uint256 public minBlockWaitForCommit = 3;
 
     constructor() {
 
@@ -24,14 +24,14 @@ contract SldCommitIntent is ICommitIntent, Ownable {
 
     function commitIntent(bytes32 _combinedHash) public {
         require(
-            NodeIntentBlockNumber[_combinedHash].blockNumber < block.number,
+            nodeIntentBlockNumber[_combinedHash].blockNumber < block.number,
             "already been committed"
         );
         CommitData memory data = CommitData(
-            uint96(block.number + MaxBlockWaitForCommit),
+            uint96(block.number + maxBlockWaitForCommit),
             msg.sender
         );
-        NodeIntentBlockNumber[_combinedHash] = data;
+        nodeIntentBlockNumber[_combinedHash] = data;
     }
 
     function allowedCommit(
@@ -40,21 +40,21 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         address _addr
     ) external view returns (bool) {
         bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
-        CommitData memory data = NodeIntentBlockNumber[combinedHash];
+        CommitData memory data = nodeIntentBlockNumber[combinedHash];
 
         return
-            data.blockNumber > (block.number + MinBlockWaitForCommit) &&
-            (data.blockNumber - MaxBlockWaitForCommit + MinBlockWaitForCommit) <= //min time to wait
+            data.blockNumber > (block.number + minBlockWaitForCommit) &&
+            (data.blockNumber - maxBlockWaitForCommit + minBlockWaitForCommit) <= //min time to wait
             block.number &&
             data.user == _addr;
     }
 
     function updateMaxBlockWaitForCommit(uint256 _maxBlockWait) external onlyOwner {
-        MaxBlockWaitForCommit = _maxBlockWait;
+        maxBlockWaitForCommit = _maxBlockWait;
     }
 
     function updateMinBlockWaitForCommit(uint256 _minBlockWait) external onlyOwner {
-        MinBlockWaitForCommit = _minBlockWait;
+        minBlockWaitForCommit = _minBlockWait;
     }
 
     function multiCommitIntent(bytes32[] calldata _combinedHashes) external {
