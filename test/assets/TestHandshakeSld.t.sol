@@ -43,9 +43,8 @@ contract TestHandshakesld is Test {
         addMockOracle();
     }
 
-    // TODO: swap param order
-    function getNamehash(string memory _label, bytes32 _parentHash) public pure returns (bytes32) {
-        return Namehash.getNamehash(_label, _parentHash);
+    function getNamehash(bytes32 _parentHash, string memory _label) public pure returns (bytes32) {
+        return Namehash.getNamehash( _parentHash, _label);
     }
 
     function getTldNamehash(string memory _label) public pure returns (bytes32) {
@@ -70,7 +69,7 @@ contract TestHandshakesld is Test {
         string memory tldLabel = "eth";
 
         // bytes32 tldLabelhash = keccak256(abi.encodePacked(tldLabel));
-        bytes32 tldNamehash = getNamehash(tldLabel, bytes32(0));
+        bytes32 tldNamehash = getNamehash(bytes32(0), tldLabel);
 
         // emit log_named_string("tld", tldLabel);
         // emit log_named_bytes32("tld labelhash", tldLabelhash);
@@ -78,7 +77,7 @@ contract TestHandshakesld is Test {
         // emit log_named_uint("tld namehash int", uint256(tldNamehash));
 
         // bytes32 sldLabelhash = keccak256(abi.encodePacked(sldLabel));
-        bytes32 sldNamehash = getNamehash(sldLabel, tldNamehash);
+        bytes32 sldNamehash = getNamehash(tldNamehash, sldLabel);
 
         // emit log_named_string("sld", sldLabel);
         // emit log_named_bytes32("sld labelhash", sldLabelhash);
@@ -145,9 +144,9 @@ contract TestHandshakesld is Test {
         string memory sldLabel = "test";
         string memory tldLabel = "test";
 
-        bytes32 tldNamehash = getNamehash(tldLabel, bytes32(0));
-        bytes32 sldNamehash = getNamehash(sldLabel, tldNamehash);
-        bytes32 subNamehash = getNamehash(sldLabel, sldNamehash);
+        bytes32 tldNamehash = getNamehash(bytes32(0), tldLabel);
+        bytes32 sldNamehash = getNamehash(tldNamehash, sldLabel);
+        bytes32 subNamehash = getNamehash(sldNamehash, sldLabel);
 
         // emit log_named_bytes32("sld namehash", sldNamehash);
         // emit log_named_uint("sld namehash int", uint256(sldNamehash));
@@ -495,7 +494,7 @@ contract TestHandshakesld is Test {
             msg.sender
         );
 
-        bytes32 full_hash = getNamehash(label, parentNamehash);
+        bytes32 full_hash = getNamehash(parentNamehash, label);
 
         assertEq(parentNamehash, sld.namehashToParentMap(full_hash));
     }
@@ -534,7 +533,7 @@ contract TestHandshakesld is Test {
             msg.sender
         );
 
-        bytes32 full_hash = getNamehash(label, parentNamehash);
+        bytes32 full_hash = getNamehash(parentNamehash, label);
 
         assertEq(label, sld.namehashToLabelMap(full_hash));
     }
@@ -815,7 +814,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -857,7 +856,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash( parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -898,7 +897,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -948,7 +947,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -997,7 +996,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -1040,7 +1039,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -1086,7 +1085,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1126,7 +1125,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -1169,7 +1168,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -1241,7 +1240,7 @@ contract TestHandshakesld is Test {
         vm.startPrank(child_address);
         bytes32[] memory emptyArr;
 
-        bytes32 namehash = getNamehash("test", parentNamehash);
+        bytes32 namehash = getNamehash(parentNamehash, "test");
         console.log('expected namehash');
         console.log(uint256(namehash));
         sld.purchaseSingleDomain(
@@ -1285,7 +1284,7 @@ contract TestHandshakesld is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 namehash = getNamehash("test", parentNamehash);
+        bytes32 namehash = getNamehash( parentNamehash, "test");
 
         //we mint to other address 0x1337
         sld.purchaseSingleDomain(
@@ -1349,7 +1348,7 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash("test", parent_hash));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
         assertEq(
             expectedsldId,
@@ -1394,12 +1393,12 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash(parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, string("test")));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1461,12 +1460,12 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash(parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash("test", sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, "test"));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1533,12 +1532,12 @@ contract TestHandshakesld is Test {
             "sld owner not correct"
         );
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash(parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, string("test")));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1605,12 +1604,12 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash( parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, string("test")));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1662,12 +1661,12 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash( parent_hash, "test");
         
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, string("test")));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1727,12 +1726,12 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
 
-        bytes32 sldHash = getNamehash("test", parent_hash);
+        bytes32 sldHash = getNamehash( parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
-        uint256 expectedsldChildId = uint256(getNamehash(string("test"), sldHash));
+        uint256 expectedsldChildId = uint256(getNamehash(sldHash, string("test")));
 
         addMockRegistrationStrategyToTld(sldHash);
 
@@ -1872,7 +1871,7 @@ contract TestHandshakesld is Test {
         assertEq(dets[0].Price, _price * 1000, "mismatch in price");
         assertEq(
             dets[0].Id,
-            uint256(getNamehash(labels[0], parentNamehash)),
+            uint256(getNamehash(parentNamehash, labels[0])),
             "expected Id does not match"
         );
         assertEq(dets[0].ParentId, parentIds[0], "Parent Id does not match");
@@ -1933,7 +1932,7 @@ contract TestHandshakesld is Test {
             assertEq(dets[i].Price, _price * 1000, "mismatch in price");
             assertEq(
                 dets[i].Id,
-                uint256(getNamehash(labels[i], parentNamehash)),
+                uint256(getNamehash( parentNamehash, labels[i])),
                 "expected Id does not match"
             );
             assertEq(dets[i].ParentId, parentIds[i], "Parent Id does not match");
@@ -1981,7 +1980,7 @@ contract TestHandshakesld is Test {
             claimant
         );
 
-        bytes32 childHash = getNamehash(label, parentNamehash);
+        bytes32 childHash = getNamehash(parentNamehash, label);
         sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
@@ -2022,7 +2021,7 @@ contract TestHandshakesld is Test {
             claimant
         );
         vm.startPrank(address(0x22446666));
-        bytes32 childHash = getNamehash(label, parentNamehash);
+        bytes32 childHash = getNamehash(parentNamehash, label);
         vm.expectRevert("ERC721: invalid token ID");
         sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
@@ -2192,7 +2191,7 @@ contract TestHandshakesld is Test {
 
         assertEq(sld.balanceOf(claimant), 1);
 
-        bytes32 namehash = getNamehash(label, parentNamehash);
+        bytes32 namehash = getNamehash(parentNamehash, label);
 
         (uint80 RegistrationTime, uint80 regLength, uint96 regPrice) = sld
             .subdomainRegistrationHistory(namehash);
@@ -2286,7 +2285,7 @@ contract TestHandshakesld is Test {
         );
         vm.stopPrank();
 
-        bytes32 namehash = getNamehash(label, parentNamehash);
+        bytes32 namehash = getNamehash( parentNamehash, label);
 
         (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = sld
             .subdomainRegistrationHistory(namehash);
@@ -2368,7 +2367,7 @@ contract TestHandshakesld is Test {
         vm.stopPrank();
 
         vm.warp(block.timestamp + (86400 * 366));
-        bytes32 namehash = getNamehash(label, parentNamehash);
+        bytes32 namehash = getNamehash(parentNamehash, label);
 
         uint256 newRegLength = 400;
 
@@ -2414,7 +2413,7 @@ contract TestHandshakesld is Test {
         );
         vm.stopPrank();
 
-        bytes32 namehash = getNamehash(label, parentNamehash);
+        bytes32 namehash = getNamehash(parentNamehash, label);
 
         (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = sld
             .subdomainRegistrationHistory(namehash);

@@ -60,9 +60,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return (royaltyPayoutAddress, amount);
     }
 
-    // TODO: swap param order
-    function getNamehash(string memory _label, bytes32 _parentHash) internal pure override returns (bytes32) {
-        return Namehash.getNamehash(_label, _parentHash);
+    function getNamehash(bytes32 _parentHash, string memory _label) internal pure override returns (bytes32) {
+        return Namehash.getNamehash(_parentHash, _label);
     }
 
     function getTldNamehash(string memory _label) internal pure returns (bytes32) {

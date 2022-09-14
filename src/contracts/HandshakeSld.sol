@@ -179,7 +179,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         );
 
         addRegistrationDetails(
-            getNamehash(_label, _parentNamehash),
+            getNamehash(_parentNamehash, _label),
             domainDollarCost,
             _registrationLength,
             priceStrat,
@@ -227,7 +227,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _recipient == address(0) ? msg.sender : _recipient
         );
 
-        bytes32 subdomainHash = getNamehash(_label, _parentNamehash);
+        bytes32 subdomainHash = getNamehash(_parentNamehash, _label);
 
         addRegistrationDetails(
             subdomainHash,
@@ -273,7 +273,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         );
         
         addRegistrationDetails(
-            getNamehash(_label, _parentNamehash),
+            getNamehash(_parentNamehash, _label),
             domainDollarCost,
             _registrationLength,
             strategy,
@@ -288,7 +288,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
         console.log('here we go');
-        distributePrimaryFunds(getOwnerOfParent(getNamehash(_label, _parentNamehash)), priceInWei);
+        distributePrimaryFunds(getOwnerOfParent(getNamehash(_parentNamehash, _label)), priceInWei);
     }
 
     function purchaseSld(
@@ -300,7 +300,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     ) private returns (uint256) {
         require(validator.isValidLabel(_label), "invalid name");
 
-        bytes32 namehash = getNamehash(_label, _parentNamehash);
+        bytes32 namehash = getNamehash(_parentNamehash, _label);
         console.log('actual namehash');
         console.log(uint256(namehash));
         require(commitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
@@ -455,7 +455,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         uint256 royaltyAmount = royaltyPayoutAmountMap[parentHash];
 
         SubdomainDetail memory detail = SubdomainDetail(
-            uint256(getNamehash(_label, parentHash)),
+            uint256(getNamehash(parentHash, _label)),
             _parentId,
             _label,
             priceInDollars,

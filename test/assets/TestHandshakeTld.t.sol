@@ -35,9 +35,9 @@ contract TestHandshakeTld is Test {
         sld = new HandshakeSld(tld, commitIntent);
     }
 
-    // TODO: swap param order
-    function getNamehash(string memory _label, bytes32 _parentHash) private pure returns (bytes32) {
-        return Namehash.getNamehash(_label, _parentHash);
+
+    function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
+        return Namehash.getNamehash(_parentHash, _label);
     }
 
     function getTldNamehash(string memory _label) private pure returns (bytes32) {
