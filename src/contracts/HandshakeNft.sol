@@ -19,17 +19,17 @@ abstract contract HandshakeNft is ERC721, Ownable {
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
     
     // a map of string labels
-    mapping(bytes32 => string) public NamehashToLabelMap;
+    mapping(bytes32 => string) public namehashToLabelMap;
 
-    IMetadataService public Metadata;
+    IMetadataService public metadata;
 
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {
 
     }
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
-        require(address(Metadata) != address(0), "Metadata service is not implemented");
-        return Metadata.tokenURI(bytes32(_id));
+        require(address(metadata) != address(0), "Metadata service is not implemented");
+        return metadata.tokenURI(bytes32(_id));
     }
 
     function setMetadataContract(IMetadataService _metadata) external onlyOwner {
@@ -37,7 +37,7 @@ abstract contract HandshakeNft is ERC721, Ownable {
             address(_metadata).supportsInterface(TOKEN_URI_SELECTOR),
             "does not implement tokenUri method"
         );
-        Metadata = _metadata;
+        metadata = _metadata;
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)

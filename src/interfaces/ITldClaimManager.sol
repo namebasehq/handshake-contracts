@@ -12,7 +12,7 @@ interface ITldClaimManager {
 
     function updateAllowedTldManager(address _addr, bool _allowed) external;
 
-    function AllowedTldManager(address _addr) external view returns (bool);
+    function allowedTldManager(address _addr) external view returns (bool);
 
     function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external;
 }

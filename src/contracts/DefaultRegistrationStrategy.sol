@@ -9,13 +9,13 @@ import "interfaces/IHandshakeSld.sol";
 import {console} from "forge-std/console.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable {
-    IHandshakeSld private SubdomainContract;
+    IHandshakeSld private subdomainContract;
 
-    mapping(bytes32 => address) public ReservedNames;
-    mapping(bytes32 => uint256) public PremiumNames;
+    mapping(bytes32 => address) public reservedNames;
+    mapping(bytes32 => uint256) public premiumNames;
 
-    mapping(bytes32 => uint256[]) public LengthCost;
-    mapping(bytes32 => uint256[]) public MultiYearDiscount;
+    mapping(bytes32 => uint256[]) public lengthCost;
+    mapping(bytes32 => uint256[]) public multiYearDiscount;
 
     function getNamehash(string memory _label, bytes32 _parentHash) private pure returns (bytes32) {
         bytes32 encoded_label = keccak256(abi.encodePacked(_label));
@@ -25,7 +25,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     }
 
     constructor(IHandshakeSld _sld) {
-        SubdomainContract = _sld;
+        subdomainContract = _sld;
     }
 
     function setPremiumName(
@@ -33,7 +33,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string calldata _label,
         uint256 _priceInDollarsPerYear
     ) private {
-        PremiumNames[
+        premiumNames[
             keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))
         ] = _priceInDollarsPerYear;
     }
@@ -43,7 +43,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string calldata _label,
         address _claimant
     ) private {
-        ReservedNames[keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))] = _claimant;
+        reservedNames[keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))] = _claimant;
     }
 
     function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
@@ -62,7 +62,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
             }
         }
 
-        LengthCost[_parentNamehash] = _prices;
+        lengthCost[_parentNamehash] = _prices;
     }
 
     function setMultiYearDiscount(bytes32 _parentNamehash, uint256[] calldata _discounts)
@@ -82,7 +82,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
                 ++i;
             }
         }
-        MultiYearDiscount[_parentNamehash] = _discounts;
+        multiYearDiscount[_parentNamehash] = _discounts;
     }
 
     function getLengthCost(bytes32 _parentNamehash, uint256 _length)
@@ -90,7 +90,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         view
         returns (uint256)
     {
-        uint256[] memory prices = LengthCost[_parentNamehash];
+        uint256[] memory prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
         require(priceCount > 0, "no length prices are set");
 
@@ -139,8 +139,8 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     ) public view returns (uint256) {
         bytes32 namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash));
 
-        uint256 annualPrice = PremiumNames[namehash];
-        if (ReservedNames[namehash] == _buyingAddress) {
+        uint256 annualPrice = premiumNames[namehash];
+        if (reservedNames[namehash] == _buyingAddress) {
             return (_registrationLength * 1 ether) / 365;
         } else if (annualPrice > 0) {
             //if it's a premium name then just use the annual rate on it.
@@ -170,7 +170,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     function getDiscount(bytes32 _parentNamehash, uint256 _years) private view returns (uint256) {
         require(_years > 0, "minimum reg is 1 year");
 
-        uint256[] memory discounts = MultiYearDiscount[_parentNamehash];
+        uint256[] memory discounts = multiYearDiscount[_parentNamehash];
         uint256 arrLength = discounts.length;
 
         if (arrLength == 0) {
@@ -196,7 +196,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
         require(
-            SubdomainContract.isApprovedOrOwner(msg.sender, uint256(_namehash)),
+            subdomainContract.isApprovedOrOwner(msg.sender, uint256(_namehash)),
             "not approved or owner"
         );
 

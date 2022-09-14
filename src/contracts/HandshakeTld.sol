@@ -11,37 +11,37 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
-    ITldClaimManager public ClaimManager;
+    ITldClaimManager public claimManager;
     
     address public claimManagerAddress;
-    address public RoyaltyPayoutAddress;
-    uint256 public RoyaltyPayoutAmount;
+    address public royaltyPayoutAddress;
+    uint256 public royaltyPayoutAmount;
 
     constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
-        ClaimManager = _claimManager;
+        claimManager = _claimManager;
         
     }
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {
-        ClaimManager = _manager;
+        claimManager = _manager;
     }
 
     function setRoyaltyPayoutAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
-        RoyaltyPayoutAddress = _addr;
+        royaltyPayoutAddress = _addr;
     }
 
     function setRoyaltyPayoutAmount(uint256 _amount) public onlyOwner {
         require(_amount < 101, "10% maximum royalty on TLD");
-        RoyaltyPayoutAmount = _amount;
+        royaltyPayoutAmount = _amount;
     }
 
     function mint(address _addr, string calldata _domain) external {
         // TLD node and token ID is full namehash with root 0x0 as parent
         bytes32 namehash = getTldNamehash(_domain);
-        require(address(ClaimManager) == msg.sender, "not authorised");
+        require(address(claimManager) == msg.sender, "not authorised");
         _mint(_addr, uint256(namehash));
-        NamehashToLabelMap[namehash] = _domain;
+        namehashToLabelMap[namehash] = _domain;
     }
 
     modifier tldOwner(bytes32 _namehash) {
@@ -55,9 +55,9 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override
         returns (address receiver, uint256 royaltyAmount)
     {
-        uint256 divisor = RoyaltyPayoutAmount.div(10);
-        uint256 amount = RoyaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
-        return (RoyaltyPayoutAddress, amount);
+        uint256 divisor = royaltyPayoutAmount.div(10);
+        uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
+        return (royaltyPayoutAddress, amount);
     }
 
     // TODO: swap param order

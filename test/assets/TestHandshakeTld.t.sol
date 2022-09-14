@@ -7,16 +7,19 @@ import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import { Namehash } from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
+import "test/mocks/MockCommitIntent.sol";
+import "interfaces/ICommitIntent.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 
 contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
-    HandshakeTld Tld;
-    HandshakeSld Sld;
+    HandshakeTld tld;
+    HandshakeSld sld;
 
-    ITldClaimManager ClaimManager;
+    ITldClaimManager claimManager;
+    ICommitIntent commitIntent;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
@@ -26,9 +29,10 @@ contract TestHandshakeTld is Test {
     bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
-        ClaimManager = new MockClaimManager();
-        Tld = new HandshakeTld(ClaimManager);
-        Sld = new HandshakeSld(Tld);
+        commitIntent = new MockCommitIntent(true);
+        claimManager = new MockClaimManager();
+        tld = new HandshakeTld(claimManager);
+        sld = new HandshakeSld(tld, commitIntent);
     }
 
     // TODO: swap param order
@@ -44,17 +48,17 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
         uint256 tldId = uint256(getTldNamehash(domain));
         vm.expectRevert("not authorised");
-        Tld.mint(address(0x1339), domain);
+        tld.mint(address(0x1339), domain);
     }
 
     function testMintFromAuthoriseAddress() public {
         string memory domain = "test";
         uint256 tldId = uint256(getTldNamehash(domain));
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
+        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        Tld.mint(address(0x1339), domain);
-        assertEq(address(0x1339), Tld.ownerOf(tldId));
+        tld.mint(address(0x1339), domain);
+        assertEq(address(0x1339), tld.ownerOf(tldId));
     }
 
     function testMintCheckLabelToHashMapUpdated() public {
@@ -62,11 +66,11 @@ contract TestHandshakeTld is Test {
         bytes32 namehash = getTldNamehash(domain);
         uint256 tldId = uint256(namehash);
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Tld)).sig("ClaimManager()").checked_write(address(this));
+        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        Tld.mint(address(0x1339), domain);
+        tld.mint(address(0x1339), domain);
 
-        assertEq(domain, Tld.NamehashToLabelMap(namehash));
+        assertEq(domain, tld.namehashToLabelMap(namehash));
     }
 
     function testUpdateDefaultSldRegistrationStrategyFromTldOwner() public {
@@ -76,13 +80,13 @@ contract TestHandshakeTld is Test {
         address tldOwnerAddr = address(0x6942);
         MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             address(this)
         );
-        stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
-            address(Sld.HandshakeTldContract())
+        stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
+            address(sld.handshakeTldContract())
         );
-        Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
+        sld.handshakeTldContract().mint(tldOwnerAddr, domain);
         assertEq(
             tldId,
             uint256(TEST_TLD_NAMEHASH),
@@ -91,13 +95,13 @@ contract TestHandshakeTld is Test {
 
         emit log_named_address(
             "owner is",
-            Sld.HandshakeTldContract().ownerOf(uint256(TEST_TLD_NAMEHASH))
+            sld.handshakeTldContract().ownerOf(uint256(TEST_TLD_NAMEHASH))
         );
 
         vm.startPrank(tldOwnerAddr);
-        Sld.setPricingStrategy(tldId, address(sldRegistrationStrategy));
+        sld.setPricingStrategy(tldId, address(sldRegistrationStrategy));
 
-        assertEq(address(Sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
+        assertEq(address(sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
 
         vm.stopPrank();
     }
@@ -111,20 +115,20 @@ contract TestHandshakeTld is Test {
         address sldRegistrationStrategy = address(0x133737);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(Sld.HandshakeTldContract())).sig("ClaimManager()").checked_write(
+        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             address(this)
         );
 
-        Sld.HandshakeTldContract().mint(tldOwnerAddr, domain);
+        sld.handshakeTldContract().mint(tldOwnerAddr, domain);
 
         vm.startPrank(notTldOwnerAddr);
 
         // Tld.updateSldPricingStrategy(bytes32(tldId), ISldRegistrationStrategy(sldRegistrationStrategy));
-        stdstore.target(address(Sld)).sig("HandshakeTldContract()").checked_write(
-            address(Sld.HandshakeTldContract())
+        stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
+            address(sld.handshakeTldContract())
         );
         vm.expectRevert("ERC721: invalid token ID");
-        Sld.setPricingStrategy(uint256(tldHash), sldRegistrationStrategy);
+        sld.setPricingStrategy(uint256(tldHash), sldRegistrationStrategy);
         vm.stopPrank();
     }
 
@@ -134,8 +138,8 @@ contract TestHandshakeTld is Test {
         //10 percent is the max royalty
         uint256 tenPercentRoyalty = 100;
 
-        Tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
-        (, uint256 amount) = Tld.royaltyInfo(0, 100);
+        tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
+        (, uint256 amount) = tld.royaltyInfo(0, 100);
         assertEq(amount, 10);
     }
 
@@ -143,29 +147,29 @@ contract TestHandshakeTld is Test {
         uint256 fivePercentRoyalty = 50;
         vm.startPrank(address(0x3333));
         vm.expectRevert("Ownable: caller is not the owner");
-        Tld.setRoyaltyPayoutAmount(fivePercentRoyalty);
+        tld.setRoyaltyPayoutAmount(fivePercentRoyalty);
         vm.stopPrank();
     }
 
     function testUpdateRoyaltyPayoutAddressFromOwnerWallet() public {
         address payoutAddress = address(0x66991122);
 
-        Tld.setRoyaltyPayoutAddress(payoutAddress);
-        (address addr, ) = Tld.royaltyInfo(0, 100);
+        tld.setRoyaltyPayoutAddress(payoutAddress);
+        (address addr, ) = tld.royaltyInfo(0, 100);
         assertEq(payoutAddress, addr);
     }
 
     function testUpdateRoyaltyToZeroAddressExpectFail() public {
         address zeroAddress = address(0);
         vm.expectRevert("cannot set to zero address");
-        Tld.setRoyaltyPayoutAddress(zeroAddress);
+        tld.setRoyaltyPayoutAddress(zeroAddress);
     }
 
     function testUpdateRoyaltyPayoutAddressFromNotOwnerWalletExpectFail() public {
         address payoutAddress = address(0x66991122);
         vm.startPrank(address(0x998877));
         vm.expectRevert("Ownable: caller is not the owner");
-        Tld.setRoyaltyPayoutAddress(payoutAddress);
+        tld.setRoyaltyPayoutAddress(payoutAddress);
         vm.stopPrank();
     }
 
@@ -173,15 +177,15 @@ contract TestHandshakeTld is Test {
         uint256 tenPointOnePercentRoyalty = 101;
 
         vm.expectRevert("10% maximum royalty on TLD");
-        Tld.setRoyaltyPayoutAmount(tenPointOnePercentRoyalty);
+        tld.setRoyaltyPayoutAmount(tenPointOnePercentRoyalty);
     }
 
     function testUpdateRoyaltyPercentageToSmallestNumberExpectZeroReturned() public {
         //this is 0.1%
         uint256 zeroPointOnePercent = 1;
 
-        Tld.setRoyaltyPayoutAmount(zeroPointOnePercent);
-        (, uint256 amount) = Tld.royaltyInfo(0, 100);
+        tld.setRoyaltyPayoutAmount(zeroPointOnePercent);
+        (, uint256 amount) = tld.royaltyInfo(0, 100);
         assertEq(amount, 0);
     }
 
@@ -192,8 +196,8 @@ contract TestHandshakeTld is Test {
         uint256 tenPercentRoyalty = 100;
         uint256 smallestSaleAmount = 1;
 
-        Tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
-        (, uint256 amount) = Tld.royaltyInfo(0, smallestSaleAmount);
+        tld.setRoyaltyPayoutAmount(tenPercentRoyalty);
+        (, uint256 amount) = tld.royaltyInfo(0, smallestSaleAmount);
         assertEq(amount, 0);
     }
 }

@@ -34,11 +34,11 @@ contract MockCommitIntent is ICommitIntent {
         return Allowed;
     }
 
-    function MaxBlockWaitForCommit() external view returns (uint256) {
+    function maxBlockWaitForCommit() external view returns (uint256) {
         return MaxBlocks;
     }
 
-    function MinBlockWaitForCommit() external view returns (uint256) {
+    function minBlockWaitForCommit() external view returns (uint256) {
         return MinBlocks;
     }
 }

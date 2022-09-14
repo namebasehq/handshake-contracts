@@ -11,14 +11,14 @@ contract TestSldCommitIntent is Test {
     ICommitIntent internal intent;
 
     function setUp() public {
-        intent = new SldCommitIntent(address(this));
+        intent = new SldCommitIntent();
     }
 
     function testMissedCommitDeadline() public {
         //Arrange
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         bytes32 secret = bytes32(uint256(42424242));
         intent.updateMinBlockWaitForCommit(0);
 
@@ -37,7 +37,7 @@ contract TestSldCommitIntent is Test {
         //Arrange
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         uint256 minBlocks = 2;
         bytes32 secret = bytes32(uint256(42424242));
         intent.updateMinBlockWaitForCommit(minBlocks);
@@ -61,7 +61,7 @@ contract TestSldCommitIntent is Test {
         //Arrange
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         bytes32 secret = bytes32(uint256(42424242));
         intent.updateMinBlockWaitForCommit(0);
 
@@ -89,7 +89,7 @@ contract TestSldCommitIntent is Test {
         //Arrange
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         bytes32 secret = bytes32(uint256(42424242));
         uint256 minWait = 2;
         intent.updateMinBlockWaitForCommit(minWait);
@@ -124,7 +124,7 @@ contract TestSldCommitIntent is Test {
         bytes32 secret = bytes32(uint256(2432423));
 
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         intent.updateMinBlockWaitForCommit(0);
 
         //Act
@@ -142,7 +142,7 @@ contract TestSldCommitIntent is Test {
         //Arrange
         bytes32 node = bytes32(uint256(667));
         uint256 startBlock = 1000;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         emit log_named_uint("max block wait: ", maxBlocks);
         bytes32 secret = bytes32(uint256(420420));
         intent.updateMinBlockWaitForCommit(0);
@@ -169,7 +169,7 @@ contract TestSldCommitIntent is Test {
         bytes32 secret2 = bytes32(uint256(1212121212));
 
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         intent.updateMinBlockWaitForCommit(0);
 
         //Act
@@ -210,7 +210,7 @@ contract TestSldCommitIntent is Test {
         bytes32 secret = bytes32(uint256(22222));
 
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
 
         intent.updateMinBlockWaitForCommit(0);
 
@@ -241,7 +241,7 @@ contract TestSldCommitIntent is Test {
         bytes32 secret = bytes32(uint256(22222));
 
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
 
         address user = address(0x08);
 
@@ -270,7 +270,7 @@ contract TestSldCommitIntent is Test {
         bytes32 secret = bytes32(uint256(22222));
 
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
 
         address user = address(0x08);
 
@@ -296,19 +296,19 @@ contract TestSldCommitIntent is Test {
 
     function testChangeCommitDeadlineByOwner() public {
         //Arrange
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
 
         //Act
         intent.updateMaxBlockWaitForCommit(maxBlocks + 20);
 
         //Assert
-        uint256 newMaxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 newMaxBlocks = intent.maxBlockWaitForCommit();
         assertEq(maxBlocks + 20, newMaxBlocks);
     }
 
     function testChangeCommitDeadlineByNotOwner() public {
         //Arrange
-        uint256 maxBlocks = intent.MaxBlockWaitForCommit();
+        uint256 maxBlocks = intent.maxBlockWaitForCommit();
 
         //Act
         vm.startPrank(address(0x10)); //change to other calling address
@@ -321,18 +321,18 @@ contract TestSldCommitIntent is Test {
 
     function testChangeMinWaitByOwner() public {
         //Arrange
-        uint256 newMinBlocks = intent.MinBlockWaitForCommit() + 3;
+        uint256 newMinBlocks = intent.minBlockWaitForCommit() + 3;
 
         //Act
         intent.updateMinBlockWaitForCommit(newMinBlocks);
 
         //Assert
-        assertEq(intent.MinBlockWaitForCommit(), newMinBlocks);
+        assertEq(intent.minBlockWaitForCommit(), newMinBlocks);
     }
 
     function testChangeMinWaitByNotOwner() public {
         //Arrange
-        uint256 minBlocks = intent.MaxBlockWaitForCommit();
+        uint256 minBlocks = intent.maxBlockWaitForCommit();
 
         //Act
         vm.startPrank(address(0x10)); //change to other calling address

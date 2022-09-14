@@ -6,6 +6,6 @@ import "interfaces/IPriceOracle.sol";
 import "contracts/UsdPriceOracle.sol";
 
 contract HasUsdOracle is Ownable {
-    IPriceOracle public UsdOracle = new UsdPriceOracle();
+    IPriceOracle public usdOracle = new UsdPriceOracle();
     event NewUsdOracle(address indexed _usdEthPriceOracle);
 }
