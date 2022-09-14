@@ -45,12 +45,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     mapping(bytes32 => uint256) public RoyaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public RoyaltyPayoutAddressMap;
 
-    constructor(HandshakeTld _tld)
+    constructor(HandshakeTld _tld, ICommitIntent _commitIntent)
         HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
         HandshakeTldContract = _tld;
-        CommitIntent = new SldCommitIntent(msg.sender);
+        CommitIntent = _commitIntent;
         Validator = new LabelValidator();
     }
 

@@ -18,8 +18,8 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     uint256 public MaxBlockWaitForCommit = 30;
     uint256 public MinBlockWaitForCommit = 3;
 
-    constructor(address _owner) {
-        transferOwnership(_owner);
+    constructor() {
+
     }
 
     function commitIntent(bytes32 _combinedHash) public {

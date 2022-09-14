@@ -11,7 +11,7 @@ contract TestSldCommitIntent is Test {
     ICommitIntent internal intent;
 
     function setUp() public {
-        intent = new SldCommitIntent(address(this));
+        intent = new SldCommitIntent();
     }
 
     function testMissedCommitDeadline() public {

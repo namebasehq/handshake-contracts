@@ -7,6 +7,8 @@ import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import { Namehash } from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
+import "test/mocks/MockCommitIntent.sol";
+import "interfaces/ICommitIntent.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
@@ -16,7 +18,8 @@ contract TestHandshakeTld is Test {
     HandshakeTld Tld;
     HandshakeSld Sld;
 
-    ITldClaimManager ClaimManager;
+    ITldClaimManager claimManager;
+    ICommitIntent commitIntent;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
@@ -26,9 +29,10 @@ contract TestHandshakeTld is Test {
     bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
-        ClaimManager = new MockClaimManager();
-        Tld = new HandshakeTld(ClaimManager);
-        Sld = new HandshakeSld(Tld);
+        commitIntent = new MockCommitIntent(true);
+        claimManager = new MockClaimManager();
+        Tld = new HandshakeTld(claimManager);
+        Sld = new HandshakeSld(Tld, commitIntent);
     }
 
     // TODO: swap param order
