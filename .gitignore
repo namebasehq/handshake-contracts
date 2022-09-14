@@ -2,6 +2,7 @@ cache/
 out/
 node_modules/
 broadcast/
+lib/
 .idea/
 .vscode/
 .DS_Store
