@@ -11,13 +11,13 @@ library Namehash {
         return keccak256(abi.encodePacked(_label));
     }
 
-    // TODO: swap params order
-    function getNamehash(string memory _label, bytes32 _parentHash) public pure returns (bytes32) {
+
+    function getNamehash(bytes32 _parentHash, string memory _label) public pure returns (bytes32) {
         bytes32 labelhash = keccak256(abi.encodePacked(_label));
         return keccak256(abi.encodePacked(_parentHash, labelhash));
     }
 
     function getTldNamehash(string memory _label) public pure returns (bytes32) {
-        return getNamehash(_label, bytes32(0));
+        return getNamehash(bytes32(0), _label);
     }
 }
