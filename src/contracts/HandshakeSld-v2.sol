@@ -28,7 +28,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
     mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
 
     ICommitIntent public commitIntent;
-    ILabelValidator public validator;
+
     HandshakeTld handshakeTldContract;
 
     IGlobalRegistrationRules public contractRegistrationStrategy;
@@ -46,25 +46,11 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
         PaymentManager(msg.sender)
     {
         commitIntent = _commitIntent;
-        validator = new LabelValidator();
         handshakeTldContract = _tld;
     }
 
-    function getRenewalPricePerDay(
-        SubdomainRegistrationDetail memory _history,
-        uint256 _registrationLength
-    ) public view returns (uint256) {
-        uint256 registrationYears = (_registrationLength / 365); //get the annual rate
-
-        registrationYears = registrationYears > 10 ? 10 : registrationYears;
-
-        uint256 renewalCostPerAnnum = _history.RegistrationPriceSnapshot[registrationYears - 1] /
-            registrationYears;
-        return renewalCostPerAnnum / 365;
-    }
-
-    function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
-        validator = _validator;
+    function mintSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
+        
     }
 
     function getPricingStrategy(bytes32 _parentNamehash)
@@ -72,15 +58,14 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
         view
         returns (ISldRegistrationStrategy)
     {
-        if (
-            address(sldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
-                PRICE_IN_DOLLARS_SELECTOR
-            )
-        ) {
-            return sldDefaultRegistrationStrategy[_parentNamehash];
-        } else {
+        ISldRegistrationStrategy strategy = sldDefaultRegistrationStrategy[_parentNamehash];
+        if (address(strategy) == address(0))
+        {
             revert MissingRegistrationStrategy();
         }
+
+        return strategy;
+
     }
 
     function setPricingStrategy(uint256 _id, address _strategy)

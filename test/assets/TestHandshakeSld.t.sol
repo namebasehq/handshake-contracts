@@ -17,7 +17,7 @@ import "test/mocks/MockCommitIntent.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/ICommitIntent.sol";
 
-contract TestHandshakesld is Test {
+contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
 
     using stdStorage for StdStorage;
