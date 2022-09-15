@@ -2,13 +2,6 @@
 pragma solidity ^0.8.15;
 
 interface ISldRegistrationManager {
-    function purchaseMultipleSld(
-        string[] calldata _label,
-        bytes32[] calldata _secret,
-        uint256[] calldata _registrationLength,
-        bytes32[] calldata _parentNamehash,
-        address[] calldata _recipient
-    ) external payable;
 
     function purchaseSingleDomain(
         string calldata _label,

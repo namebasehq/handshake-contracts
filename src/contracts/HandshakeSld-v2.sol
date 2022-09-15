@@ -29,7 +29,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
 
     ICommitIntent public commitIntent;
 
-    HandshakeTld handshakeTldContract;
+    IHandshakeTld handshakeTldContract;
 
     IGlobalRegistrationRules public contractRegistrationStrategy;
 
@@ -41,7 +41,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
         bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
-    constructor(HandshakeTld _tld, ICommitIntent _commitIntent)
+    constructor(IHandshakeTld _tld, ICommitIntent _commitIntent)
         HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
