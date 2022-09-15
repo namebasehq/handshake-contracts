@@ -27,12 +27,7 @@ library NameEncoder {
             for (uint256 i = length - 1; i >= 0; i--) {
                 if (bytesName[i] == ".") {
                     dnsName[i + 1] = bytes1(labelLength);
-                    node = keccak256(
-                        abi.encodePacked(
-                            node,
-                            bytesName.keccak(i + 1, labelLength)
-                        )
-                    );
+                    node = keccak256(abi.encodePacked(node, bytesName.keccak(i + 1, labelLength)));
                     labelLength = 0;
                 } else {
                     labelLength += 1;
@@ -44,9 +39,7 @@ library NameEncoder {
             }
         }
 
-        node = keccak256(
-            abi.encodePacked(node, bytesName.keccak(0, labelLength))
-        );
+        node = keccak256(abi.encodePacked(node, bytesName.keccak(0, labelLength)));
 
         dnsName[0] = bytes1(labelLength);
         return (dnsName, node);

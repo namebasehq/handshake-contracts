@@ -16,8 +16,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-    constructor() {
-    }
+    constructor() {}
 
     //provide this as a public function in case we want to query it from the UI
     function canClaim(address _addr, bytes32 _namehash) public view returns (bool) {

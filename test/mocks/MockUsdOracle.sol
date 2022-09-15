@@ -11,7 +11,12 @@ contract MockUsdOracle is IPriceOracle {
         Price = _price;
     }
 
-    function getPrice() external view returns (uint256) {
+    function getPrice() public view returns (uint256) {
         return Price;
+    }
+
+    function getWeiValueOfDollar() public view returns (uint256) {
+        uint256 price = getPrice();
+        return (1 ether * 100000000) / price;
     }
 }

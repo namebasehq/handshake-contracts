@@ -102,7 +102,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         assertEq(strategy.premiumNames(full_hash), price);
     }
@@ -124,7 +126,9 @@ contract TestDefaultRegistrationStrategy is Test {
         vm.expectRevert("not approved or owner");
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         assertEq(strategy.premiumNames(full_hash), 0);
     }
@@ -146,7 +150,9 @@ contract TestDefaultRegistrationStrategy is Test {
         vm.expectRevert("not approved or owner");
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         assertEq(strategy.reservedNames(full_hash), address(0));
     }
@@ -177,9 +183,15 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
-        bytes32 full_hash2 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash));
-        bytes32 full_hash3 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
+        bytes32 full_hash2 = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash)
+        );
+        bytes32 full_hash3 = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash)
+        );
 
         assertEq(strategy.premiumNames(full_hash), price);
         assertEq(strategy.premiumNames(full_hash2), price2);
@@ -201,7 +213,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         assertEq(strategy.reservedNames(full_hash), claimer);
     }
@@ -231,9 +245,15 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
-        bytes32 full_hash2 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash));
-        bytes32 full_hash3 = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash));
+        bytes32 full_hash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
+        bytes32 full_hash2 = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash)
+        );
+        bytes32 full_hash3 = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash)
+        );
 
         assertEq(strategy.reservedNames(full_hash), claimer);
         assertEq(strategy.reservedNames(full_hash2), claimer2);
@@ -297,7 +317,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
         uint256 price = 50;
         stdstore
             .target(address(strategy))
@@ -326,7 +348,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
         address addr = address(0x335577);
         stdstore
             .target(address(strategy))
@@ -358,7 +382,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -408,7 +434,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -560,7 +588,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
+        bytes32 full_namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
+        );
 
         uint256[] memory lengthPrices = new uint256[](3);
 

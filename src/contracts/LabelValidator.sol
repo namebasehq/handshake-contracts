@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import "interfaces/ILabelValidator.sol";
 
 contract LabelValidator is ILabelValidator {
-
     // max individual length of SLDs and TLDs
     uint256 public constant MAX_LABEL_LENGTH = 63;
 
@@ -26,7 +25,7 @@ contract LabelValidator is ILabelValidator {
         if (labelBytes[0] == 0x2D || labelBytes[bytesLength - 1] == 0x2D) return false;
         // double hyphen not allowed at positions 3 & 4, this prevents punycode
         if (bytesLength > 3 && labelBytes[2] == 0x2D && labelBytes[3] == 0x2D) return false;
-        for (uint256 i; i < bytesLength;) {
+        for (uint256 i; i < bytesLength; ) {
             bytes1 char = labelBytes[i];
             if (
                 // only allow a-z,0-9,-

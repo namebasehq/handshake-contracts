@@ -43,7 +43,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string calldata _label,
         address _claimant
     ) private {
-        reservedNames[keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))] = _claimant;
+        reservedNames[
+            keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))
+        ] = _claimant;
     }
 
     function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
@@ -137,7 +139,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string memory _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
-        bytes32 namehash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash));
+        bytes32 namehash = keccak256(
+            abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash)
+        );
 
         uint256 annualPrice = premiumNames[namehash];
         if (reservedNames[namehash] == _buyingAddress) {

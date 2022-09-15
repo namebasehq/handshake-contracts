@@ -72,9 +72,7 @@ interface IResolver is
         address implementer
     ) external;
 
-    function multicall(bytes[] calldata data)
-        external
-        returns (bytes[] memory results);
+    function multicall(bytes[] calldata data) external returns (bytes[] memory results);
 
     /* Deprecated functions */
     function content(bytes32 node) external view returns (bytes32);

@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
-import { Namehash } from "utils/Namehash.sol";
+import {Namehash} from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
 import "test/mocks/MockCommitIntent.sol";
@@ -22,11 +22,14 @@ contract TestHandshakeTld is Test {
     ICommitIntent commitIntent;
 
     // test
-    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    bytes32 constant TEST_TLD_NAMEHASH =
+        0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
-    bytes32 constant TEST_SLD_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    bytes32 constant TEST_SLD_NAMEHASH =
+        0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
     // test.test.test
-    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+    bytes32 constant TEST_SUB_NAMEHASH =
+        0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
         commitIntent = new MockCommitIntent(true);
@@ -34,7 +37,6 @@ contract TestHandshakeTld is Test {
         tld = new HandshakeTld(claimManager);
         sld = new HandshakeSld(tld, commitIntent);
     }
-
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
         return Namehash.getNamehash(_parentHash, _label);
@@ -87,11 +89,7 @@ contract TestHandshakeTld is Test {
             address(sld.handshakeTldContract())
         );
         sld.handshakeTldContract().mint(tldOwnerAddr, domain);
-        assertEq(
-            tldId,
-            uint256(TEST_TLD_NAMEHASH),
-            "parent id not as expected"
-        );
+        assertEq(tldId, uint256(TEST_TLD_NAMEHASH), "parent id not as expected");
 
         emit log_named_address(
             "owner is",

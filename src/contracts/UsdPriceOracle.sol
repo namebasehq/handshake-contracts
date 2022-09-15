@@ -16,4 +16,10 @@ contract UsdPriceOracle is IPriceOracle {
         require(price > 0, "oracle returned invalid price");
         return uint256(price);
     }
+
+    function getWeiValueOfDollar() public view returns (uint256) {
+        uint256 price = getPrice();
+
+        return (1 ether * 100000000) / price;
+    }
 }

@@ -26,7 +26,6 @@ contract OwnedResolver is
     PubkeyResolver,
     TextResolver
 {
-
     address immutable tldContract;
     address immutable sldContract;
 

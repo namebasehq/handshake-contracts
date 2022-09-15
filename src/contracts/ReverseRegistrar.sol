@@ -10,6 +10,7 @@ abstract contract NameResolver {
 
 bytes32 constant lookup = 0x3031323334353637383961626364656600000000000000000000000000000000;
 bytes32 constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
+
 // namehash('addr.reverse')
 
 contract ReverseRegistrar is Ownable, IReverseRegistrar {
@@ -60,11 +61,9 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
         address resolver
     ) public override authorised(addr) returns (bytes32) {
         bytes32 labelHash = sha3HexAddress(addr);
-        bytes32 reverseNode = keccak256(
-            abi.encodePacked(ADDR_REVERSE_NODE, labelHash)
-        );
+        bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         emit ReverseClaimed(addr, reverseNode);
-       // registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
+        // registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
         return reverseNode;
     }
 
@@ -74,11 +73,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
      * @param resolver The address of the resolver to set; 0 to leave unchanged.
      * @return The node hash of the reverse record.
      */
-    function claimWithResolver(address owner, address resolver)
-        public
-        override
-        returns (bytes32)
-    {
+    function claimWithResolver(address owner, address resolver) public override returns (bytes32) {
         return claimForAddr(msg.sender, owner, resolver);
     }
 
@@ -90,13 +85,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
      * @return The node hash of the reverse record.
      */
     function setName(string memory name) public override returns (bytes32) {
-        return
-            setNameForAddr(
-                msg.sender,
-                msg.sender,
-                address(defaultResolver),
-                name
-            );
+        return setNameForAddr(msg.sender, msg.sender, address(defaultResolver), name);
     }
 
     /**
@@ -126,10 +115,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
      * @return The node hash.
      */
     function node(address addr) public pure override returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr))
-            );
+        return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr)));
     }
 
     /**

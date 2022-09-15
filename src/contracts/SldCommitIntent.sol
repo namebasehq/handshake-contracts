@@ -18,9 +18,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     uint256 public maxBlockWaitForCommit = 30;
     uint256 public minBlockWaitForCommit = 3;
 
-    constructor() {
-
-    }
+    constructor() {}
 
     function commitIntent(bytes32 _combinedHash) public {
         require(

@@ -18,19 +18,9 @@ library LowLevelCallUtils {
         view
         returns (bool success)
     {
-        require(
-            target.isContract(),
-            "LowLevelCallUtils: static call to non-contract"
-        );
+        require(target.isContract(), "LowLevelCallUtils: static call to non-contract");
         assembly {
-            success := staticcall(
-                gas(),
-                target,
-                add(data, 32),
-                mload(data),
-                0,
-                0
-            )
+            success := staticcall(gas(), target, add(data, 32), mload(data), 0, 0)
         }
     }
 

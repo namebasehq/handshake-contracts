@@ -12,14 +12,15 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
     ITldClaimManager public claimManager;
-    
+
+    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
+
     address public claimManagerAddress;
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount;
 
     constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
         claimManager = _claimManager;
-        
     }
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {
@@ -52,7 +53,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view
-        override
         returns (address receiver, uint256 royaltyAmount)
     {
         uint256 divisor = royaltyPayoutAmount.div(10);
@@ -60,7 +60,12 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return (royaltyPayoutAddress, amount);
     }
 
-    function getNamehash(bytes32 _parentHash, string memory _label) internal pure override returns (bytes32) {
+    function getNamehash(bytes32 _parentHash, string memory _label)
+        internal
+        pure
+        override
+        returns (bytes32)
+    {
         return Namehash.getNamehash(_parentHash, _label);
     }
 

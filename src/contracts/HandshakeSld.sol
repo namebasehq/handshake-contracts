@@ -18,10 +18,9 @@ import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
 import {console} from "forge-std/console.sol";
 
-
 contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
-    
+
     HandshakeTld public handshakeTldContract;
     ICommitIntent public commitIntent;
     ILabelValidator public validator;
@@ -30,7 +29,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
-    //moved this from tld contract so we can have subdomains of subdomains.
     mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
 
@@ -263,7 +261,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         );
 
         //refund any excess, can't reentry as token will already exist
-        
+
         purchaseSld(
             _label,
             _secret,
@@ -271,7 +269,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _parentNamehash,
             _recipient == address(0) ? msg.sender : _recipient
         );
-        
+
         addRegistrationDetails(
             getNamehash(_parentNamehash, _label),
             domainDollarCost,
@@ -280,14 +278,14 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _parentNamehash,
             _label
         );
-        
+
         uint256 priceInWei = (getWeiValueOfDollar() * domainDollarCost) / DECIMAL_MULTIPLIER;
 
         require(priceInWei <= msg.value, "Price too low");
 
         uint256 refund = msg.value - priceInWei;
         payable(msg.sender).transfer(refund);
-        console.log('here we go');
+        console.log("here we go");
         distributePrimaryFunds(getOwnerOfParent(getNamehash(_parentNamehash, _label)), priceInWei);
     }
 
@@ -301,7 +299,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         require(validator.isValidLabel(_label), "invalid name");
 
         bytes32 namehash = getNamehash(_parentNamehash, _label);
-        console.log('actual namehash');
+        console.log("actual namehash");
         console.log(uint256(namehash));
         require(commitIntent.allowedCommit(namehash, _secret, msg.sender), "commit not allowed");
         require(canRegister(namehash), "Subdomain already registered");
@@ -367,7 +365,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view
-        override
         returns (address receiver, uint256 royaltyAmount)
     {
         bytes32 parentNamehash = namehashToParentMap[bytes32(tokenId)];
@@ -519,7 +516,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         contractRegistrationStrategy = IGlobalRegistrationRules(_strategy);
     }
 
-    function getGuarenteedPrices(bytes32 _namehash) external view returns (uint48[10] memory _prices) {
+    function getGuarenteedPrices(bytes32 _namehash)
+        external
+        view
+        returns (uint48[10] memory _prices)
+    {
         SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
         return detail.RegistrationPriceSnapshot;
     }
@@ -531,11 +532,17 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     }
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) public view returns (bool) {
-
-        return handshakeTldContract.isApprovedOrOwner(msg.sender, _id) || isApprovedOrOwner(msg.sender, _id);
+        return
+            handshakeTldContract.isApprovedOrOwner(msg.sender, _id) ||
+            isApprovedOrOwner(msg.sender, _id);
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) public override(HandshakeNft,IHandshakeSld) view returns (bool) { 
+    function isApprovedOrOwner(address spender, uint256 tokenId)
+        public
+        view
+        override(HandshakeNft, IHandshakeSld)
+        returns (bool)
+    {
         super.isApprovedOrOwner(spender, tokenId);
     }
 

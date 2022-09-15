@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import { Namehash } from "utils/Namehash.sol";
+import {Namehash} from "utils/Namehash.sol";
 import "contracts/HandshakeSld.sol";
 import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
@@ -27,14 +27,16 @@ contract TestHandshakesld is Test {
     ICommitIntent commitIntent;
 
     // test
-    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    bytes32 constant TEST_TLD_NAMEHASH =
+        0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
-    bytes32 constant TEST_sld_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    bytes32 constant TEST_sld_NAMEHASH =
+        0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
     // test.test.test
-    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+    bytes32 constant TEST_SUB_NAMEHASH =
+        0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
-
         commitIntent = new MockCommitIntent(true);
         claimManager = new MockClaimManager();
         tld = new HandshakeTld(claimManager);
@@ -44,7 +46,7 @@ contract TestHandshakesld is Test {
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) public pure returns (bytes32) {
-        return Namehash.getNamehash( _parentHash, _label);
+        return Namehash.getNamehash(_parentHash, _label);
     }
 
     function getTldNamehash(string memory _label) public pure returns (bytes32) {
@@ -120,11 +122,9 @@ contract TestHandshakesld is Test {
 
         // check aox.eth sld token ID
         assertEq(sldNamehash, 0x81f536edca1dbdb9582598140d28a86010c4dbb395f128647f1add370d334d89);
-
     }
 
     function testTestTldTokenIds() public {
-
         // .test
         // tld labelhash: 0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658
         // tld namehash: 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6
@@ -231,7 +231,11 @@ contract TestHandshakesld is Test {
         stdstore.target(address(sld)).sig("validator()").checked_write(address(validator));
     }
 
-    function _addMockRegistrationStrategyToTld(MockRegistrationStrategy _strategy, bytes32 _tldNamehash, uint256 _price) private {
+    function _addMockRegistrationStrategyToTld(
+        MockRegistrationStrategy _strategy,
+        bytes32 _tldNamehash,
+        uint256 _price
+    ) private {
         stdstore
             .target(address(sld))
             .sig("sldDefaultRegistrationStrategy(bytes32)")
@@ -239,10 +243,11 @@ contract TestHandshakesld is Test {
             .checked_write(address(_strategy));
     }
 
-    function addMockRegistrationStrategyToTldWithPrice(bytes32 _tldNamehash, uint256 _price) private {
+    function addMockRegistrationStrategyToTldWithPrice(bytes32 _tldNamehash, uint256 _price)
+        private
+    {
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(_price);
         _addMockRegistrationStrategyToTld(strategy, _tldNamehash, _price);
-
     }
 
     function addMockRegistrationStrategyToTld(bytes32 _tldNamehash) private {
@@ -288,7 +293,6 @@ contract TestHandshakesld is Test {
     function testOwnerOfTldContractSetCorrectly() public {
         assertEq(address(this), Ownable(address(sld.handshakeTldContract())).owner());
     }
-
 
     function testMintsldFromAuthorisedWallet() public {
         string memory label = "";
@@ -816,14 +820,11 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(parent_hash);
         assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
-        console.log('yoyoyoyo');
+        console.log("yoyoyoyo");
         vm.prank(tldOwner);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
         (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
@@ -856,12 +857,9 @@ contract TestHandshakesld is Test {
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
         // test.test
-        uint256 expectedsldId = uint256(getNamehash( parent_hash, "test"));
+        uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -899,10 +897,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -949,10 +944,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -998,10 +990,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1041,10 +1030,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1127,10 +1113,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1170,10 +1153,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1241,7 +1221,7 @@ contract TestHandshakesld is Test {
         bytes32[] memory emptyArr;
 
         bytes32 namehash = getNamehash(parentNamehash, "test");
-        console.log('expected namehash');
+        console.log("expected namehash");
         console.log(uint256(namehash));
         sld.purchaseSingleDomain(
             "test",
@@ -1284,7 +1264,7 @@ contract TestHandshakesld is Test {
 
         bytes32[] memory emptyArr;
 
-        bytes32 namehash = getNamehash( parentNamehash, "test");
+        bytes32 namehash = getNamehash(parentNamehash, "test");
 
         //we mint to other address 0x1337
         sld.purchaseSingleDomain(
@@ -1350,10 +1330,7 @@ contract TestHandshakesld is Test {
         // test.test
         uint256 expectedsldId = uint256(getNamehash(parent_hash, "test"));
 
-        assertEq(
-            expectedsldId,
-            uint256(TEST_sld_NAMEHASH)
-        );
+        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(getTldNamehash(tldName));
 
@@ -1405,13 +1382,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldsldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
-        assertEq(
-            sld.ownerOf(
-                uint256(TEST_sld_NAMEHASH)
-            ),
-            sldsldOwner,
-            "no owner of child of sld"
-        );
+        assertEq(sld.ownerOf(uint256(TEST_sld_NAMEHASH)), sldsldOwner, "no owner of child of sld");
 
         assertEq(
             expectedsldChildId,
@@ -1472,13 +1443,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldsldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
-        assertEq(
-            sld.ownerOf(
-                uint256(TEST_SUB_NAMEHASH)
-            ),
-            sldsldOwner,
-            "no owner of child of sld"
-        );
+        assertEq(sld.ownerOf(uint256(TEST_SUB_NAMEHASH)), sldsldOwner, "no owner of child of sld");
 
         assertEq(
             expectedsldChildId,
@@ -1497,7 +1462,6 @@ contract TestHandshakesld is Test {
         vm.expectRevert("ERC721: invalid token ID");
         sld.setRoyaltyPayoutAmount(sldId, setRoyaltyNumber);
     }
-
 
     function ignoretestSetRoyaltyPaymentAddressForsldChildrenFromsldOwner() public {
         string memory tldName = "test";
@@ -1524,13 +1488,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        assertEq(
-            sld.ownerOf(
-                uint256(TEST_sld_NAMEHASH)
-            ),
-            sldOwner,
-            "sld owner not correct"
-        );
+        assertEq(sld.ownerOf(uint256(TEST_sld_NAMEHASH)), sldOwner, "sld owner not correct");
 
         bytes32 sldHash = getNamehash(parent_hash, "test");
 
@@ -1544,13 +1502,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldsldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, sldHash, emptyArr, sldsldOwner);
 
-        assertEq(
-            sld.ownerOf(
-                uint256(TEST_SUB_NAMEHASH)
-            ),
-            sldsldOwner,
-            "no owner of child of sld"
-        );
+        assertEq(sld.ownerOf(uint256(TEST_SUB_NAMEHASH)), sldsldOwner, "no owner of child of sld");
 
         assertEq(
             expectedsldChildId,
@@ -1604,7 +1556,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash( parent_hash, "test");
+        bytes32 sldHash = getNamehash(parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
@@ -1636,7 +1588,9 @@ contract TestHandshakesld is Test {
         vm.stopPrank();
     }
 
-    function ignoretestSetRoyaltyPaymentAmountForsldParentFromsldParentOwnerApprovedAddress() public {
+    function ignoretestSetRoyaltyPaymentAmountForsldParentFromsldParentOwnerApprovedAddress()
+        public
+    {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
@@ -1661,8 +1615,8 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
 
-        bytes32 sldHash = getNamehash( parent_hash, "test");
-        
+        bytes32 sldHash = getNamehash(parent_hash, "test");
+
         uint256 sldId = uint256(sldHash);
 
         // test.test.test
@@ -1726,7 +1680,7 @@ contract TestHandshakesld is Test {
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
 
-        bytes32 sldHash = getNamehash( parent_hash, "test");
+        bytes32 sldHash = getNamehash(parent_hash, "test");
 
         uint256 sldId = uint256(sldHash);
 
@@ -1932,7 +1886,7 @@ contract TestHandshakesld is Test {
             assertEq(dets[i].Price, _price * 1000, "mismatch in price");
             assertEq(
                 dets[i].Id,
-                uint256(getNamehash( parentNamehash, labels[i])),
+                uint256(getNamehash(parentNamehash, labels[i])),
                 "expected Id does not match"
             );
             assertEq(dets[i].ParentId, parentIds[i], "Parent Id does not match");
@@ -2285,7 +2239,7 @@ contract TestHandshakesld is Test {
         );
         vm.stopPrank();
 
-        bytes32 namehash = getNamehash( parentNamehash, label);
+        bytes32 namehash = getNamehash(parentNamehash, label);
 
         (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = sld
             .subdomainRegistrationHistory(namehash);

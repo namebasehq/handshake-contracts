@@ -2,7 +2,7 @@
 pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
-import { Namehash } from "utils/Namehash.sol";
+import {Namehash} from "utils/Namehash.sol";
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -17,15 +17,13 @@ abstract contract HandshakeNft is ERC721, Ownable {
 
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
-    
+
     // a map of string labels
     mapping(bytes32 => string) public namehashToLabelMap;
 
     IMetadataService public metadata;
 
-    constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {
-
-    }
+    constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
         require(address(metadata) != address(0), "Metadata service is not implemented");
@@ -40,17 +38,8 @@ abstract contract HandshakeNft is ERC721, Ownable {
         metadata = _metadata;
     }
 
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
-        external
-        view
-        virtual
-        returns (address receiver, uint256 royaltyAmount)
-    {}
-
     function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
-        return
-            super.supportsInterface(interfaceId) ||
-            interfaceId == this.royaltyInfo.selector ^ this.tokenURI.selector;
+        return super.supportsInterface(interfaceId) || interfaceId == this.tokenURI.selector;
     }
 
     /**
@@ -61,7 +50,7 @@ abstract contract HandshakeNft is ERC721, Ownable {
     function ownerOf(uint256 tokenId) public view override returns (address) {
         // TODO: implement expirations
         // require(expiries[tokenId] > block.timestamp);
-        console.log('ownerOf');
+        console.log("ownerOf");
         console.log(tokenId);
         return super.ownerOf(tokenId);
     }
@@ -72,7 +61,12 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to be transferred
      * @return bool whether spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view override returns (bool) {
+    function _isApprovedOrOwner(address spender, uint256 tokenId)
+        internal
+        view
+        override
+        returns (bool)
+    {
         address owner = ownerOf(tokenId);
         return (spender == owner ||
             getApproved(tokenId) == spender ||
@@ -85,7 +79,12 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to be transferred
      * @return bool whether the spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
-    function isApprovedOrOwner(address spender, uint256 tokenId) public view virtual returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId)
+        public
+        view
+        virtual
+        returns (bool)
+    {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
@@ -111,7 +110,12 @@ abstract contract HandshakeNft is ERC721, Ownable {
     }
 
     // TODO: swap param order
-    function getNamehash(bytes32 _parentHash, string memory _label) internal pure virtual returns (bytes32) {
-        return Namehash.getNamehash( _parentHash, _label);
+    function getNamehash(bytes32 _parentHash, string memory _label)
+        internal
+        pure
+        virtual
+        returns (bytes32)
+    {
+        return Namehash.getNamehash(_parentHash, _label);
     }
 }

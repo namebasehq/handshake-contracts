@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import "interfaces/IGlobalRegistrationRules.sol";
 
-contract GlobalRegistrationRules is IGlobalRegistrationRules{
+contract GlobalRegistrationRules is IGlobalRegistrationRules {
     uint256 private constant MIN_REGISTRATION_DAYS = 365;
     uint256 private constant MIN_DOLLAR_COST = 1;
 

@@ -9,7 +9,6 @@ import "test/mocks/MockMetadataService.sol";
 import "test/mocks/MockCommitIntent.sol";
 
 contract TestNft is HandshakeNft {
-    
     constructor() HandshakeNft("HNSNFT", "HandshakeNFT") {}
 
     function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
