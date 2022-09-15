@@ -31,7 +31,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
         bytes32 namehash = keccak256(abi.encodePacked(_domain));
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.mint(msg.sender, _domain);
+        handshakeTldContract.register(msg.sender, _domain);
     }
 
     //can also be removed by setting address to 0x0

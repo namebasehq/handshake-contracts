@@ -97,7 +97,7 @@ contract TestHandshakeSld is Test {
         stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
-        sld.handshakeTldContract().mint(parent_address, tldLabel);
+        sld.handshakeTldContract().register(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
         sld.setPricingStrategy(uint256(tldNamehash), strat);
@@ -163,7 +163,7 @@ contract TestHandshakeSld is Test {
         stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
             parent_address
         );
-        sld.handshakeTldContract().mint(parent_address, tldLabel);
+        sld.handshakeTldContract().register(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
         sld.setPricingStrategy(uint256(tldNamehash), strat);
@@ -311,7 +311,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "testtest");
+        tld.register(tldOwner, "testtest");
 
         vm.stopPrank();
 
@@ -352,7 +352,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "packed");
+        tld.register(tldOwner, "packed");
 
         vm.stopPrank();
 
@@ -435,7 +435,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yyyyy");
+        tld.register(tldOwner, "yyyyy");
 
         vm.stopPrank();
 
@@ -481,7 +481,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "testing");
+        tld.register(tldOwner, "testing");
 
         vm.stopPrank();
 
@@ -520,7 +520,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "testing");
+        tld.register(tldOwner, "testing");
 
         vm.stopPrank();
 
@@ -595,8 +595,8 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yo");
-        tld.mint(tldOwner, "yoyo");
+        tld.register(tldOwner, "yo");
+        tld.register(tldOwner, "yoyo");
         vm.stopPrank();
 
         addMockCommitIntent(true);
@@ -646,8 +646,8 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yes");
-        tld.mint(tldOwner, "no");
+        tld.register(tldOwner, "yes");
+        tld.register(tldOwner, "no");
         vm.stopPrank();
 
         bytes32[][] memory empty_array = new bytes32[][](2);
@@ -687,7 +687,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "heyman");
+        tld.register(tldOwner, "heyman");
 
         vm.stopPrank();
 
@@ -722,7 +722,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "hash");
+        tld.register(tldOwner, "hash");
         vm.stopPrank();
 
         bytes32[] memory empty_array;
@@ -775,8 +775,8 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "hey");
-        tld.mint(tldOwner, "you");
+        tld.register(tldOwner, "hey");
+        tld.register(tldOwner, "you");
         vm.stopPrank();
 
         bytes32[][] memory empty_array = new bytes32[][](2);
@@ -812,7 +812,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -851,7 +851,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -889,7 +889,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -936,7 +936,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -982,7 +982,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1022,7 +1022,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1065,7 +1065,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1105,7 +1105,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1145,7 +1145,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1186,7 +1186,7 @@ contract TestHandshakeSld is Test {
         );
 
         vm.startPrank(parent_address);
-        sld.handshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(1));
         sld.setPricingStrategy(uint256(parentNamehash), strat);
@@ -1206,7 +1206,7 @@ contract TestHandshakeSld is Test {
         );
 
         vm.startPrank(parent_address);
-        tld.mint(parent_address, domain);
+        tld.register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
         sld.setPricingStrategy(uint256(parentNamehash), strat);
@@ -1252,7 +1252,7 @@ contract TestHandshakeSld is Test {
         );
 
         vm.startPrank(parent_address);
-        sld.handshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
         sld.setPricingStrategy(uint256(parentNamehash), strat);
@@ -1294,7 +1294,7 @@ contract TestHandshakeSld is Test {
         );
 
         vm.startPrank(parent_address);
-        sld.handshakeTldContract().mint(parent_address, domain);
+        sld.handshakeTldContract().register(parent_address, domain);
         vm.stopPrank();
 
         vm.startPrank(not_parent_address);
@@ -1322,7 +1322,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1365,7 +1365,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1426,7 +1426,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1483,7 +1483,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1551,7 +1551,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1610,7 +1610,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, sldOwner);
@@ -1675,7 +1675,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, tldName);
+        tld.register(tldOwner, tldName);
 
         vm.prank(sldOwner);
         sld.purchaseSingleDomain("test", bytes32(0x0), 365, parent_hash, emptyArr, msg.sender);
@@ -1917,7 +1917,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yo");
+        tld.register(tldOwner, "yo");
 
         vm.stopPrank();
 
@@ -1958,7 +1958,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yoyo");
+        tld.register(tldOwner, "yoyo");
 
         vm.stopPrank();
 
@@ -1998,7 +1998,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yyyttt");
+        tld.register(tldOwner, "yyyttt");
 
         vm.stopPrank();
 
@@ -2062,8 +2062,8 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "testing12345");
-        tld.mint(tldOwner, "testing98765");
+        tld.register(tldOwner, "testing12345");
+        tld.register(tldOwner, "testing98765");
         vm.stopPrank();
 
         addMockCommitIntent(true);
@@ -2119,7 +2119,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "tatata");
+        tld.register(tldOwner, "tatata");
 
         vm.stopPrank();
 
@@ -2178,7 +2178,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "tatata");
+        tld.register(tldOwner, "tatata");
         vm.stopPrank();
 
         bytes32[] memory empty_array;
@@ -2224,7 +2224,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, "yoyo");
+        tld.register(tldOwner, "yoyo");
 
         vm.warp(6688);
 
@@ -2301,7 +2301,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "abc");
+        tld.register(tldOwner, "abc");
         vm.stopPrank();
 
         bytes32[] memory empty_array;
@@ -2348,7 +2348,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
-        tld.mint(tldOwner, "yo");
+        tld.register(tldOwner, "yo");
         addMockOracle();
 
         bytes32[] memory empty_array;
@@ -2428,7 +2428,7 @@ contract TestHandshakeSld is Test {
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.startPrank(tldOwner);
-        tld.mint(tldOwner, "yoyoyo");
+        tld.register(tldOwner, "yoyoyo");
         vm.stopPrank();
 
         MockUsdOracle oracle = new MockUsdOracle(200000000000);

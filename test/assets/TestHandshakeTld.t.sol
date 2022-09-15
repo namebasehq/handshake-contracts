@@ -50,7 +50,7 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
         uint256 tldId = uint256(getTldNamehash(domain));
         vm.expectRevert("not authorised");
-        tld.mint(address(0x1339), domain);
+        tld.register(address(0x1339), domain);
     }
 
     function testMintFromAuthoriseAddress() public {
@@ -59,7 +59,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.mint(address(0x1339), domain);
+        tld.register(address(0x1339), domain);
         assertEq(address(0x1339), tld.ownerOf(tldId));
     }
 
@@ -70,7 +70,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.mint(address(0x1339), domain);
+        tld.register(address(0x1339), domain);
 
         assertEq(domain, tld.namehashToLabelMap(namehash));
     }
@@ -88,7 +88,7 @@ contract TestHandshakeTld is Test {
         stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
             address(sld.handshakeTldContract())
         );
-        sld.handshakeTldContract().mint(tldOwnerAddr, domain);
+        sld.handshakeTldContract().register(tldOwnerAddr, domain);
         assertEq(tldId, uint256(TEST_TLD_NAMEHASH), "parent id not as expected");
 
         emit log_named_address(
@@ -117,7 +117,7 @@ contract TestHandshakeTld is Test {
             address(this)
         );
 
-        sld.handshakeTldContract().mint(tldOwnerAddr, domain);
+        sld.handshakeTldContract().register(tldOwnerAddr, domain);
 
         vm.startPrank(notTldOwnerAddr);
 

@@ -49,8 +49,8 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
         handshakeTldContract = _tld;
     }
 
-    function mintSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
-        
+    function register(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
+
     }
 
     function getPricingStrategy(bytes32 _parentNamehash)

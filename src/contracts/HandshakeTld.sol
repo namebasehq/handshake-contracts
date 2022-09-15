@@ -37,7 +37,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         royaltyPayoutAmount = _amount;
     }
 
-    function mint(address _addr, string calldata _domain) external {
+    function register(address _addr, string calldata _domain) external {
         // TLD node and token ID is full namehash with root 0x0 as parent
         bytes32 namehash = getTldNamehash(_domain);
         require(address(claimManager) == msg.sender, "not authorised");

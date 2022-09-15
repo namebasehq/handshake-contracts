@@ -5,6 +5,7 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "contracts/SldRegistrationManager.sol";
+import "mocks/MockLabelValidator.sol";
 
 
 contract TestSldRegistrationManager is Test {
