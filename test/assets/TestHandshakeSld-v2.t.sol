@@ -26,12 +26,10 @@ contract TestHandshakeSld_v2 is Test {
 
     HandshakeSld_v2 sld;
     IHandshakeTld tld;
-    ICommitIntent commit;
 
     function setUp() public {
         tld = new MockHandshakeTld();
-        commit = new MockCommitIntent(true);
-        sld = new HandshakeSld_v2(tld, commit);
+        sld = new HandshakeSld_v2(tld);
     }
 
     function testMintSldFromRegistryAddress_success() public {}

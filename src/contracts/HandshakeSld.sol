@@ -29,7 +29,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
-    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
+    mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
 
     error MissingRegistrationStrategy();
@@ -332,7 +332,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
-        uint48[10] memory arr;
+        uint128[10] memory arr;
 
         for (uint256 i; i < arr.length; ) {
             uint256 price = _strategy.getPriceInDollars(
@@ -398,8 +398,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         view
         returns (ISldRegistrationStrategy)
     {
-        if (address(0) != address(sldDefaultRegistrationStrategy[_parentNamehash])) {
-            return sldDefaultRegistrationStrategy[_parentNamehash];
+        if (address(0) != address(registrationStrategy[_parentNamehash])) {
+            return registrationStrategy[_parentNamehash];
         } else {
             revert MissingRegistrationStrategy();
         }
@@ -413,7 +413,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
             _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
-        sldDefaultRegistrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
+        registrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
@@ -521,7 +521,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     function getGuarenteedPrices(bytes32 _namehash)
         external
         view
-        returns (uint48[10] memory _prices)
+        returns (uint128[10] memory _prices)
     {
         SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
         return detail.RegistrationPriceSnapshot;

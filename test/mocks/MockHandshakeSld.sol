@@ -2,12 +2,14 @@
 pragma solidity ^0.8.15;
 
 import "interfaces/IHandshakeSld.sol";
+import "interfaces/ISldRegistrationStrategy.sol";
 
 contract MockHandshakeSld is IHandshakeSld {
-    mapping(uint256 => mapping(address => bool)) IdToAddressToApproved;
+    mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
+    mapping(bytes32 => ISldRegistrationStrategy) mockRegistrationStrategy;
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) external view returns (bool) {
-        return IdToAddressToApproved[_id][msg.sender];
+        return idToAddressToApproved[_id][msg.sender];
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId)
@@ -16,7 +18,7 @@ contract MockHandshakeSld is IHandshakeSld {
         override
         returns (bool)
     {
-        return IdToAddressToApproved[tokenId][spender];
+        return idToAddressToApproved[tokenId][spender];
     }
 
     function addMapping(
@@ -24,7 +26,7 @@ contract MockHandshakeSld is IHandshakeSld {
         address _addr,
         bool _approved
     ) public {
-        IdToAddressToApproved[_id][_addr] = _approved;
+        idToAddressToApproved[_id][_addr] = _approved;
     }
 
     function registerSld(
@@ -32,4 +34,25 @@ contract MockHandshakeSld is IHandshakeSld {
         bytes32 _tldNamehash,
         bytes32 _sldNamehash
     ) external {}
+
+    function registrationStrategy(bytes32 _subdomainNamehash)
+        external
+        view
+        returns (ISldRegistrationStrategy)
+    {}
+
+    function getRegistrationStrategy(bytes32 _parentNamehash)
+        public
+        view
+        returns (ISldRegistrationStrategy)
+    {
+        return mockRegistrationStrategy[_parentNamehash];
+    }
+
+    function setMockRegistrationStrategy(
+        bytes32 _parentNamehash,
+        ISldRegistrationStrategy _strategy
+    ) public {
+        mockRegistrationStrategy[_parentNamehash] = _strategy;
+    }
 }

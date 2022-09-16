@@ -10,14 +10,23 @@ import "mocks/MockGlobalRegistrationStrategy.sol";
 import "mocks/MockLabelValidator.sol";
 import "mocks/MockHandshakeTld.sol";
 import "mocks/MockHandshakeSld.sol";
+import "mocks/MockCommitIntent.sol";
+import "mocks/MockRegistrationStrategy.sol";
+import "src/utils/Namehash.sol";
+import "structs/SubdomainRegistrationDetail.sol";
 
 contract TestSldRegistrationManager is Test {
     SldRegistrationManager manager;
 
+    MockHandshakeSld sld;
+    MockHandshakeTld tld;
+    MockCommitIntent commitIntent;
+
     function setUp() public {
-        MockHandshakeSld sld = new MockHandshakeSld();
-        MockHandshakeTld tld = new MockHandshakeTld();
-        manager = new SldRegistrationManager(tld, sld);
+        sld = new MockHandshakeSld();
+        tld = new MockHandshakeTld();
+        commitIntent = new MockCommitIntent(true);
+        manager = new SldRegistrationManager(tld, sld, commitIntent);
     }
 
     function setUpLabelValidator() public {
@@ -28,6 +37,11 @@ contract TestSldRegistrationManager is Test {
     function setUpGlobalRules() public {
         IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false);
         manager.updateGlobalRegistrationStrategy(globalRules);
+    }
+
+    function setUpRegistrationStrategy(bytes32 _parentNamehash) public {
+        ISldRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
+        sld.setMockRegistrationStrategy(_parentNamehash, strategy);
     }
 
     function testUpdateLabelValidatorFromOwner_success() public {
@@ -62,6 +76,24 @@ contract TestSldRegistrationManager is Test {
 
         vm.prank(address(0x420));
         vm.expectRevert("invalid label");
+        manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
+    }
+
+    function testPurchaseSldGlobalRegistrationRulesReturnFalse_fail() public {
+        setUpLabelValidator();
+        IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false);
+        manager.updateGlobalRegistrationStrategy(rules);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 500;
+        bytes32 parentNamehash = 0x0;
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0x5555);
+
+        vm.prank(address(0x420));
+        vm.expectRevert("failed global strategy");
         manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
     }
 
@@ -147,7 +179,37 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0);
 
-        vm.prank(address(0x420));
+        address sendingAddress = address(0x420);
+        vm.prank(sendingAddress);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(
+                manager.sld().registerSld,
+                (
+                    sendingAddress,
+                    parentNamehash,
+                    0xab5dd1bdf3bb990efe3a65bbfd47346dbf0974daf9c37506381381bb28f98651
+                )
+            )
+        );
+        manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
+    }
+
+    function testPurchaseSldToOtherAddress() public {
+        setUpLabelValidator();
+        setUpGlobalRules();
+        bytes32 parentNamehash = 0x0;
+        setUpRegistrationStrategy(parentNamehash);
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 500;
+
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        vm.prank(sendingAddress);
         vm.expectCall(
             address(manager.sld()),
             abi.encodeCall(
@@ -162,11 +224,81 @@ contract TestSldRegistrationManager is Test {
         manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
     }
 
-    function testPurchaseSldToOtherAddress() public {}
+    function testMintSingleDomainWithNoPriceStrategy_fail() public {
+        setUpLabelValidator();
+        setUpGlobalRules();
 
-    function testMintSingleDomainCheckHistory() public {}
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 500;
+        bytes32 parentNamehash = 0x0;
+        bytes32[] memory proofs = new bytes32[](0);
 
-    function testRegisterSubdomainForOneDollarLowestPrice_pass() public {}
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        vm.prank(sendingAddress);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(
+                manager.sld().registerSld,
+                (
+                    recipient,
+                    parentNamehash,
+                    0xab5dd1bdf3bb990efe3a65bbfd47346dbf0974daf9c37506381381bb28f98651
+                )
+            )
+        );
+
+        vm.expectRevert("no registration strategy");
+        manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
+    }
+
+    function testMintSingleDomainCheckHistory() public {
+        setUpLabelValidator();
+        setUpGlobalRules();
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 500;
+        bytes32 parentNamehash = 0x0;
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        vm.prank(sendingAddress);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(
+                manager.sld().registerSld,
+                (
+                    recipient,
+                    parentNamehash,
+                    0xab5dd1bdf3bb990efe3a65bbfd47346dbf0974daf9c37506381381bb28f98651
+                )
+            )
+        );
+        manager.registerSld(label, secret, registrationLength, parentNamehash, proofs, recipient);
+
+        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength,
+            uint96 actualRegistrationPrice
+        ) = manager.subdomainRegistrationHistory(subdomainNamehash);
+
+        assertEq(actualRegistrationTime, block.timestamp, "registration time incorrect");
+        assertEq(actualRegistrationLength, registrationLength, "registration length incorrect");
+        assertEq(actualRegistrationPrice, 1, "registration price incorrect");
+
+        uint128[10] memory pricing = manager.getTenYearGuarenteedPricing(subdomainNamehash);
+
+        for (uint256 i; i < 10; i++) {
+            assertEq(pricing[i], i + 1, "issue with historic pricing");
+        }
+    }
 
     function testRenewSubdomainFromSldOwner_pass() public {}
 
@@ -175,5 +307,5 @@ contract TestSldRegistrationManager is Test {
 
     function testRenewNoneExistingToken_fail() public {}
 
-    function testRenewExpiredSld_fail() public { }
+    function testRenewExpiredSld_fail() public {}
 }

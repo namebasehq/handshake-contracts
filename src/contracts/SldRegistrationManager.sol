@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ILabelValidator.sol";
+import "interfaces/ICommitIntent.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
 import "structs/SubdomainRegistrationDetail.sol";
@@ -20,9 +21,16 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
     IHandshakeSld public sld;
     IHandshakeTld public tld;
 
-    constructor(IHandshakeTld _tld, IHandshakeSld _sld) {
+    ICommitIntent public commitIntent;
+
+    constructor(
+        IHandshakeTld _tld,
+        IHandshakeSld _sld,
+        ICommitIntent _commitIntent
+    ) {
         sld = _sld;
         tld = _tld;
+        commitIntent = _commitIntent;
     }
 
     function registerMultipleSld(
@@ -42,7 +50,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         address _recipient
     ) external payable {
         require(labelValidator.isValidLabel(_label), "invalid label");
-
+        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+        require(address(strategy) != address(0), "no price strategy");
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
         sld.registerSld(_recipient, _parentNamehash, sldNamehash);
@@ -61,6 +70,17 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
 
     function updateGlobalRegistrationStrategy(IGlobalRegistrationRules _strategy) public onlyOwner {
         globalStrategy = _strategy;
+    }
+
+    function getTenYearGuarenteedPricing(bytes32 _subdomainNamehash)
+        external
+        view
+        returns (uint128[10] memory)
+    {
+        SubdomainRegistrationDetail memory details = subdomainRegistrationHistory[
+            _subdomainNamehash
+        ];
+        return details.RegistrationPriceSnapshot;
     }
 
     function getRenewalPricePerDay(

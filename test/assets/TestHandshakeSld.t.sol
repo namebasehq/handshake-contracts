@@ -238,7 +238,7 @@ contract TestHandshakeSld is Test {
     ) private {
         stdstore
             .target(address(sld))
-            .sig("sldDefaultRegistrationStrategy(bytes32)")
+            .sig("registrationStrategy(bytes32)")
             .with_key(_tldNamehash)
             .checked_write(address(_strategy));
     }
@@ -2153,7 +2153,7 @@ contract TestHandshakeSld is Test {
         assertEq(regLength, registrationLength, "registration length incorrect");
         assertEq(regPrice, annualCost * 1000, "registration price incorrect");
 
-        uint48[10] memory prices = sld.getGuarenteedPrices(namehash);
+        uint128[10] memory prices = sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < prices.length; i++) {
             assertEq(prices[i] / 1000, (i + 1) * annualCost, "annual cost incorrect");
@@ -2249,7 +2249,7 @@ contract TestHandshakeSld is Test {
         emit log_named_uint("registration price", RegistrationPrice);
         emit log_named_uint("wei value of dollar", sld.getWeiValueOfDollar());
 
-        uint48[10] memory rates = sld.getGuarenteedPrices(namehash);
+        uint128[10] memory rates = sld.getGuarenteedPrices(namehash);
 
         /*
         for (uint256 i; i < rates.length; i++) {
@@ -2377,7 +2377,7 @@ contract TestHandshakeSld is Test {
         emit log_named_uint("registration price", RegistrationPrice);
         emit log_named_uint("wei value of dollar", sld.getWeiValueOfDollar());
 
-        uint48[10] memory rates = sld.getGuarenteedPrices(namehash);
+        uint128[10] memory rates = sld.getGuarenteedPrices(namehash);
 
         for (uint256 i; i < rates.length; i++) {
             emit log_named_uint("rate", rates[i]);

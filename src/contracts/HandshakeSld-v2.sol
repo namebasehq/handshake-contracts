@@ -16,6 +16,7 @@ import "contracts/UsdPriceOracle.sol";
 import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
+import "interfaces/ISldRegistrationManager.sol";
 
 import {console} from "forge-std/console.sol";
 
@@ -25,13 +26,12 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public royaltyPayoutAddressMap;
     mapping(bytes32 => bytes32) public namehashToParentMap;
-    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
-
-    ICommitIntent public commitIntent;
+    mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
 
     IHandshakeTld handshakeTldContract;
 
     IGlobalRegistrationRules public contractRegistrationStrategy;
+    ISldRegistrationManager public registrationManager;
 
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
@@ -41,11 +41,10 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
         bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
-    constructor(IHandshakeTld _tld, ICommitIntent _commitIntent)
+    constructor(IHandshakeTld _tld)
         HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
-        commitIntent = _commitIntent;
         handshakeTldContract = _tld;
     }
 
@@ -53,7 +52,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         address _to,
         bytes32 _tldNamehash,
         bytes32 _sldNamehash
-    ) external {}
+    ) external isRegistrationManager {}
 
     function isApprovedOrOwner(address spender, uint256 tokenId)
         public
@@ -69,7 +68,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         view
         returns (ISldRegistrationStrategy)
     {
-        ISldRegistrationStrategy strategy = sldDefaultRegistrationStrategy[_parentNamehash];
+        ISldRegistrationStrategy strategy = registrationStrategy[_parentNamehash];
         if (address(strategy) == address(0)) {
             revert MissingRegistrationStrategy();
         }
@@ -85,7 +84,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
             _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
             "missing interface for price strategy"
         );
-        sldDefaultRegistrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
+        registrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
@@ -205,6 +204,11 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
             handshakeTldContract.isApprovedOrOwner(msg.sender, _id),
             "ERC721: invalid token ID"
         );
+        _;
+    }
+
+    modifier isRegistrationManager() {
+        require(address(registrationManager) == msg.sender, "not authorised");
         _;
     }
 }
