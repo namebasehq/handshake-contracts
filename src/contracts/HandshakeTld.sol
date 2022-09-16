@@ -69,11 +69,21 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return Namehash.getNamehash(_parentHash, _label);
     }
 
-    function ownerOf(uint256 _id) public override(HandshakeNft, IHandshakeTld) view returns(address){
+    function ownerOf(uint256 _id)
+        public
+        view
+        override(HandshakeNft, IHandshakeTld)
+        returns (address)
+    {
         return super.ownerOf(_id);
     }
 
-    function isApprovedOrOwner(address _operator, uint256 _id) public override(HandshakeNft, IHandshakeTld) view returns(bool){
+    function isApprovedOrOwner(address _operator, uint256 _id)
+        public
+        view
+        override(HandshakeNft, IHandshakeTld)
+        returns (bool)
+    {
         return super.isApprovedOrOwner(_operator, _id);
     }
 

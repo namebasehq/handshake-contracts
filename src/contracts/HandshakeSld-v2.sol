@@ -49,13 +49,20 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         handshakeTldContract = _tld;
     }
 
-    function registerSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
+    function registerSld(
+        address _to,
+        bytes32 _tldNamehash,
+        bytes32 _sldNamehash
+    ) external {}
 
-    }
-
-     function isApprovedOrOwner(address spender, uint256 tokenId) public view override(HandshakeNft, IHandshakeSld) returns (bool){
+    function isApprovedOrOwner(address spender, uint256 tokenId)
+        public
+        view
+        override(HandshakeNft, IHandshakeSld)
+        returns (bool)
+    {
         return HandshakeNft.isApprovedOrOwner(spender, tokenId);
-     }
+    }
 
     function getRegistrationStrategy(bytes32 _parentNamehash)
         public
@@ -63,13 +70,11 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         returns (ISldRegistrationStrategy)
     {
         ISldRegistrationStrategy strategy = sldDefaultRegistrationStrategy[_parentNamehash];
-        if (address(strategy) == address(0))
-        {
+        if (address(strategy) == address(0)) {
             revert MissingRegistrationStrategy();
         }
 
         return strategy;
-
     }
 
     function setRegistrationStrategy(uint256 _id, address _strategy)
@@ -174,15 +179,6 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
         usdOracle = _oracle;
         emit NewUsdOracle(address(_oracle));
-    }
-
-    function setGlobalRegistrationStrategy(address _strategy) public onlyOwner {
-        require(
-            _strategy.supportsInterface(type(IGlobalRegistrationRules).interfaceId),
-            "IGlobalRegistrationRules interface not supported"
-        );
-
-        contractRegistrationStrategy = IGlobalRegistrationRules(_strategy);
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)

@@ -9,8 +9,11 @@ import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
 import "structs/SubdomainRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 contract SldRegistrationManager is Ownable, ISldRegistrationManager {
+    using ERC165Checker for address;
+
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
     ILabelValidator public labelValidator;
     IGlobalRegistrationRules public globalStrategy;
@@ -28,9 +31,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         uint256[] calldata _registrationLength,
         bytes32[] calldata _parentNamehash,
         address[] calldata _recipient
-    ) public payable {
-
-    }
+    ) public payable {}
 
     function registerSld(
         string calldata _label,
@@ -45,12 +46,9 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
         sld.registerSld(_recipient, _parentNamehash, sldNamehash);
-
     }
 
-    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {
-
-    }
+    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {}
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
         SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
@@ -77,6 +75,4 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             registrationYears;
         return renewalCostPerAnnum / 365;
     }
-
-
 }

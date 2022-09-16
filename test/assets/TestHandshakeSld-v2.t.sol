@@ -32,143 +32,79 @@ contract TestHandshakeSld_v2 is Test {
         tld = new MockHandshakeTld();
         commit = new MockCommitIntent(true);
         sld = new HandshakeSld_v2(tld, commit);
-        
     }
 
-    function testMintSldFromRegistryAddress_success() public {
+    function testMintSldFromRegistryAddress_success() public {}
 
-    }
+    function testMintSldFromNotRegistryAddress_fail() public {}
 
-    function testMintSldFromNotRegistryAddress_fail() public {
+    function testMintDuplicateSld_fail() public {}
 
-    }
+    function testCheckParentNamehashIsCorrectAfterMint() public {}
 
-    function testMintDuplicateSld_fail() public {
+    function testCheckLabelToNamehashIsCorrectAfterMint() public {}
 
-    }
+    function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {}
 
-    function testCheckParentNamehashIsCorrectAfterMint() public {
+    function testSetRoyaltyPaymentAddressForTldNotSet_ShouldReturnTldOwner() public {}
 
-    }
+    function testSetRoyaltyPaymentAddressThenTransferTld_AddressShouldResetToNewOwner() public {}
 
-    function testCheckLabelToNamehashIsCorrectAfterMint() public {
+    function testSetRoyaltyPaymentAddressForTldFromTldOwnerApprovedAddress() public {}
 
-    }
- 
-    function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {
+    function testSetRoyaltyPaymentAddressForTldFromNotTldOwnerAddress_ExpectFail() public {}
 
-    }
- 
-    function testSetRoyaltyPaymentAddressForTldNotSet_ShouldReturnTldOwner() public {
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress() public {}
 
-    }
+    function testSetRoyaltyPaymentAmountForTldNotSet_ShouldReturnZero() public {}
 
-    function testSetRoyaltyPaymentAddressThenTransferTld_AddressShouldResetToNewOwner() public {
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerApprovedAddress() public {}
 
-    }
+    function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {}
 
-    function testSetRoyaltyPaymentAddressForTldFromTldOwnerApprovedAddress() public {
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddressOver10Percent_expectFail()
+        public
+    {}
 
-    }
+    function testAddRegistrationStrategyToTldDomain_pass() public {}
 
-    function testSetRoyaltyPaymentAddressForTldFromNotTldOwnerAddress_ExpectFail() public {
+    function testAddRegistrationStrategyToTldNotOwner_fail() public {}
 
-    }
+    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame() public {}
 
-    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress() public {
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsParentIdsDifferent()
+        public
+    {}
 
-    }
- 
-    function testSetRoyaltyPaymentAmountForTldNotSet_ShouldReturnZero() public {
-
-    }
-
-    function testSetRoyaltyPaymentAmountForTldFromTldOwnerApprovedAddress() public {
-
-    }
-
-    function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
-
-    }
-
-    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddressOver10Percent_expectFail() public {
-
-    }
-
-    function testAddRegistrationStrategyToTldDomain_pass() public {
-
-    }
-
-
-    function testAddRegistrationStrategyToTldNotOwner_fail() public {
-
-    }
-
-    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame() public {
-
-    }
-
-    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsParentIdsDifferent() public {
-
-    }
-
-    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsLabelsDifferent() public {
-
-    }
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsLabelsDifferent()
+        public
+    {}
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRegistrationLengthsDifferent()
         public
-    {
-
-    }
+    {}
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsProofsDifferent()
         public
-    {
-
-    }
+    {}
 
     function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRecipientsDifferent()
         public
-    {
+    {}
 
-    }
+    function testGetSubdomainDetails_single() public {}
 
-    function testGetSubdomainDetails_single() public {
+    function testGetSubdomainDetails_multiple() public {}
 
-    }
+    function testPurchaseSingleDomainGetRefundForExcess() public {}
 
-    function testGetSubdomainDetails_multiple() public {
+    function testPurchaseTwoDomainGetRefundForExcess() public {}
 
-    }
+    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {}
 
-    function testPurchaseSingleDomainGetRefundForExcess() public {
+    function testSetHandshakeWalletAddressFromContractOwner_pass() public {}
 
-    }
+    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {}
 
-    function testPurchaseTwoDomainGetRefundForExcess() public {
-
-    }
-
-    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {
-
-    }
-
-    function testSetHandshakeWalletAddressFromContractOwner_pass() public {
-
-    }
-
-    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {
-
-    }
-
-    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {
-
-    }       
-
-
-
-
-
-
+    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {}
 }

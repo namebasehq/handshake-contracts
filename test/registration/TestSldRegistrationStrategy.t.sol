@@ -8,6 +8,4 @@ import "interfaces/ITldClaimManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
 
-contract TestSldRegistrationStrategy is Test {
-
-}
+contract TestSldRegistrationStrategy is Test {}

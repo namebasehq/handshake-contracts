@@ -27,8 +27,9 @@ contract MockHandshakeSld is IHandshakeSld {
         IdToAddressToApproved[_id][_addr] = _approved;
     }
 
-    
-    function registerSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
-        
-    }
+    function registerSld(
+        address _to,
+        bytes32 _tldNamehash,
+        bytes32 _sldNamehash
+    ) external {}
 }

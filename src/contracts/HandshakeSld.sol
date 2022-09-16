@@ -140,10 +140,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         }
     }
 
-    
-    function registerSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
-        
-    }
+    function registerSld(
+        address _to,
+        bytes32 _tldNamehash,
+        bytes32 _sldNamehash
+    ) external {}
 
     function purchaseDomainReturnPrice(
         bytes32 _parentNamehash,
@@ -397,9 +398,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         view
         returns (ISldRegistrationStrategy)
     {
-        if (
-            address(0) != address(sldDefaultRegistrationStrategy[_parentNamehash])
-        ) {
+        if (address(0) != address(sldDefaultRegistrationStrategy[_parentNamehash])) {
             return sldDefaultRegistrationStrategy[_parentNamehash];
         } else {
             revert MissingRegistrationStrategy();

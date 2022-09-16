@@ -10,17 +10,13 @@ import "interfaces/ITldClaimManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract MockHandshakeTld is IHandshakeTld {
+    function register(address _addr, string calldata _domain) external {}
 
-    function register(address _addr, string calldata _domain) external{
-
+    function ownerOf(uint256 _id) external view returns (address) {
+        return address(0);
     }
 
-    function ownerOf(uint256 _id) external view returns(address){
-        return address(0);
-    }   
-
-    function isApprovedOrOwner(address _operator, uint256 _id) external view returns(bool){
+    function isApprovedOrOwner(address _operator, uint256 _id) external view returns (bool) {
         return true;
     }
-
 }

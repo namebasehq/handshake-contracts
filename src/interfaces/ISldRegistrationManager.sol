@@ -2,7 +2,6 @@
 pragma solidity ^0.8.15;
 
 interface ISldRegistrationManager {
-
     function registerSld(
         string calldata _label,
         bytes32 _secret,

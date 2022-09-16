@@ -9,7 +9,6 @@ import "interfaces/ISldRegistrationManager.sol";
 import "structs/SubdomainRegistrationDetail.sol";
 
 contract MockSldRegistrationManager is ISldRegistrationManager {
-
     function registerSld(
         string calldata _label,
         bytes32 _secret,
@@ -17,11 +16,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         bytes32 _parentNamehash,
         bytes32[] calldata _proofs,
         address _recipient
-    ) external payable{
-        
-    }
+    ) external payable {}
 
-    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable{
-
-    }
+    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {}
 }
