@@ -97,9 +97,9 @@ contract TestHandshakeTld is Test {
         );
 
         vm.startPrank(tldOwnerAddr);
-        sld.setPricingStrategy(tldId, address(sldRegistrationStrategy));
+        sld.setRegistrationStrategy(tldId, address(sldRegistrationStrategy));
 
-        assertEq(address(sld.getPricingStrategy(tldHash)), address(sldRegistrationStrategy));
+        assertEq(address(sld.getRegistrationStrategy(tldHash)), address(sldRegistrationStrategy));
 
         vm.stopPrank();
     }
@@ -126,7 +126,7 @@ contract TestHandshakeTld is Test {
             address(sld.handshakeTldContract())
         );
         vm.expectRevert("ERC721: invalid token ID");
-        sld.setPricingStrategy(uint256(tldHash), sldRegistrationStrategy);
+        sld.setRegistrationStrategy(uint256(tldHash), sldRegistrationStrategy);
         vm.stopPrank();
     }
 

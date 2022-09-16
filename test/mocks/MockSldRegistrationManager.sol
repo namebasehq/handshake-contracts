@@ -10,7 +10,7 @@ import "structs/SubdomainRegistrationDetail.sol";
 
 contract MockSldRegistrationManager is ISldRegistrationManager {
 
-    function purchaseSingleDomain(
+    function registerSld(
         string calldata _label,
         bytes32 _secret,
         uint256 _registrationLength,

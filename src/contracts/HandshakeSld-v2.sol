@@ -19,7 +19,7 @@ import "contracts/PaymentManager.sol";
 
 import {console} from "forge-std/console.sol";
 
-contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
+contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandshakeSld {
     using ERC165Checker for address;
 
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
@@ -49,11 +49,15 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
         handshakeTldContract = _tld;
     }
 
-    function register(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
+    function registerSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
 
     }
 
-    function getPricingStrategy(bytes32 _parentNamehash)
+     function isApprovedOrOwner(address spender, uint256 tokenId) public view override(HandshakeNft, IHandshakeSld) returns (bool){
+        return HandshakeNft.isApprovedOrOwner(spender, tokenId);
+     }
+
+    function getRegistrationStrategy(bytes32 _parentNamehash)
         public
         view
         returns (ISldRegistrationStrategy)
@@ -68,7 +72,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
 
     }
 
-    function setPricingStrategy(uint256 _id, address _strategy)
+    function setRegistrationStrategy(uint256 _id, address _strategy)
         public
         onlyParentApprovedOrOwner(_id)
     {
@@ -105,7 +109,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager {
     ) private view returns (SubdomainDetail memory) {
         bytes32 parentHash = bytes32(_parentId);
         //will revert if pricing strategy does not exist.
-        ISldRegistrationStrategy priceStrat = getPricingStrategy(parentHash);
+        ISldRegistrationStrategy priceStrat = getRegistrationStrategy(parentHash);
 
         uint256 priceInDollars = priceStrat.getPriceInDollars(
             _recipient,

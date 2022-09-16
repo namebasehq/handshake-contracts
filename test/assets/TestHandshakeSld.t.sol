@@ -100,8 +100,8 @@ contract TestHandshakeSld is Test {
         sld.handshakeTldContract().register(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
-        sld.setPricingStrategy(uint256(tldNamehash), strat);
-        assertEq(address(sld.getPricingStrategy(tldNamehash)), strat);
+        sld.setRegistrationStrategy(uint256(tldNamehash), strat);
+        assertEq(address(sld.getRegistrationStrategy(tldNamehash)), strat);
 
         // check .eth tld token ID
         assertEq(tldNamehash, 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae);
@@ -166,8 +166,8 @@ contract TestHandshakeSld is Test {
         sld.handshakeTldContract().register(parent_address, tldLabel);
 
         address strat = address(new MockRegistrationStrategy(0));
-        sld.setPricingStrategy(uint256(tldNamehash), strat);
-        assertEq(address(sld.getPricingStrategy(tldNamehash)), strat);
+        sld.setRegistrationStrategy(uint256(tldNamehash), strat);
+        assertEq(address(sld.getRegistrationStrategy(tldNamehash)), strat);
 
         // check .test tld token ID
         assertEq(tldNamehash, 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6);
@@ -1189,9 +1189,9 @@ contract TestHandshakeSld is Test {
         sld.handshakeTldContract().register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(1));
-        sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setRegistrationStrategy(uint256(parentNamehash), strat);
 
-        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getRegistrationStrategy(parentNamehash)), strat);
     }
 
     function ignoreAddRegistrationStrategyTosldDomain_pass() public {
@@ -1209,12 +1209,12 @@ contract TestHandshakeSld is Test {
         tld.register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setRegistrationStrategy(uint256(parentNamehash), strat);
 
         emit log_named_address("usd address", address(sld.usdOracle()));
         emit log_named_uint("usd value", sld.usdOracle().getPrice());
 
-        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getRegistrationStrategy(parentNamehash)), strat);
         vm.stopPrank();
 
         vm.startPrank(child_address);
@@ -1234,9 +1234,9 @@ contract TestHandshakeSld is Test {
 
         console.log("yoyoyoyo");
         address childStrat = address(new MockRegistrationStrategy(1));
-        sld.setPricingStrategy(uint256(namehash), childStrat);
+        sld.setRegistrationStrategy(uint256(namehash), childStrat);
 
-        assertEq(address(sld.getPricingStrategy(namehash)), childStrat);
+        assertEq(address(sld.getRegistrationStrategy(namehash)), childStrat);
         vm.stopPrank();
     }
 
@@ -1255,9 +1255,9 @@ contract TestHandshakeSld is Test {
         sld.handshakeTldContract().register(parent_address, domain);
 
         address strat = address(new MockRegistrationStrategy(0));
-        sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setRegistrationStrategy(uint256(parentNamehash), strat);
 
-        assertEq(address(sld.getPricingStrategy(parentNamehash)), strat);
+        assertEq(address(sld.getRegistrationStrategy(parentNamehash)), strat);
         vm.stopPrank();
 
         vm.startPrank(child_address);
@@ -1277,7 +1277,7 @@ contract TestHandshakeSld is Test {
         );
         address childStrat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("ERC721: invalid token ID");
-        sld.setPricingStrategy(uint256(namehash), childStrat);
+        sld.setRegistrationStrategy(uint256(namehash), childStrat);
 
         vm.stopPrank();
     }
@@ -1300,7 +1300,7 @@ contract TestHandshakeSld is Test {
         vm.startPrank(not_parent_address);
         address strat = address(new MockRegistrationStrategy(1));
         vm.expectRevert("ERC721: invalid token ID");
-        sld.setPricingStrategy(uint256(parentNamehash), strat);
+        sld.setRegistrationStrategy(uint256(parentNamehash), strat);
     }
 
     function testSetRoyaltyPaymentAmountForTldFromNotTldOwnerAddress_ExpectFail() public {
@@ -1935,7 +1935,7 @@ contract TestHandshakeSld is Test {
         );
 
         bytes32 childHash = getNamehash(parentNamehash, label);
-        sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
+        sld.setRegistrationStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 
@@ -1977,7 +1977,7 @@ contract TestHandshakeSld is Test {
         vm.startPrank(address(0x22446666));
         bytes32 childHash = getNamehash(parentNamehash, label);
         vm.expectRevert("ERC721: invalid token ID");
-        sld.setPricingStrategy(uint256(childHash), address(RegistrationStrategy));
+        sld.setRegistrationStrategy(uint256(childHash), address(RegistrationStrategy));
         vm.stopPrank();
     }
 

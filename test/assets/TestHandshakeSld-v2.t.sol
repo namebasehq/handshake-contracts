@@ -43,18 +43,6 @@ contract TestHandshakeSld_v2 is Test {
 
     }
 
-    function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
-
-    }
-
-    function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
-        
-    }
-
-    function testSetGlobalRegistrationStrategyIncorrectInterfaceFromContractOwner_fail() public {
-
-    }
-
     function testMintDuplicateSld_fail() public {
 
     }

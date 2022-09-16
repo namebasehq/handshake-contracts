@@ -140,6 +140,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         }
     }
 
+    
+    function registerSld(address _to, bytes32 _tldNamehash, bytes32 _sldNamehash) external {
+        
+    }
+
     function purchaseDomainReturnPrice(
         bytes32 _parentNamehash,
         string calldata _label,
@@ -148,7 +153,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         address _recipient
     ) private returns (uint256) {
         //will revert if pricing strategy does not exist.
-        ISldRegistrationStrategy priceStrat = getPricingStrategy(_parentNamehash);
+        ISldRegistrationStrategy priceStrat = getRegistrationStrategy(_parentNamehash);
 
         uint256 domainDollarCost = priceStrat.getPriceInDollars(
             msg.sender,
@@ -197,7 +202,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         uint256 _weiToDollar
     ) private returns (uint256 domainWeiCost) {
         //will revert if pricing strategy does not exist.
-        ISldRegistrationStrategy priceStrat = getPricingStrategy(_parentNamehash);
+        ISldRegistrationStrategy priceStrat = getRegistrationStrategy(_parentNamehash);
 
         uint256 domainDollarCost = priceStrat.getPriceInDollars(
             msg.sender,
@@ -252,7 +257,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         bytes32[] calldata _proofs,
         address _recipient
     ) external payable {
-        ISldRegistrationStrategy strategy = getPricingStrategy(_parentNamehash);
+        ISldRegistrationStrategy strategy = getRegistrationStrategy(_parentNamehash);
         uint256 domainDollarCost = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,
@@ -387,15 +392,13 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         validator = _validator;
     }
 
-    function getPricingStrategy(bytes32 _parentNamehash)
+    function getRegistrationStrategy(bytes32 _parentNamehash)
         public
         view
         returns (ISldRegistrationStrategy)
     {
         if (
-            address(sldDefaultRegistrationStrategy[_parentNamehash]).supportsInterface(
-                PRICE_IN_DOLLARS_SELECTOR
-            )
+            address(0) != address(sldDefaultRegistrationStrategy[_parentNamehash])
         ) {
             return sldDefaultRegistrationStrategy[_parentNamehash];
         } else {
@@ -403,7 +406,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         }
     }
 
-    function setPricingStrategy(uint256 _id, address _strategy)
+    function setRegistrationStrategy(uint256 _id, address _strategy)
         public
         onlyParentApprovedOrOwner(_id)
     {
@@ -440,7 +443,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
     ) private view returns (SubdomainDetail memory) {
         bytes32 parentHash = bytes32(_parentId);
         //will revert if pricing strategy does not exist.
-        ISldRegistrationStrategy priceStrat = getPricingStrategy(parentHash);
+        ISldRegistrationStrategy priceStrat = getRegistrationStrategy(parentHash);
 
         uint256 priceInDollars = priceStrat.getPriceInDollars(
             _recipient,

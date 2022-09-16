@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 interface ISldRegistrationManager {
 
-    function purchaseSingleDomain(
+    function registerSld(
         string calldata _label,
         bytes32 _secret,
         uint256 _registrationLength,
