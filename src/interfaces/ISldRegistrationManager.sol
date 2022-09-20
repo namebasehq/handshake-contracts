@@ -7,7 +7,6 @@ interface ISldRegistrationManager {
         bytes32 _secret,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        bytes32[] calldata _proofs,
         address _recipient
     ) external payable;
 

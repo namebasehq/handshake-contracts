@@ -12,6 +12,8 @@ import "structs/SubdomainRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
+import {console} from "forge-std/console.sol";
+
 contract SldRegistrationManager is Ownable, ISldRegistrationManager {
     using ERC165Checker for address;
 
@@ -46,15 +48,50 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         bytes32 _secret,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        bytes32[] calldata _proofs,
         address _recipient
     ) external payable {
         require(labelValidator.isValidLabel(_label), "invalid label");
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-        require(address(strategy) != address(0), "no price strategy");
-        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        require(address(strategy) != address(0), "no registration strategy");
 
-        sld.registerSld(_recipient, _parentNamehash, sldNamehash);
+        uint256 dollarPrice = strategy.getPriceInDollars(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
+        require(
+            globalStrategy.canRegister(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                _registrationLength,
+                dollarPrice
+            ),
+            "failed global strategy"
+        );
+
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        require(canRegister(sldNamehash), "domain already registered");
+
+        sld.registerSld(
+            _recipient == address(0) ? msg.sender : _recipient,
+            _parentNamehash,
+            sldNamehash
+        );
+
+        console.logAddress(_recipient == address(0) ? msg.sender : _recipient);
+        console.logBytes32(_parentNamehash);
+        console.logBytes32(sldNamehash);
+
+        addRegistrationDetails(
+            sldNamehash,
+            dollarPrice,
+            _registrationLength,
+            strategy,
+            _parentNamehash,
+            _label
+        );
     }
 
     function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {}
@@ -81,6 +118,40 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             _subdomainNamehash
         ];
         return details.RegistrationPriceSnapshot;
+    }
+
+    function addRegistrationDetails(
+        bytes32 _namehash,
+        uint256 _price,
+        uint256 _days,
+        ISldRegistrationStrategy _strategy,
+        bytes32 _parentNamehash,
+        string calldata _label
+    ) private {
+        uint128[10] memory arr;
+
+        for (uint256 i; i < arr.length; ) {
+            uint256 price = _strategy.getPriceInDollars(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                (i + 1) * 365
+            );
+
+            console.log("year x", uint96(price));
+            arr[i] = uint96(price);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        subdomainRegistrationHistory[_namehash] = SubdomainRegistrationDetail(
+            uint72(block.timestamp),
+            uint24(_days),
+            uint96(_price),
+            arr
+        );
     }
 
     function getRenewalPricePerDay(
