@@ -11,4 +11,9 @@ interface ISldRegistrationManager {
     ) external payable;
 
     function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable;
+
+    function getRenewalPricePerDay(bytes32 _parentNamehash, uint256 _registrationLength)
+        external
+        view
+        returns (uint256);
 }

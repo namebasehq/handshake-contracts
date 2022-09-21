@@ -138,8 +138,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
                 (i + 1) * 365
             );
 
-            console.log("year x", uint96(price));
-            arr[i] = uint96(price);
+            //get and save annual cost
+            arr[i] = uint128(price / (i + 1));
 
             unchecked {
                 ++i;
@@ -154,16 +154,19 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         );
     }
 
-    function getRenewalPricePerDay(
-        SubdomainRegistrationDetail memory _history,
-        uint256 _registrationLength
-    ) public view returns (uint256) {
+    function getRenewalPricePerDay(bytes32 _parentNamehash, uint256 _registrationLength)
+        public
+        view
+        returns (uint256)
+    {
+        SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[_parentNamehash];
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
+        uint256 renewalCostPerAnnum = history.RegistrationPriceSnapshot[
+            (registrationYears > 10 ? 10 : registrationYears) - 1
+        ];
 
-        uint256 renewalCostPerAnnum = _history.RegistrationPriceSnapshot[registrationYears - 1] /
-            registrationYears;
         return renewalCostPerAnnum / 365;
     }
 }

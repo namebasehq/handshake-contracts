@@ -174,11 +174,11 @@ contract TestSldRegistrationManager is Test {
         manager.updateGlobalRegistrationStrategy(globalRules);
     }
 
-    function testMultiPurchasesldWithIncorrectArrayLengths_expectFail() public {}
+    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail() public {}
 
-    function testMultiPurchasesldWithIncorrectArrayLengths_expectFail_2() public {}
+    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail_2() public {}
 
-    function testMultiPurchasesld() public {}
+    function testMultiPurchaseSld() public {}
 
     function testMultiPurchasesldWithZeroAddressInReceiver() public {}
 
@@ -301,16 +301,142 @@ contract TestSldRegistrationManager is Test {
         uint128[10] memory pricing = manager.getTenYearGuarenteedPricing(subdomainNamehash);
 
         for (uint256 i; i < 10; i++) {
-            assertEq(pricing[i], (i + 1) * 1 ether, "issue with historic pricing");
+            //pricing should return back flat rate of 1 dollar per year regardless of length
+            assertEq(pricing[i], 1 ether, "issue with historic pricing");
         }
     }
 
     function testRenewSubdomainFromSldOwner_pass() public {}
 
     //TODO: what's the expected behaviour (pass i think)
-    function testRenewSubdomainFromNotSldOwner_whatDoWeWantToDo() public {}
+    function testRenewSubdomainFromNotSldOwner_pass() public {}
 
     function testRenewNoneExistingToken_fail() public {}
 
     function testRenewExpiredSld_fail() public {}
+
+    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice() public {
+
+       setUpLabelValidator();
+        setUpGlobalRules(true);
+
+        uint128[10] memory prices = [
+            uint128(10 ether),
+            9 ether,
+            8 ether,
+            7 ether,
+            6 ether,
+            5 ether,
+            4 ether,
+            3 ether,
+            2 ether,
+            1 ether
+        ];
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
+        strategy.setMultiYearPricing(prices);
+        sld.setMockRegistrationStrategy(parentNamehash, strategy);
+
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        vm.startPrank(sendingAddress);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(
+                manager.sld().registerSld,
+                (
+                    recipient,
+                    parentNamehash,
+                    0xc9deaae6135f5bffc91df7e1f3e69359942c17c296519680019a467d0e78ddc5
+                )
+            )
+        );
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+
+        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength,
+            uint96 actualRegistrationPrice
+        ) = manager.subdomainRegistrationHistory(subdomainNamehash);
+
+
+        setUpRegistrationStrategy(parentNamehash);
+
+        //need to renew domain and then renew price should be 1 dollar for each year
+        assertFalse(true, "not implemented yet");
+
+    }
+
+
+
+    function testGetDailyPricingForMultiYearDiscountStrategy() public {
+        setUpLabelValidator();
+        setUpGlobalRules(true);
+
+        uint128[10] memory prices = [
+            uint128(10 ether),
+            9 ether,
+            8 ether,
+            7 ether,
+            6 ether,
+            5 ether,
+            4 ether,
+            3 ether,
+            2 ether,
+            1 ether
+        ];
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
+        strategy.setMultiYearPricing(prices);
+        sld.setMockRegistrationStrategy(parentNamehash, strategy);
+
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        vm.startPrank(sendingAddress);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(
+                manager.sld().registerSld,
+                (
+                    recipient,
+                    parentNamehash,
+                    0xc9deaae6135f5bffc91df7e1f3e69359942c17c296519680019a467d0e78ddc5
+                )
+            )
+        );
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+
+        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength,
+            uint96 actualRegistrationPrice
+        ) = manager.subdomainRegistrationHistory(subdomainNamehash);
+
+        //assert
+        for (uint256 i; i < 10; i++) {
+            uint256 actual = manager.getRenewalPricePerDay(subdomainNamehash, (i + 1) * 365);
+            uint256 expected = prices[i] / 365;
+            assertGt(actual, 0);
+            assertEq(actual, expected);
+        }
+        
+    }
 }

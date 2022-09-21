@@ -18,4 +18,12 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     ) external payable {}
 
     function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {}
+
+    function getRenewalPricePerDay(bytes32 _parentNamehash, uint256 _registrationLength)
+        public
+        view
+        returns (uint256)
+    {
+        require(false, "not implemented");
+    }
 }
