@@ -73,7 +73,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
 
         bytes32[] memory proofs = new bytes32[](0);
 
@@ -94,7 +94,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
 
         bytes32[] memory proofs = new bytes32[](0);
 
@@ -115,7 +115,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
         bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
@@ -139,7 +139,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
 
         bytes32[] memory proofs = new bytes32[](0);
 
@@ -174,14 +174,6 @@ contract TestSldRegistrationManager is Test {
         manager.updateGlobalRegistrationStrategy(globalRules);
     }
 
-    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail() public {}
-
-    function testMultiPurchaseSldWithIncorrectArrayLengths_expectFail_2() public {}
-
-    function testMultiPurchaseSld() public {}
-
-    function testMultiPurchasesldWithZeroAddressInReceiver() public {}
-
     function testPurchaseSldToZeroAddress_expectSendToMsgSender() public {
         setUpLabelValidator();
         setUpGlobalRules(true);
@@ -190,7 +182,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
 
         bytes32[] memory proofs = new bytes32[](0);
 
@@ -219,7 +211,7 @@ contract TestSldRegistrationManager is Test {
         setUpRegistrationStrategy(parentNamehash);
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
 
         bytes32[] memory proofs = new bytes32[](0);
 
@@ -243,7 +235,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 500;
+        uint80 registrationLength = 500;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
         bytes32[] memory proofs = new bytes32[](0);
@@ -263,7 +255,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 365;
+        uint80 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
         setUpRegistrationStrategy(parentNamehash);
         bytes32[] memory proofs = new bytes32[](0);
@@ -295,7 +287,11 @@ contract TestSldRegistrationManager is Test {
         ) = manager.subdomainRegistrationHistory(subdomainNamehash);
 
         assertEq(actualRegistrationTime, block.timestamp, "registration time incorrect");
-        assertEq(actualRegistrationLength, registrationLength, "registration length incorrect");
+        assertEq(
+            actualRegistrationLength,
+            registrationLength * 1 days,
+            "registration length incorrect"
+        );
         assertEq(actualRegistrationPrice, 1 ether, "registration price incorrect");
 
         uint128[10] memory pricing = manager.getTenYearGuarenteedPricing(subdomainNamehash);
@@ -306,18 +302,161 @@ contract TestSldRegistrationManager is Test {
         }
     }
 
-    function testRenewSubdomainFromSldOwner_pass() public {}
+    function testRenewSubdomainFromSldOwner_pass() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalRules(true);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        uint80 renewalLength = 1200;
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0x5555);
+
+        vm.startPrank(address(0x420));
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+
+        manager.renewSubdomain(label, parentNamehash, renewalLength);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength,
+            uint96 actualRegistrationPrice
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+
+        console.log("registration time before", actualRegistrationTime);
+        console.log("registration time before", actualRegistrationLength);
+        uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
+        uint256 actualValue = block.timestamp + ((registrationLength + renewalLength) * 1 days);
+
+        console.log("expected value", expectedValue);
+        console.log("actual value", actualValue);
+
+        console.log("timestamp", block.timestamp);
+        //check that the registration details have been updated.
+        assertEq(
+            expectedValue,
+            block.timestamp + ((registrationLength + renewalLength) * 1 days),
+            "invalid registration details"
+        );
+    }
 
     //TODO: what's the expected behaviour (pass i think)
-    function testRenewSubdomainFromNotSldOwner_pass() public {}
+    function testRenewSubdomainFromNotSldOwner_pass() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalRules(true);
 
-    function testRenewNoneExistingToken_fail() public {}
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        setUpRegistrationStrategy(parentNamehash);
 
-    function testRenewExpiredSld_fail() public {}
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        uint80 renewalLength = 1200;
+        bytes32[] memory proofs = new bytes32[](0);
 
-    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice() public {
+        address recipient = address(0x5555);
 
-       setUpLabelValidator();
+        vm.startPrank(address(0x420));
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        vm.stopPrank();
+
+        uint256 registrationTimestamp = block.timestamp;
+        vm.warp(block.timestamp + (registrationLength * 86400));
+
+        //different wallet, can renew domain.
+        vm.startPrank(address(0x99999999));
+        manager.renewSubdomain(label, parentNamehash, renewalLength);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength,
+            uint96 actualRegistrationPrice
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+
+        console.log("registration time", actualRegistrationTime);
+        console.log("registration length", actualRegistrationLength);
+
+        //check that the registration details have been updated.
+        assertEq(
+            actualRegistrationTime + actualRegistrationLength,
+            registrationTimestamp + (registrationLength + renewalLength) * 1 days,
+            "invalid registration details"
+        );
+    }
+
+    function testRenewNoneExistingToken_fail() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalRules(true);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        uint256 renewalLength = 1200;
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0x5555);
+
+        vm.startPrank(address(0x420));
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+
+        vm.warp(block.timestamp + (registrationLength * 86400));
+
+        vm.expectRevert("invalid domain");
+        manager.renewSubdomain("doesnotexist", parentNamehash, registrationLength);
+
+        vm.expectRevert("invalid domain");
+        manager.renewSubdomain(
+            label,
+            keccak256(abi.encodePacked("doesnotexist")),
+            registrationLength
+        );
+    }
+
+    function testRenewExpiredSld_fail() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalRules(true);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        bytes32[] memory proofs = new bytes32[](0);
+
+        address recipient = address(0x5555);
+
+        vm.prank(address(0x420));
+
+        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+
+        vm.warp(block.timestamp + (registrationLength * 86400) + 1);
+
+        vm.expectRevert("invalid domain");
+        manager.renewSubdomain(label, parentNamehash, registrationLength);
+    }
+
+    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(uint8 _years)
+        public
+    {
+        _years = uint8(bound(_years, 1, 15));
+
+        setUpLabelValidator();
         setUpGlobalRules(true);
 
         uint128[10] memory prices = [
@@ -330,37 +469,39 @@ contract TestSldRegistrationManager is Test {
             4 ether,
             3 ether,
             2 ether,
-            1 ether
+            1.5 ether
         ];
 
-        string memory label = "yo";
-        bytes32 secret = 0x0;
-        uint256 registrationLength = 365;
+        uint128[15] memory cheapestPrices = [
+            uint128(3 ether),
+            3 ether,
+            3 ether,
+            3 ether,
+            3 ether,
+            3 ether,
+            3 ether,
+            3 ether,
+            2 ether,
+            1.5 ether,
+            1.5 ether,
+            1.5 ether,
+            1.5 ether,
+            1.5 ether,
+            1.5 ether
+        ];
+
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
-        MockRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(3 ether);
         strategy.setMultiYearPricing(prices);
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
-        address recipient = address(0xbadbad);
-
         address sendingAddress = address(0x420);
         vm.startPrank(sendingAddress);
-        vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(
-                manager.sld().registerSld,
-                (
-                    recipient,
-                    parentNamehash,
-                    0xc9deaae6135f5bffc91df7e1f3e69359942c17c296519680019a467d0e78ddc5
-                )
-            )
-        );
 
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerSld("yo", 0x0, 365, parentNamehash, address(0));
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
+        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, "yo");
 
         (
             uint80 actualRegistrationTime,
@@ -368,15 +509,19 @@ contract TestSldRegistrationManager is Test {
             uint96 actualRegistrationPrice
         ) = manager.subdomainRegistrationHistory(subdomainNamehash);
 
+        sld.setMockRegistrationStrategy(parentNamehash, new MockRegistrationStrategy(3 ether));
 
-        setUpRegistrationStrategy(parentNamehash);
+        sld.setNamehashToParentMap(subdomainNamehash, parentNamehash);
 
-        //need to renew domain and then renew price should be 1 dollar for each year
-        assertFalse(true, "not implemented yet");
+        //need to renew domain and then renew price should be cheapest price
+        uint256 renewalPricePerDay = manager.getRenewalPricePerDay(
+            parentNamehash,
+            "yo",
+            _years * 365
+        );
 
+        assertEq(renewalPricePerDay, cheapestPrices[_years - 1] / 365, "price incorrect");
     }
-
-
 
     function testGetDailyPricingForMultiYearDiscountStrategy() public {
         setUpLabelValidator();
@@ -397,7 +542,7 @@ contract TestSldRegistrationManager is Test {
 
         string memory label = "yo";
         bytes32 secret = 0x0;
-        uint256 registrationLength = 365;
+        uint80 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
@@ -432,11 +577,10 @@ contract TestSldRegistrationManager is Test {
 
         //assert
         for (uint256 i; i < 10; i++) {
-            uint256 actual = manager.getRenewalPricePerDay(subdomainNamehash, (i + 1) * 365);
+            uint256 actual = manager.getRenewalPricePerDay(parentNamehash, label, (i + 1) * 365);
             uint256 expected = prices[i] / 365;
             assertGt(actual, 0);
             assertEq(actual, expected);
         }
-        
     }
 }

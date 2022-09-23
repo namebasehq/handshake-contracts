@@ -94,11 +94,25 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         );
     }
 
-    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable {}
+    function renewSubdomain(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable {
+        bytes32 subdomainNamehash = Namehash.getNamehash(_parentNamehash, _label);
+
+        require(!canRegister(subdomainNamehash), "invalid domain");
+
+        SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[subdomainNamehash];
+
+        detail.RegistrationLength = detail.RegistrationLength + (_registrationLength * 1 days);
+
+        subdomainRegistrationHistory[subdomainNamehash] = detail;
+    }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
         SubdomainRegistrationDetail memory detail = subdomainRegistrationHistory[_namehash];
-        return detail.RegistrationTime + (detail.RegistrationLength * 86400) < block.timestamp;
+        return (detail.RegistrationTime + detail.RegistrationLength) < block.timestamp;
     }
 
     function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
@@ -148,18 +162,21 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
 
         subdomainRegistrationHistory[_namehash] = SubdomainRegistrationDetail(
             uint72(block.timestamp),
-            uint24(_days),
+            uint80(_days * 1 days),
             uint96(_price),
             arr
         );
     }
 
-    function getRenewalPricePerDay(bytes32 _parentNamehash, uint256 _registrationLength)
-        public
-        view
-        returns (uint256)
-    {
-        SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[_parentNamehash];
+    function getRenewalPricePerDay(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) public view returns (uint256) {
+        bytes32 subdomainNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[
+            subdomainNamehash
+        ];
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
@@ -167,6 +184,24 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        return renewalCostPerAnnum / 365;
+        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+        uint256 price = strategy.getPriceInDollars(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
+
+        console.log("renewal", renewalCostPerAnnum);
+        console.log("registration", (price / _registrationLength) * 365);
+
+        uint256 dailyRenewalPrice = renewalCostPerAnnum / 365;
+        uint256 dailyRegistrationPrice = price / _registrationLength;
+
+        console.log("daily renewal", dailyRenewalPrice);
+        console.log("daily registration", dailyRegistrationPrice);
+
+        return
+            dailyRenewalPrice > dailyRegistrationPrice ? dailyRegistrationPrice : dailyRenewalPrice;
     }
 }

@@ -10,10 +10,15 @@ interface ISldRegistrationManager {
         address _recipient
     ) external payable;
 
-    function renewSubdomain(bytes32 _subdomainHash, uint256 _registrationLength) external payable;
+    function renewSubdomain(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable;
 
-    function getRenewalPricePerDay(bytes32 _parentNamehash, uint256 _registrationLength)
-        external
-        view
-        returns (uint256);
+    function getRenewalPricePerDay(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) external view returns (uint256);
 }

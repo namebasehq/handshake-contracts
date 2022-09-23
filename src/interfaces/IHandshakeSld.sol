@@ -16,4 +16,9 @@ interface IHandshakeSld {
         external
         view
         returns (ISldRegistrationStrategy);
+
+    function namehashToParentMap(bytes32 _childNamehash)
+        external
+        view
+        returns (bytes32 _parentNamehash);
 }

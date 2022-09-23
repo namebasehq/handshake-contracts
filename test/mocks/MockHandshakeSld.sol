@@ -7,6 +7,7 @@ import "interfaces/ISldRegistrationStrategy.sol";
 contract MockHandshakeSld is IHandshakeSld {
     mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
     mapping(bytes32 => ISldRegistrationStrategy) mockRegistrationStrategy;
+    mapping(bytes32 => bytes32) public namehashToParentMap;
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) external view returns (bool) {
         return idToAddressToApproved[_id][msg.sender];
@@ -54,5 +55,9 @@ contract MockHandshakeSld is IHandshakeSld {
         ISldRegistrationStrategy _strategy
     ) public {
         mockRegistrationStrategy[_parentNamehash] = _strategy;
+    }
+
+    function setNamehashToParentMap(bytes32 _childNamehash, bytes32 _parentNamehash) external {
+        namehashToParentMap[_childNamehash] = _parentNamehash;
     }
 }
