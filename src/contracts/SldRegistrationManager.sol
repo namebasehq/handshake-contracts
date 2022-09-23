@@ -80,10 +80,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             sldNamehash
         );
 
-        console.logAddress(_recipient == address(0) ? msg.sender : _recipient);
-        console.logBytes32(_parentNamehash);
-        console.logBytes32(sldNamehash);
-
         addRegistrationDetails(
             sldNamehash,
             dollarPrice,

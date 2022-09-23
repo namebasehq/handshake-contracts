@@ -583,4 +583,42 @@ contract TestSldRegistrationManager is Test {
             assertEq(actual, expected);
         }
     }
+
+    function testGetSubdomainDetailsValidationCheckShouldPassIfArrayLengthsAllTheSame() public {}
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsParentIdsDifferent()
+        public
+    {}
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsLabelsDifferent()
+        public
+    {}
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRegistrationLengthsDifferent()
+        public
+    {}
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsProofsDifferent()
+        public
+    {}
+
+    function testGetSubdomainDetailsValidationCheckShouldFailIfArrayLengthsRecipientsDifferent()
+        public
+    {}
+
+    function testGetSubdomainDetails_single() public {}
+
+    function testGetSubdomainDetails_multiple() public {}
+
+    function testPurchaseSingleDomainGetRefundForExcess() public {}
+
+    function testPurchaseTwoDomainGetRefundForExcess() public {}
+
+    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {}
+
+    function testSetHandshakeWalletAddressFromContractOwner_pass() public {}
+
+    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {}
+
+    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {}
 }

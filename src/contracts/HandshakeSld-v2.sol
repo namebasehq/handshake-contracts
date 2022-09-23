@@ -76,15 +76,11 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         return strategy;
     }
 
-    function setRegistrationStrategy(uint256 _id, address _strategy)
+    function setRegistrationStrategy(uint256 _id, ISldRegistrationStrategy _strategy)
         public
         onlyParentApprovedOrOwner(_id)
     {
-        require(
-            _strategy.supportsInterface(PRICE_IN_DOLLARS_SELECTOR),
-            "missing interface for price strategy"
-        );
-        registrationStrategy[bytes32(_id)] = ISldRegistrationStrategy(_strategy);
+        registrationStrategy[bytes32(_id)] = _strategy;
     }
 
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
