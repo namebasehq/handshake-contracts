@@ -41,8 +41,8 @@ contract TestHandshakeSld_v2 is Test {
 
     function setUp() public {
         tld = new MockHandshakeTld();
-        sld = new HandshakeSld_v2(tld);
         manager = new MockSldRegistrationManager();
+        sld = new HandshakeSld_v2(tld, manager);
     }
 
     function testMintSldFromRegistryAddress_success() public {
@@ -81,7 +81,7 @@ contract TestHandshakeSld_v2 is Test {
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
         assertEq(sld.balanceOf(to), 1, "balance incorrect");
 
-        vm.expectRevert("duplicated token");
+        vm.expectRevert("ERC721: token already minted");
         sld.registerSld(to, tldNamehash, sldNamehash);
     }
 
@@ -100,10 +100,12 @@ contract TestHandshakeSld_v2 is Test {
 
     function testCheckLabelToNamehashIsCorrectAfterMint() public {
         vm.startPrank(address(manager));
-
+        console.log("manager address", address(manager));
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         bytes32 sldNamehash = bytes32(uint256(0x446688));
+
+        tld.register(address(manager), uint256(tldNamehash));
 
         sld.registerSld(to, tldNamehash, sldNamehash);
 
@@ -131,7 +133,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -166,7 +168,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -199,7 +201,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -212,7 +214,7 @@ contract TestHandshakeSld_v2 is Test {
 
         address newTldOwner = address(0x553311);
 
-        vm.prank(tldOwner);
+        vm.startPrank(tldOwner);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
         (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
@@ -240,7 +242,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -279,9 +281,9 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.startPrank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
-
+        vm.stopPrank();
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
@@ -294,13 +296,13 @@ contract TestHandshakeSld_v2 is Test {
 
         address notTldOwner = address(0x9988332211);
         vm.startPrank(notTldOwner);
-        vm.expectRevert("not authorised token owner");
+        vm.expectRevert("not authorised");
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
 
         vm.stopPrank();
     }
 
-    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress() public {
+    function testSetRoyaltyPaymentAmountForTldFromTldOwnerAddress_pass() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
@@ -317,7 +319,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -331,10 +333,10 @@ contract TestHandshakeSld_v2 is Test {
         uint256 royaltyPercent = 10;
 
         vm.prank(tldOwner);
-        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        sld.setRoyaltyPayoutAmount({_id: tldId, _amount: royaltyPercent});
         (, uint256 amount) = sld.royaltyInfo(expectedsldId, 100);
 
-        assertEq(amount, 1, "incorrect royalty amount");
+        assertEq(amount, royaltyPercent, "incorrect royalty amount");
         vm.stopPrank();
     }
 
@@ -355,7 +357,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -389,7 +391,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -405,10 +407,13 @@ contract TestHandshakeSld_v2 is Test {
         vm.prank(tldOwner);
         tld.setApprovalForAll(approvedAddress, true);
         vm.startPrank(approvedAddress);
-        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (, uint256 amount) = sld.royaltyInfo(expectedsldId, 300);
+        uint256 royaltyPercent = 1;
+        sld.setRoyaltyPayoutAmount(tldId, royaltyPercent);
+
+        (address addy, uint256 amount) = sld.royaltyInfo(expectedsldId, 300);
 
         assertEq(amount, 3, "incorrect royalty amount");
+
         vm.stopPrank();
     }
 
@@ -429,7 +434,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -443,7 +448,7 @@ contract TestHandshakeSld_v2 is Test {
         address notTldOwner = address(0x558822);
 
         vm.startPrank(notTldOwner);
-        vm.expectRevert("not authorised or TLD owner");
+        vm.expectRevert("not authorised");
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
 
         vm.stopPrank();
@@ -466,7 +471,7 @@ contract TestHandshakeSld_v2 is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
-        vm.prank(sldOwner);
+        vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
         // test.test
@@ -480,7 +485,8 @@ contract TestHandshakeSld_v2 is Test {
         uint256 royaltyPercent = 11;
 
         vm.startPrank(tldOwner);
-        sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
+        vm.expectRevert("10% maximum royalty on SLD");
+        sld.setRoyaltyPayoutAmount({_id: tldId, _amount: royaltyPercent});
         (, uint256 amount) = sld.royaltyInfo(expectedsldId, 100);
 
         vm.stopPrank();
@@ -495,12 +501,13 @@ contract TestHandshakeSld_v2 is Test {
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
-        vm.prank(tldOwner);
+        vm.startPrank(tldOwner);
         tld.register(tldOwner, tldName);
 
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
 
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
+        tld.addApprovedAddress(tldOwner, uint256(parentNamehash));
         sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
 
         ISldRegistrationStrategy expectedStrategy = sld.getRegistrationStrategy(parentNamehash);
@@ -524,9 +531,10 @@ contract TestHandshakeSld_v2 is Test {
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         vm.startPrank(notTldOwner);
+        vm.expectRevert("not authorised");
         sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
 
-        vm.expectRevert("shouldnt be any strategy available");
+        vm.expectRevert(MissingRegistrationStrategy.selector);
         ISldRegistrationStrategy expectedStrategy = sld.getRegistrationStrategy(parentNamehash);
     }
 }

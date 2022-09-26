@@ -84,7 +84,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override(HandshakeNft, IHandshakeTld)
         returns (bool)
     {
-        return super.isApprovedOrOwner(_operator, _id);
+        address owner = ownerOf(_id);
+        return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
     function getTldNamehash(string memory _label) internal pure returns (bytes32) {

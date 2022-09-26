@@ -800,7 +800,7 @@ contract TestHandshakeSld is Test {
         address payoutAddress = address(0x22886644);
 
         HandshakeTld tld = sld.handshakeTldContract();
-
+ 
         bytes32[] memory emptyArr;
 
         bytes32 parent_hash = getTldNamehash(tldName);

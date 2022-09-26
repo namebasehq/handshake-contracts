@@ -41,18 +41,22 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
         bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
-    constructor(IHandshakeTld _tld)
+    constructor(IHandshakeTld _tld, ISldRegistrationManager _registrationManager)
         HandshakeNft("SLD", "Handshake SLD")
         PaymentManager(msg.sender)
     {
         handshakeTldContract = _tld;
+        registrationManager = _registrationManager;
     }
 
     function registerSld(
         address _to,
         bytes32 _tldNamehash,
         bytes32 _sldNamehash
-    ) external isRegistrationManager {}
+    ) external isRegistrationManager {
+        _mint(_to, uint256(_sldNamehash));
+        namehashToParentMap[_sldNamehash] = _tldNamehash;
+    }
 
     function isApprovedOrOwner(address spender, uint256 tokenId)
         public
@@ -196,10 +200,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
-        require(
-            handshakeTldContract.isApprovedOrOwner(msg.sender, _id),
-            "ERC721: invalid token ID"
-        );
+        require(handshakeTldContract.isApprovedOrOwner(msg.sender, _id), "not authorised");
         _;
     }
 
