@@ -8,6 +8,7 @@ import "interfaces/ILabelValidator.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
+import "interfaces/IPriceOracle.sol";
 import "structs/SubdomainRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
@@ -25,14 +26,22 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
 
     ICommitIntent public commitIntent;
 
+    IPriceOracle public priceOracle;
+
     constructor(
         IHandshakeTld _tld,
         IHandshakeSld _sld,
-        ICommitIntent _commitIntent
+        ICommitIntent _commitIntent,
+        IPriceOracle _oracle
     ) {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
+        updatePriceOracle(_oracle);
+    }
+
+    function updatePriceOracle(IPriceOracle _oracle) public onlyOwner {
+        priceOracle = _oracle;
     }
 
     function registerMultipleSld(

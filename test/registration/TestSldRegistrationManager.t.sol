@@ -14,6 +14,7 @@ import "mocks/MockCommitIntent.sol";
 import "mocks/MockRegistrationStrategy.sol";
 import "src/utils/Namehash.sol";
 import "structs/SubdomainRegistrationDetail.sol";
+import "mocks/MockUsdOracle.sol";
 
 contract TestSldRegistrationManager is Test {
     SldRegistrationManager manager;
@@ -26,7 +27,8 @@ contract TestSldRegistrationManager is Test {
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();
         commitIntent = new MockCommitIntent(true);
-        manager = new SldRegistrationManager(tld, sld, commitIntent);
+        MockUsdOracle oracle = new MockUsdOracle(1);
+        manager = new SldRegistrationManager(tld, sld, commitIntent, oracle);
     }
 
     function setUpLabelValidator() public {
@@ -53,6 +55,20 @@ contract TestSldRegistrationManager is Test {
             address(validator),
             "label validator not set correctly"
         );
+    }
+
+    function testUpdateUsdOracleFromOwner_pass() public {
+        MockUsdOracle oracle = new MockUsdOracle(1);
+        manager.updatePriceOracle(oracle);
+
+        assertEq(address(manager.priceOracle()), address(oracle));
+    }
+
+    function testUpdateUsdOracleFromNotOwner_fail() public {
+        MockUsdOracle oracle = new MockUsdOracle(1);
+        vm.startPrank(address(0x112233));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.updatePriceOracle(oracle);
     }
 
     function testUpdateLabelValidatorFromNotOwner_fail() public {
