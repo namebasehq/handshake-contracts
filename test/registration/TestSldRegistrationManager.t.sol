@@ -142,13 +142,25 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.prank(address(0x420));
-
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        hoax(address(0x420), 4 ether);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
         vm.warp(block.timestamp + (registrationLength * 86400) + 1);
 
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        vm.prank(address(0x420));
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
     }
 
     function testMintSldFromAuthorisedWalletRepurchaseWhenStillActive_fail() public {
@@ -167,14 +179,26 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.prank(address(0x420));
-
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        hoax(address(0x420), 4 ether);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
         vm.warp(block.timestamp + (registrationLength * 86400) - 10);
 
+        vm.prank(address(0x420));
         vm.expectRevert("domain already registered");
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
     }
 
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
@@ -211,7 +235,7 @@ contract TestSldRegistrationManager is Test {
         address recipient = address(0);
 
         address sendingAddress = address(0x420);
-        vm.startPrank(sendingAddress);
+        hoax(sendingAddress, 20 ether);
         vm.expectCall(
             address(manager.sld()),
             abi.encodeCall(
@@ -223,7 +247,14 @@ contract TestSldRegistrationManager is Test {
                 )
             )
         );
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        vm.startPrank(sendingAddress);
+        manager.registerSld{value: (uint256(1 ether) / uint256(365)) * registrationLength + 137}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
     }
 
     function testPurchaseSldToOtherAddress() public {
@@ -240,7 +271,7 @@ contract TestSldRegistrationManager is Test {
         address recipient = address(0xbadbad);
 
         address sendingAddress = address(0x420);
-        vm.startPrank(sendingAddress);
+        hoax(sendingAddress, 2 ether);
         vm.expectCall(
             address(manager.sld()),
             abi.encodeCall(
@@ -248,7 +279,14 @@ contract TestSldRegistrationManager is Test {
                 (recipient, parentNamehash, Namehash.getNamehash(parentNamehash, label))
             )
         );
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        vm.prank(sendingAddress);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
     }
 
     function testMintSingleDomainWithNoPriceStrategy_fail() public {
@@ -285,7 +323,8 @@ contract TestSldRegistrationManager is Test {
         address recipient = address(0xbadbad);
 
         address sendingAddress = address(0x420);
-        vm.startPrank(sendingAddress);
+        hoax(sendingAddress, 20 ether);
+
         vm.expectCall(
             address(manager.sld()),
             abi.encodeCall(
@@ -298,7 +337,14 @@ contract TestSldRegistrationManager is Test {
             )
         );
 
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        vm.startPrank(sendingAddress);
+        manager.registerSld{value: 1 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
 
@@ -340,11 +386,17 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.startPrank(address(0x420));
+        startHoax(address(0x420), 50 ether);
 
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
-        manager.renewSubdomain(label, parentNamehash, renewalLength);
+        manager.renewSubdomain{value: 5 ether}(label, parentNamehash, renewalLength);
 
         (
             uint80 actualRegistrationTime,
@@ -386,17 +438,23 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.startPrank(address(0x420));
+        startHoax(address(0x420), 30 ether);
 
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
         vm.stopPrank();
 
         uint256 registrationTimestamp = block.timestamp;
         vm.warp(block.timestamp + (registrationLength * 86400));
 
         //different wallet, can renew domain.
-        vm.startPrank(address(0x99999999));
-        manager.renewSubdomain(label, parentNamehash, renewalLength);
+        startHoax(address(0x99999999));
+        manager.renewSubdomain{value: 3.29 ether}(label, parentNamehash, renewalLength);
 
         (
             uint80 actualRegistrationTime,
@@ -431,9 +489,14 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.startPrank(address(0x420));
-
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        startHoax(address(0x420), 20 ether);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
         vm.warp(block.timestamp + (registrationLength * 86400));
 
@@ -463,12 +526,18 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0x5555);
 
-        vm.prank(address(0x420));
-
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        hoax(address(0x420), 20 ether);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
 
         vm.warp(block.timestamp + (registrationLength * 86400) + 1);
 
+        vm.prank(address(0x420));
         vm.expectRevert("invalid domain");
         manager.renewSubdomain(label, parentNamehash, registrationLength);
     }
@@ -519,9 +588,9 @@ contract TestSldRegistrationManager is Test {
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         address sendingAddress = address(0x420);
-        vm.startPrank(sendingAddress);
+        startHoax(sendingAddress, 100 ether);
 
-        manager.registerSld("yo", 0x0, 365, parentNamehash, address(0));
+        manager.registerSld{value: 10 ether}("yo", 0x0, 365, parentNamehash, address(0));
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, "yo");
 
@@ -575,7 +644,7 @@ contract TestSldRegistrationManager is Test {
         address recipient = address(0xbadbad);
 
         address sendingAddress = address(0x420);
-        hoax(sendingAddress, 2000 ether);
+        hoax(sendingAddress, 10.11 ether);
         vm.expectCall(
             address(manager.sld()),
             abi.encodeCall(
@@ -596,6 +665,8 @@ contract TestSldRegistrationManager is Test {
             parentNamehash,
             recipient
         );
+
+        assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
 

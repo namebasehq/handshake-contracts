@@ -131,6 +131,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
             1 ether;
 
+        console.log("priceInWei", priceInWei);
+        console.log("msg.value", msg.value);
         require(priceInWei <= msg.value, "Price too low");
     }
 
