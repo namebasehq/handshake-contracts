@@ -12,10 +12,11 @@ import "interfaces/IPriceOracle.sol";
 import "structs/SubdomainRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "./PaymentManager.sol";
 
 import {console} from "forge-std/console.sol";
 
-contract SldRegistrationManager is Ownable, ISldRegistrationManager {
+contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentManager {
     using ERC165Checker for address;
 
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
@@ -26,31 +27,19 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
 
     ICommitIntent public commitIntent;
 
-    IPriceOracle public priceOracle;
+    IPriceOracle public usdOracle;
 
     constructor(
         IHandshakeTld _tld,
         IHandshakeSld _sld,
         ICommitIntent _commitIntent,
         IPriceOracle _oracle
-    ) {
+    ) PaymentManager(msg.sender) {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
         updatePriceOracle(_oracle);
     }
-
-    function updatePriceOracle(IPriceOracle _oracle) public onlyOwner {
-        priceOracle = _oracle;
-    }
-
-    function registerMultipleSld(
-        string[] calldata _label,
-        bytes32[] calldata _secret,
-        uint256[] calldata _registrationLength,
-        bytes32[] calldata _parentNamehash,
-        address[] calldata _recipient
-    ) public payable {}
 
     function registerSld(
         string calldata _label,
@@ -60,7 +49,9 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         address _recipient
     ) external payable {
         require(labelValidator.isValidLabel(_label), "invalid label");
+
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+
         require(address(strategy) != address(0), "no registration strategy");
 
         uint256 dollarPrice = strategy.getPriceInDollars(
@@ -69,6 +60,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             _label,
             _registrationLength
         );
+
         require(
             globalStrategy.canRegister(
                 msg.sender,
@@ -97,6 +89,22 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             _parentNamehash,
             _label
         );
+
+        uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
+        console.log("wei value of dollar", getWeiValueOfDollar());
+        console.log("dollar price", dollarPrice);
+        console.log("msg.value", msg.value);
+        console.log("price in wei", priceInWei);
+        console.log("msg.sender", msg.sender);
+
+        require(priceInWei <= msg.value, "price too low");
+
+        uint256 refund = msg.value - priceInWei;
+
+        console.log("value in contract", address(this).balance);
+        if (refund > 0) {
+            payable(msg.sender).transfer(refund);
+        }
     }
 
     function renewSubdomain(
@@ -113,6 +121,17 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         detail.RegistrationLength = detail.RegistrationLength + (_registrationLength * 1 days);
 
         subdomainRegistrationHistory[subdomainNamehash] = detail;
+
+        uint256 priceInDollars = getRenewalPricePerDay(
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
+
+        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
+            1 ether;
+
+        require(priceInWei <= msg.value, "Price too low");
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
@@ -124,8 +143,16 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
         labelValidator = _validator;
     }
 
+    function updateHandshakePaymentAddress(address _addr) public onlyOwner {
+        handshakeWalletPayoutAddress = _addr;
+    }
+
     function updateGlobalRegistrationStrategy(IGlobalRegistrationRules _strategy) public onlyOwner {
         globalStrategy = _strategy;
+    }
+
+    function updatePriceOracle(IPriceOracle _oracle) public onlyOwner {
+        usdOracle = _oracle;
     }
 
     function getTenYearGuarenteedPricing(bytes32 _subdomainNamehash)
@@ -197,16 +224,22 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager {
             _registrationLength
         );
 
-        console.log("renewal", renewalCostPerAnnum);
-        console.log("registration", (price / _registrationLength) * 365);
+        //console.log("renewal", renewalCostPerAnnum);
+        //console.log("registration", (price / _registrationLength) * 365);
 
         uint256 dailyRenewalPrice = renewalCostPerAnnum / 365;
         uint256 dailyRegistrationPrice = price / _registrationLength;
 
-        console.log("daily renewal", dailyRenewalPrice);
-        console.log("daily registration", dailyRegistrationPrice);
+        //console.log("daily renewal", dailyRenewalPrice);
+        //console.log("daily registration", dailyRegistrationPrice);
 
         return
             dailyRenewalPrice > dailyRegistrationPrice ? dailyRegistrationPrice : dailyRenewalPrice;
+    }
+
+    function getWeiValueOfDollar() public view returns (uint256) {
+        uint256 price = usdOracle.getPrice();
+
+        return (1 ether * 100000000) / price;
     }
 }

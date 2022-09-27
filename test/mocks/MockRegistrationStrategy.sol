@@ -28,6 +28,7 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
         } else {
             annualCost = price;
         }
+
         return (annualCost * _registrationLength) / 365;
     }
 
