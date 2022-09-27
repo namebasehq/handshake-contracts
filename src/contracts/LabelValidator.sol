@@ -16,7 +16,7 @@ contract LabelValidator is ILabelValidator {
      * @param _label The label to validate. Should be normalized to lowercase without spaces, periods, or non-alphanumeric characters.
      * @return bool Label is valid
      */
-    function isValidLabel(string calldata _label) external view returns (bool) {
+    function isValidLabel(string calldata _label) external pure returns (bool) {
         bytes memory labelBytes = bytes(_label);
         uint256 bytesLength = labelBytes.length;
         if (bytesLength == 0) return false;

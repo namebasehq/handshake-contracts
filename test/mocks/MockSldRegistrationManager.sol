@@ -27,7 +27,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
-    ) public view returns (uint256) {
+    ) public pure returns (uint256) {
         require(false, "not implemented");
     }
 }

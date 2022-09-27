@@ -20,6 +20,7 @@ import "interfaces/ICommitIntent.sol";
 contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
 
+    /*
     using stdStorage for StdStorage;
     HandshakeTld tld;
     HandshakeSld sld;
@@ -35,7 +36,7 @@ contract TestHandshakeSld is Test {
     // test.test.test
     bytes32 constant TEST_SUB_NAMEHASH =
         0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
-    /*
+   
     function setUp() public {
         commitIntent = new MockCommitIntent(true);
         claimManager = new MockClaimManager();

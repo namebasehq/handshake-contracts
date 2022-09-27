@@ -20,7 +20,7 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
         return shouldRegister;
     }
 
-    function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
+    function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
         return
             _interfaceId == this.canRegister.selector ||
             _interfaceId == this.supportsInterface.selector;

@@ -535,6 +535,6 @@ contract TestHandshakeSld_v2 is Test {
         sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
 
         vm.expectRevert(MissingRegistrationStrategy.selector);
-        ISldRegistrationStrategy expectedStrategy = sld.getRegistrationStrategy(parentNamehash);
+        sld.getRegistrationStrategy(parentNamehash);
     }
 }

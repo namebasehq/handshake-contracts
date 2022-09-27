@@ -17,7 +17,7 @@ import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
 import {console} from "forge-std/console.sol";
-
+/*
 contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManager {
     using ERC165Checker for address;
 
@@ -553,3 +553,4 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld, HasUsdOracle, PaymentManag
         _;
     }
 }
+*/

@@ -91,11 +91,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         );
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
-        console.log("wei value of dollar", getWeiValueOfDollar());
-        console.log("dollar price", dollarPrice);
-        console.log("msg.value", msg.value);
-        console.log("price in wei", priceInWei);
-        console.log("msg.sender", msg.sender);
 
         require(priceInWei <= msg.value, "price too low");
 
@@ -131,8 +126,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
             1 ether;
 
-        console.log("priceInWei", priceInWei);
-        console.log("msg.value", msg.value);
         require(priceInWei <= msg.value, "Price too low");
     }
 
@@ -226,14 +219,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
             _registrationLength
         );
 
-        //console.log("renewal", renewalCostPerAnnum);
-        //console.log("registration", (price / _registrationLength) * 365);
-
         uint256 dailyRenewalPrice = renewalCostPerAnnum / 365;
         uint256 dailyRegistrationPrice = price / _registrationLength;
-
-        //console.log("daily renewal", dailyRenewalPrice);
-        //console.log("daily registration", dailyRegistrationPrice);
 
         return
             dailyRenewalPrice > dailyRegistrationPrice ? dailyRegistrationPrice : dailyRenewalPrice;

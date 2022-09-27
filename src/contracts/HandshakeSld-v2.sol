@@ -20,7 +20,7 @@ import "interfaces/ISldRegistrationManager.sol";
 
 import {console} from "forge-std/console.sol";
 
-contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandshakeSld {
+contract HandshakeSld_v2 is HandshakeNft, PaymentManager, IHandshakeSld {
     using ERC165Checker for address;
 
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
@@ -28,7 +28,7 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     mapping(bytes32 => bytes32) public namehashToParentMap;
     mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
 
-    IHandshakeTld handshakeTldContract;
+    IHandshakeTld public handshakeTldContract;
 
     IGlobalRegistrationRules public contractRegistrationStrategy;
     ISldRegistrationManager public registrationManager;
@@ -36,10 +36,6 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
     uint256 private DECIMAL_MULTIPLIER = 1000;
 
     error MissingRegistrationStrategy();
-
-    //interface method for price strategy
-    bytes4 private constant PRICE_IN_DOLLARS_SELECTOR =
-        bytes4(keccak256("getPriceInDollars(address,bytes32,string,uint256)"));
 
     constructor(IHandshakeTld _tld, ISldRegistrationManager _registrationManager)
         HandshakeNft("SLD", "Handshake SLD")
@@ -76,7 +72,6 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
         if (address(strategy) == address(0)) {
             revert MissingRegistrationStrategy();
         }
-
         return strategy;
     }
 
@@ -131,7 +126,6 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
             priceInDollars,
             royaltyAmount
         );
-
         return detail;
     }
 
@@ -166,18 +160,12 @@ contract HandshakeSld_v2 is HandshakeNft, HasUsdOracle, PaymentManager, IHandsha
                 ++i;
             }
         }
-
         return arr;
     }
 
     function setHandshakeWalletAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
         handshakeWalletPayoutAddress = _addr;
-    }
-
-    function setPriceOracle(IPriceOracle _oracle) public onlyOwner {
-        usdOracle = _oracle;
-        emit NewUsdOracle(address(_oracle));
     }
 
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
