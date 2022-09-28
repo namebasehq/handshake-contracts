@@ -11,16 +11,16 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     }
 
     function canRegister(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string calldata _label,
-        uint256 _registrationLength,
-        uint256 _dollarCost
+        address, //_buyingAddress
+        bytes32, //_parentNamehash
+        string calldata, //_label
+        uint256, //_registrationLength
+        uint256 // _dollarCost
     ) external view returns (bool) {
         return shouldRegister;
     }
 
-    function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
+    function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
         return
             _interfaceId == this.canRegister.selector ||
             _interfaceId == this.supportsInterface.selector;

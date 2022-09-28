@@ -12,14 +12,15 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
     ITldClaimManager public claimManager;
-    
+
+    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
+
     address public claimManagerAddress;
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount;
 
     constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
         claimManager = _claimManager;
-        
     }
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {
@@ -36,7 +37,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         royaltyPayoutAmount = _amount;
     }
 
-    function mint(address _addr, string calldata _domain) external {
+    function register(address _addr, string calldata _domain) external {
         // TLD node and token ID is full namehash with root 0x0 as parent
         bytes32 namehash = getTldNamehash(_domain);
         require(address(claimManager) == msg.sender, "not authorised");
@@ -49,10 +50,9 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         _;
     }
 
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+    function royaltyInfo(uint256, uint256 salePrice)
         external
         view
-        override
         returns (address receiver, uint256 royaltyAmount)
     {
         uint256 divisor = royaltyPayoutAmount.div(10);
@@ -60,8 +60,32 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return (royaltyPayoutAddress, amount);
     }
 
-    function getNamehash(bytes32 _parentHash, string memory _label) internal pure override returns (bytes32) {
+    function getNamehash(bytes32 _parentHash, string memory _label)
+        internal
+        pure
+        override
+        returns (bytes32)
+    {
         return Namehash.getNamehash(_parentHash, _label);
+    }
+
+    function ownerOf(uint256 _id)
+        public
+        view
+        override(HandshakeNft, IHandshakeTld)
+        returns (address)
+    {
+        return super.ownerOf(_id);
+    }
+
+    function isApprovedOrOwner(address _operator, uint256 _id)
+        public
+        view
+        override(HandshakeNft, IHandshakeTld)
+        returns (bool)
+    {
+        address owner = ownerOf(_id);
+        return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
     function getTldNamehash(string memory _label) internal pure returns (bytes32) {

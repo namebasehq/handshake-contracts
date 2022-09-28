@@ -16,8 +16,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-    constructor() {
-    }
+    constructor() {}
 
     //provide this as a public function in case we want to query it from the UI
     function canClaim(address _addr, bytes32 _namehash) public view returns (bool) {
@@ -32,7 +31,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
         bytes32 namehash = keccak256(abi.encodePacked(_domain));
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.mint(msg.sender, _domain);
+        handshakeTldContract.register(msg.sender, _domain);
     }
 
     //can also be removed by setting address to 0x0

@@ -5,17 +5,13 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
 import "utils/BytesUtils.sol";
-import { NameEncoder } from "utils/NameEncoder.sol";
+import {NameEncoder} from "utils/NameEncoder.sol";
 
 contract TestNameEncoder is Test {
     using NameEncoder for string;
     using BytesUtils for bytes;
 
-    function encodeName(string memory name)
-        private
-        pure
-        returns (bytes memory, bytes32)
-    {
+    function encodeName(string memory name) private pure returns (bytes memory, bytes32) {
         return name.dnsEncodeName();
     }
 

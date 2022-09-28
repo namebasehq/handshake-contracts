@@ -2,7 +2,6 @@
 pragma solidity ^0.8.15;
 
 library BytesUtils {
-
     /*
      * @dev Returns the keccak-256 hash of a byte range.
      * @param self The byte string to hash.
@@ -27,18 +26,13 @@ library BytesUtils {
      * @param offset The offset at which to start hashing.
      * @return The namehash of the name.
      */
-    function namehash(bytes memory self, uint256 offset)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function namehash(bytes memory self, uint256 offset) internal pure returns (bytes32) {
         (bytes32 labelhash, uint256 newOffset) = readLabel(self, offset);
         if (labelhash == bytes32(0)) {
             require(offset == self.length - 1, "namehash: Junk at end of name");
             return bytes32(0);
         }
-        return
-            keccak256(abi.encodePacked(namehash(self, newOffset), labelhash));
+        return keccak256(abi.encodePacked(namehash(self, newOffset), labelhash));
     }
 
     /**
@@ -71,11 +65,7 @@ library BytesUtils {
      * @param other The second bytes to compare.
      * @return The result of the comparison.
      */
-    function compare(bytes memory self, bytes memory other)
-        internal
-        pure
-        returns (int256)
-    {
+    function compare(bytes memory self, bytes memory other) internal pure returns (int256) {
         return compare(self, 0, self.length, other, 0, other.length);
     }
 
@@ -186,9 +176,7 @@ library BytesUtils {
         uint256 offset,
         bytes memory other
     ) internal pure returns (bool) {
-        return
-            self.length >= offset + other.length &&
-            equals(self, offset, other, 0, other.length);
+        return self.length >= offset + other.length && equals(self, offset, other, 0, other.length);
     }
 
     /*
@@ -197,14 +185,8 @@ library BytesUtils {
      * @param other The second byte range to compare.
      * @return True if the byte ranges are equal, false otherwise.
      */
-    function equals(bytes memory self, bytes memory other)
-        internal
-        pure
-        returns (bool)
-    {
-        return
-            self.length == other.length &&
-            equals(self, 0, other, 0, self.length);
+    function equals(bytes memory self, bytes memory other) internal pure returns (bool) {
+        return self.length == other.length && equals(self, 0, other, 0, self.length);
     }
 
     /*
@@ -213,11 +195,7 @@ library BytesUtils {
      * @param idx The index into the bytes
      * @return The specified 8 bits of the string, interpreted as an integer.
      */
-    function readUint8(bytes memory self, uint256 idx)
-        internal
-        pure
-        returns (uint8 ret)
-    {
+    function readUint8(bytes memory self, uint256 idx) internal pure returns (uint8 ret) {
         return uint8(self[idx]);
     }
 
@@ -227,11 +205,7 @@ library BytesUtils {
      * @param idx The index into the bytes
      * @return The specified 16 bits of the string, interpreted as an integer.
      */
-    function readUint16(bytes memory self, uint256 idx)
-        internal
-        pure
-        returns (uint16 ret)
-    {
+    function readUint16(bytes memory self, uint256 idx) internal pure returns (uint16 ret) {
         require(idx + 2 <= self.length);
         assembly {
             ret := and(mload(add(add(self, 2), idx)), 0xFFFF)
@@ -244,11 +218,7 @@ library BytesUtils {
      * @param idx The index into the bytes
      * @return The specified 32 bits of the string, interpreted as an integer.
      */
-    function readUint32(bytes memory self, uint256 idx)
-        internal
-        pure
-        returns (uint32 ret)
-    {
+    function readUint32(bytes memory self, uint256 idx) internal pure returns (uint32 ret) {
         require(idx + 4 <= self.length);
         assembly {
             ret := and(mload(add(add(self, 4), idx)), 0xFFFFFFFF)
@@ -261,11 +231,7 @@ library BytesUtils {
      * @param idx The index into the bytes
      * @return The specified 32 bytes of the string.
      */
-    function readBytes32(bytes memory self, uint256 idx)
-        internal
-        pure
-        returns (bytes32 ret)
-    {
+    function readBytes32(bytes memory self, uint256 idx) internal pure returns (bytes32 ret) {
         require(idx + 32 <= self.length);
         assembly {
             ret := mload(add(add(self, 32), idx))
@@ -278,11 +244,7 @@ library BytesUtils {
      * @param idx The index into the bytes
      * @return The specified 32 bytes of the string.
      */
-    function readBytes20(bytes memory self, uint256 idx)
-        internal
-        pure
-        returns (bytes20 ret)
-    {
+    function readBytes20(bytes memory self, uint256 idx) internal pure returns (bytes20 ret) {
         require(idx + 20 <= self.length);
         assembly {
             ret := and(

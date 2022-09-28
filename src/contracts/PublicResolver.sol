@@ -22,7 +22,6 @@ contract PublicResolver is
     PubkeyResolver,
     TextResolver
 {
-
     address immutable tldContract;
     address immutable sldContract;
 
@@ -32,10 +31,7 @@ contract PublicResolver is
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        if (
-            msg.sender == tldContract ||
-            msg.sender == sldContract
-        ) {
+        if (msg.sender == tldContract || msg.sender == sldContract) {
             return true;
         }
         address owner = address(0);
@@ -50,7 +46,7 @@ contract PublicResolver is
      */
     function setContenthash(bytes32 node, bytes calldata hash)
         external
-        override (ContentHashResolver)
+        override(ContentHashResolver)
         authorised(node)
     {
         hashes[node] = hash;
@@ -65,7 +61,7 @@ contract PublicResolver is
     function contenthash(bytes32 node)
         external
         view
-        override (ContentHashResolver)
+        override(ContentHashResolver)
         returns (bytes memory)
     {
         return hashes[node];
@@ -82,7 +78,7 @@ contract PublicResolver is
         bytes32 node,
         string calldata key,
         string calldata value
-    ) public override (TextResolver) authorised(node) {
+    ) public override(TextResolver) authorised(node) {
         texts[node][key] = value;
         emit TextChanged(node, key, key, value);
     }
@@ -96,7 +92,7 @@ contract PublicResolver is
     function text(bytes32 node, string calldata key)
         external
         view
-        override (TextResolver)
+        override(TextResolver)
         returns (string memory)
     {
         return texts[node][key];
@@ -120,5 +116,4 @@ contract PublicResolver is
     {
         return super.supportsInterface(interfaceID);
     }
-
 }

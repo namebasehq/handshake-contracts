@@ -17,11 +17,7 @@ library RRUtils {
      * @param offset The offset to start reading at.
      * @return The length of the DNS name at 'offset', in bytes.
      */
-    function nameLength(bytes memory self, uint256 offset)
-        internal
-        pure
-        returns (uint256)
-    {
+    function nameLength(bytes memory self, uint256 offset) internal pure returns (uint256) {
         uint256 idx = offset;
         while (true) {
             assert(idx < self.length);
@@ -40,11 +36,7 @@ library RRUtils {
      * @param offset The offset to start reading at.
      * @return ret The name.
      */
-    function readName(bytes memory self, uint256 offset)
-        internal
-        pure
-        returns (bytes memory ret)
-    {
+    function readName(bytes memory self, uint256 offset) internal pure returns (bytes memory ret) {
         uint256 len = nameLength(self, offset);
         return self.substring(offset, len);
     }
@@ -55,11 +47,7 @@ library RRUtils {
      * @param offset The offset to start reading at.
      * @return The number of labels in the DNS name at 'offset', in bytes.
      */
-    function labelCount(bytes memory self, uint256 offset)
-        internal
-        pure
-        returns (uint256)
-    {
+    function labelCount(bytes memory self, uint256 offset) internal pure returns (uint256) {
         uint256 count = 0;
         while (true) {
             assert(offset < self.length);
@@ -95,11 +83,7 @@ library RRUtils {
         bytes name;
     }
 
-    function readSignedSet(bytes memory data)
-        internal
-        pure
-        returns (SignedSet memory self)
-    {
+    function readSignedSet(bytes memory data) internal pure returns (SignedSet memory self) {
         self.typeCovered = data.readUint16(RRSIG_TYPE);
         self.algorithm = data.readUint8(RRSIG_ALGORITHM);
         self.labels = data.readUint8(RRSIG_LABELS);
@@ -114,11 +98,7 @@ library RRUtils {
         );
     }
 
-    function rrs(SignedSet memory rrset)
-        internal
-        pure
-        returns (RRIterator memory)
-    {
+    function rrs(SignedSet memory rrset) internal pure returns (RRIterator memory) {
         return iterateRRs(rrset.data, 0);
     }
 
@@ -194,11 +174,7 @@ library RRUtils {
      * @return A new bytes object containing the owner name from the RR.
      */
     function name(RRIterator memory iter) internal pure returns (bytes memory) {
-        return
-            iter.data.substring(
-                iter.offset,
-                nameLength(iter.data, iter.offset)
-            );
+        return iter.data.substring(iter.offset, nameLength(iter.data, iter.offset));
     }
 
     /**
@@ -206,16 +182,8 @@ library RRUtils {
      * @param iter The iterator.
      * @return A new bytes object containing the RR's RDATA.
      */
-    function rdata(RRIterator memory iter)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return
-            iter.data.substring(
-                iter.rdataOffset,
-                iter.nextOffset - iter.rdataOffset
-            );
+    function rdata(RRIterator memory iter) internal pure returns (bytes memory) {
+        return iter.data.substring(iter.rdataOffset, iter.nextOffset - iter.rdataOffset);
     }
 
     uint256 constant DNSKEY_FLAGS = 0;
@@ -238,10 +206,7 @@ library RRUtils {
         self.flags = data.readUint16(offset + DNSKEY_FLAGS);
         self.protocol = data.readUint8(offset + DNSKEY_PROTOCOL);
         self.algorithm = data.readUint8(offset + DNSKEY_ALGORITHM);
-        self.publicKey = data.substring(
-            offset + DNSKEY_PUBKEY,
-            length - DNSKEY_PUBKEY
-        );
+        self.publicKey = data.substring(offset + DNSKEY_PUBKEY, length - DNSKEY_PUBKEY);
     }
 
     uint256 constant DS_KEY_TAG = 0;
@@ -303,11 +268,7 @@ library RRUtils {
         self.typeBitmap = data.substring(offset, end - offset);
     }
 
-    function checkTypeBitmap(NSEC3 memory self, uint16 rrtype)
-        internal
-        pure
-        returns (bool)
-    {
+    function checkTypeBitmap(NSEC3 memory self, uint16 rrtype) internal pure returns (bool) {
         return checkTypeBitmap(self.typeBitmap, 0, rrtype);
     }
 
@@ -325,9 +286,7 @@ library RRUtils {
     ) internal pure returns (bool) {
         uint8 typeWindow = uint8(rrtype >> 8);
         uint8 windowByte = uint8((rrtype & 0xff) / 8);
-        uint8 windowBitmask = uint8(
-            uint8(1) << (uint8(7) - uint8(rrtype & 0x7))
-        );
+        uint8 windowBitmask = uint8(uint8(1) << (uint8(7) - uint8(rrtype & 0x7)));
         for (uint256 off = offset; off < bitmap.length; ) {
             uint8 window = bitmap.readUint8(off);
             uint8 len = bitmap.readUint8(off + 1);
@@ -340,9 +299,7 @@ library RRUtils {
                     // Our type is past the end of the bitmap
                     return false;
                 }
-                return
-                    (bitmap.readUint8(off + windowByte + 2) & windowBitmask) !=
-                    0;
+                return (bitmap.readUint8(off + windowByte + 2) & windowBitmask) != 0;
             } else {
                 // Skip this type bitmap
                 off += len + 2;
@@ -352,11 +309,7 @@ library RRUtils {
         return false;
     }
 
-    function compareNames(bytes memory self, bytes memory other)
-        internal
-        pure
-        returns (int256)
-    {
+    function compareNames(bytes memory self, bytes memory other) internal pure returns (int256) {
         if (self.equals(other)) {
             return 0;
         }
@@ -410,19 +363,11 @@ library RRUtils {
     /**
      * @dev Compares two serial numbers using RFC1982 serial number math.
      */
-    function serialNumberGte(uint32 i1, uint32 i2)
-        internal
-        pure
-        returns (bool)
-    {
+    function serialNumberGte(uint32 i1, uint32 i2) internal pure returns (bool) {
         return int32(i1) - int32(i2) >= 0;
     }
 
-    function progress(bytes memory body, uint256 off)
-        internal
-        pure
-        returns (uint256)
-    {
+    function progress(bytes memory body, uint256 off) internal pure returns (uint256) {
         return off + 1 + body.readUint8(off);
     }
 
@@ -472,40 +417,25 @@ library RRUtils {
                     word = (word >> unused) << unused;
                 }
                 ac1 +=
-                    (word &
-                        0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >>
+                    (word & 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >>
                     8;
-                ac2 += (word &
-                    0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF);
+                ac2 += (word & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF);
             }
             ac1 =
-                (ac1 &
-                    0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
-                ((ac1 &
-                    0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >>
-                    16);
+                (ac1 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
+                ((ac1 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
             ac2 =
-                (ac2 &
-                    0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
-                ((ac2 &
-                    0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >>
-                    16);
+                (ac2 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
+                ((ac2 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
             ac1 = (ac1 << 8) + ac2;
             ac1 =
-                (ac1 &
-                    0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) +
-                ((ac1 &
-                    0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >>
-                    32);
+                (ac1 & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) +
+                ((ac1 & 0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >> 32);
             ac1 =
-                (ac1 &
-                    0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) +
-                ((ac1 &
-                    0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >>
-                    64);
+                (ac1 & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) +
+                ((ac1 & 0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >> 64);
             ac1 =
-                (ac1 &
-                    0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) +
+                (ac1 & 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) +
                 (ac1 >> 128);
             ac1 += (ac1 >> 16) & 0xFFFF;
             return uint16(ac1);
