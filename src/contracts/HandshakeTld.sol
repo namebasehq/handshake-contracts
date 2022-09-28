@@ -75,8 +75,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override(HandshakeNft, IHandshakeTld)
         returns (bool)
     {
-        address owner = ownerOf(_id);
-        return _operator == owner || isApprovedForAll(owner, _operator);
+        return _isApprovedOrOwner(_operator, _id);
     }
-
 }

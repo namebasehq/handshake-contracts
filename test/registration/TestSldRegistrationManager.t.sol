@@ -391,8 +391,11 @@ contract TestSldRegistrationManager is Test {
 
         manager.renewSubdomain{value: 5 ether}(label, parentNamehash, renewalLength);
 
-        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = // uint96 actualRegistrationPrice
-        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
         uint256 actualValue = block.timestamp + ((registrationLength + renewalLength) * 1 days);
@@ -436,8 +439,11 @@ contract TestSldRegistrationManager is Test {
         startHoax(address(0x99999999));
         manager.renewSubdomain{value: 3.29 ether}(label, parentNamehash, renewalLength);
 
-        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = //uint96 actualRegistrationPrice
-        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength, //uint96 actualRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         console.log("registration time", actualRegistrationTime);
         console.log("registration length", actualRegistrationLength);
@@ -735,8 +741,11 @@ contract TestSldRegistrationManager is Test {
 
         manager.renewSubdomain{value: 1.096 ether}(label, parentNamehash, newRegLength);
 
-        (uint80 NewRegistrationTime, uint80 NewRegistrationLength, ) = //uint96NewRegistrationPrice
-        manager.subdomainRegistrationHistory(namehash);
+        (
+            uint80 NewRegistrationTime,
+            uint80 NewRegistrationLength, //uint96NewRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(namehash);
 
         assertEq(
             NewRegistrationLength,

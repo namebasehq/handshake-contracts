@@ -37,7 +37,7 @@ contract TestGlobalRegistrationRules is Test {
         bytes32 parentNamehash = 0x0;
         string memory label = "testing";
         uint256 registrationLength = 365;
-        uint256 dollarPrice = 1;
+        uint256 dollarPrice = 1 ether;
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -54,7 +54,7 @@ contract TestGlobalRegistrationRules is Test {
         bytes32 parentNamehash = 0x0;
         string memory label = "testing";
         uint256 registrationLength = 365;
-        uint256 dollarPrice = type(uint256).max;
+        uint256 dollarPrice = 1000 ether;
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -88,7 +88,7 @@ contract TestGlobalRegistrationRules is Test {
         bytes32 parentNamehash = 0x0;
         string memory label = "testing";
         uint256 registrationLength = (365 * 100);
-        uint256 dollarPrice = 99;
+        uint256 dollarPrice = 99 ether;
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -105,7 +105,7 @@ contract TestGlobalRegistrationRules is Test {
         bytes32 parentNamehash = 0x0;
         string memory label = "testing";
         uint256 registrationLength = (365 * 100);
-        uint256 dollarPrice = 100;
+        uint256 dollarPrice = 100 ether;
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -115,5 +115,22 @@ contract TestGlobalRegistrationRules is Test {
         );
 
         assertTrue(result, "should be able to register with $1 per year");
+    }
+
+    function testClaimWithPartYearsDollarAverage_fail() public {
+        address buyingAddress = address(0x11);
+        bytes32 parentNamehash = 0x0;
+        string memory label = "testing";
+        uint256 registrationLength = 365 + 364;
+        uint256 dollarPrice = 1.1 ether;
+        bool result = rules.canRegister(
+            buyingAddress,
+            parentNamehash,
+            label,
+            registrationLength,
+            dollarPrice
+        );
+
+        assertFalse(result, "should fail, less that $1 per year");
     }
 }
