@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Namehash} from "utils/Namehash.sol";
-import "contracts/HandshakeSld-v2.sol";
+import "contracts/HandshakeSld.sol";
 import "utils/Namehash.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/ISldRegistrationManager.sol";
@@ -20,7 +20,7 @@ import "test/mocks/MockSldRegistrationManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/ICommitIntent.sol";
 
-contract TestHandshakeSld_v2 is Test {
+contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
 
     // test
@@ -35,14 +35,14 @@ contract TestHandshakeSld_v2 is Test {
 
     using stdStorage for StdStorage;
 
-    HandshakeSld_v2 sld;
+    HandshakeSld sld;
     MockHandshakeTld tld;
     MockSldRegistrationManager manager;
 
     function setUp() public {
         tld = new MockHandshakeTld();
         manager = new MockSldRegistrationManager();
-        sld = new HandshakeSld_v2(tld, manager);
+        sld = new HandshakeSld(tld, manager);
     }
 
     function testMintSldFromRegistryAddress_success() public {

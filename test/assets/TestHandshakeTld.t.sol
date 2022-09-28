@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
-import {HandshakeTld, HandshakeSld_v2} from "contracts/HandshakeSld-v2.sol";
+import {HandshakeTld, HandshakeSld} from "contracts/HandshakeSld.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
@@ -17,7 +17,7 @@ import "interfaces/ISldRegistrationManager.sol";
 contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
     HandshakeTld tld;
-    HandshakeSld_v2 sld;
+    HandshakeSld sld;
 
     ITldClaimManager claimManager;
     ISldRegistrationManager registrationManager;
@@ -36,7 +36,7 @@ contract TestHandshakeTld is Test {
         claimManager = new MockClaimManager();
         registrationManager = new MockSldRegistrationManager();
         tld = new HandshakeTld(claimManager);
-        sld = new HandshakeSld_v2(tld, registrationManager);
+        sld = new HandshakeSld(tld, registrationManager);
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
