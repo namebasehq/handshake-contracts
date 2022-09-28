@@ -108,14 +108,4 @@ abstract contract HandshakeNft is ERC721, Ownable {
     function exists(uint256 tokenId) public view returns (bool) {
         return ERC721._exists(tokenId);
     }
-
-    // TODO: swap param order
-    function getNamehash(bytes32 _parentHash, string memory _label)
-        internal
-        pure
-        virtual
-        returns (bytes32)
-    {
-        return Namehash.getNamehash(_parentHash, _label);
-    }
 }

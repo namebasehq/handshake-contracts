@@ -26,6 +26,8 @@ contract TestSldRegistrationManager is Test {
 
     fallback() external payable {}
 
+    receive() external payable {}
+
     function setUp() public {
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();

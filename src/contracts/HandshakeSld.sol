@@ -119,7 +119,7 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         uint256 royaltyAmount = royaltyPayoutAmountMap[parentHash];
 
         SubdomainDetail memory detail = SubdomainDetail(
-            uint256(getNamehash(parentHash, _label)),
+            uint256(Namehash.getNamehash(parentHash, _label)),
             _parentId,
             _label,
             priceInDollars,
@@ -143,7 +143,6 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         SubdomainDetail[] memory arr = new SubdomainDetail[](len);
 
         for (uint256 i; i < len; ) {
-            bytes32[] memory empty_arr;
             arr[i] = getSingleSubdomainDetails(
                 _recipients[i],
                 _parentIds[i],

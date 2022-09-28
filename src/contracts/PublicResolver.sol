@@ -30,7 +30,7 @@ contract PublicResolver is
         sldContract = _sldContract;
     }
 
-    function isAuthorised(bytes32 node) internal view override returns (bool) {
+    function isAuthorised(bytes32) internal view override returns (bool) {
         if (msg.sender == tldContract || msg.sender == sldContract) {
             return true;
         }

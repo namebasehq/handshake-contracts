@@ -313,8 +313,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsFromPremiumName_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
         bytes32 full_namehash = keccak256(
@@ -344,8 +342,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsFromReservedName_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
         bytes32 full_namehash = keccak256(
@@ -378,13 +374,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithDifferentLengths_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -430,13 +420,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithDifferentLengthsMultipleYears_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -482,8 +466,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testMultiYearDiscountWithOver50Percent_fail() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
 
         uint256[] memory multiYearDiscount = new uint256[](3);
@@ -499,8 +481,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testMultiYearDiscountWithIncorrectDiscountSequence_fail() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
 
         uint256[] memory multiYearDiscount = new uint256[](3);
@@ -516,10 +496,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscount_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
 
         uint256[] memory lengthPrices = new uint256[](1);
 
@@ -550,11 +527,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscountNotLessThanOneDollarPerYear_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-
         uint256[] memory lengthPrices = new uint256[](1);
 
         lengthPrices[0] = 1;
@@ -584,13 +557,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscountAndLengthPrices_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory lengthPrices = new uint256[](3);
 

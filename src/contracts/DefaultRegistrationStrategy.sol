@@ -165,7 +165,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         address _buyingAddress,
         bytes32 _parentNamehash,
         string calldata _label,
-        bytes32[] calldata _proofs,
         uint256 _registrationLength
     ) external view returns (uint256) {
         return getPriceInDollars(_buyingAddress, _parentNamehash, _label, _registrationLength);
