@@ -14,7 +14,7 @@ abstract contract PaymentManager {
         uint256 _funds
     ) internal {
         uint256 contractFunds = address(this).balance;
-
+        require(contractFunds >= _funds, "not enough ether");
         if (contractFunds > 0) {
             uint256 handshakeShare = (_funds * 5) / 100;
 

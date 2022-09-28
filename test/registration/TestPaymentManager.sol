@@ -35,6 +35,7 @@ contract TestPaymentManager is Test {
         address sldOwner = address(0x88);
         address sender = address(0x420);
 
+        startHoax(sender, totalFunds);
         paymentManager.payableFunction{value: totalFunds}(sldOwner, tldOwner, spentFunds);
 
         uint256 onePercent = spentFunds / 100;
@@ -48,5 +49,17 @@ contract TestPaymentManager is Test {
             "balance of sldOwner should be returned overspend"
         );
         assertEq(tldOwner.balance, onePercent * 95, "tld owner wallet should get 95% of the funds");
+    }
+
+    function testPayoutWithNotEnoughFunds_fail() public {
+        uint256 totalFunds = 10 ether;
+
+        address tldOwner = address(0x22);
+        address sldOwner = address(0x88);
+        address sender = address(0x420);
+
+        startHoax(sender, totalFunds);
+        vm.expectRevert("not enough ether");
+        paymentManager.payableFunction{value: totalFunds - 1}(sldOwner, tldOwner, totalFunds);
     }
 }

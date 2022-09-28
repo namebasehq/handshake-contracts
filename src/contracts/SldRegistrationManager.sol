@@ -93,14 +93,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
         distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
-        // require(priceInWei <= msg.value, "price too low");
-
-        //  uint256 refund = msg.value - priceInWei;
-
-        //  console.log("value in contract", address(this).balance);
-        //  if (refund > 0) {
-        //      payable(msg.sender).transfer(refund);
-        //  }
     }
 
     function renewSubdomain(
