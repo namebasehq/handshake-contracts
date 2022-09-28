@@ -103,8 +103,7 @@ contract HandshakeSld_v2 is HandshakeNft, PaymentManager, IHandshakeSld {
         address _recipient,
         uint256 _parentId,
         string calldata _label,
-        uint256 _registrationLength,
-        bytes32[] calldata _proofs
+        uint256 _registrationLength
     ) private view returns (SubdomainDetail memory) {
         bytes32 parentHash = bytes32(_parentId);
         //will revert if pricing strategy does not exist.
@@ -133,14 +132,11 @@ contract HandshakeSld_v2 is HandshakeNft, PaymentManager, IHandshakeSld {
         address[] calldata _recipients,
         uint256[] calldata _parentIds,
         string[] calldata _labels,
-        uint256[] calldata _registrationLengths,
-        bytes32[][] calldata _proofs
+        uint256[] calldata _registrationLengths
     ) external view returns (SubdomainDetail[] memory) {
         uint256 len = _parentIds.length;
         require(
-            (len ^ _recipients.length ^ _labels.length ^ _proofs.length) == 0 &&
-                len == _proofs.length &&
-                len == _registrationLengths.length,
+            (len ^ _recipients.length ^ _labels.length ^ _registrationLengths.length) == 0,
             "array lengths are different"
         );
 
@@ -152,8 +148,7 @@ contract HandshakeSld_v2 is HandshakeNft, PaymentManager, IHandshakeSld {
                 _recipients[i],
                 _parentIds[i],
                 _labels[i],
-                _registrationLengths[i],
-                _proofs[i]
+                _registrationLengths[i]
             );
 
             unchecked {

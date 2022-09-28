@@ -24,6 +24,8 @@ contract TestSldRegistrationManager is Test {
     MockHandshakeTld tld;
     MockCommitIntent commitIntent;
 
+    fallback() external payable {}
+
     function setUp() public {
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();
@@ -97,8 +99,6 @@ contract TestSldRegistrationManager is Test {
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
 
-        bytes32[] memory proofs = new bytes32[](0);
-
         address recipient = address(0x5555);
 
         vm.prank(address(0x420));
@@ -118,8 +118,6 @@ contract TestSldRegistrationManager is Test {
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
 
-        bytes32[] memory proofs = new bytes32[](0);
-
         address recipient = address(0x5555);
 
         vm.prank(address(0x420));
@@ -133,12 +131,12 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
 
@@ -168,14 +166,13 @@ contract TestSldRegistrationManager is Test {
         manager.updateLabelValidator(validator);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
         setUpGlobalStrategy(true);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
 
@@ -224,13 +221,12 @@ contract TestSldRegistrationManager is Test {
         setUpLabelValidator();
         setUpGlobalStrategy(true);
         bytes32 parentNamehash = bytes32(uint256(0x226677));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0);
 
@@ -261,12 +257,11 @@ contract TestSldRegistrationManager is Test {
         setUpLabelValidator();
         setUpGlobalStrategy(true);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0xbadbad);
 
@@ -298,8 +293,6 @@ contract TestSldRegistrationManager is Test {
         uint80 registrationLength = 500;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
-        bytes32[] memory proofs = new bytes32[](0);
-
         address recipient = address(0xbadbad);
 
         address sendingAddress = address(0x420);
@@ -317,8 +310,8 @@ contract TestSldRegistrationManager is Test {
         bytes32 secret = 0x0;
         uint80 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0xbadbad);
 
@@ -376,13 +369,13 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
         uint80 renewalLength = 1200;
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
 
@@ -398,27 +391,14 @@ contract TestSldRegistrationManager is Test {
 
         manager.renewSubdomain{value: 5 ether}(label, parentNamehash, renewalLength);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength,
-            uint96 actualRegistrationPrice
-        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = // uint96 actualRegistrationPrice
+        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
-        console.log("registration time before", actualRegistrationTime);
-        console.log("registration time before", actualRegistrationLength);
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
         uint256 actualValue = block.timestamp + ((registrationLength + renewalLength) * 1 days);
 
-        console.log("expected value", expectedValue);
-        console.log("actual value", actualValue);
-
-        console.log("timestamp", block.timestamp);
         //check that the registration details have been updated.
-        assertEq(
-            expectedValue,
-            block.timestamp + ((registrationLength + renewalLength) * 1 days),
-            "invalid registration details"
-        );
+        assertEq(actualValue, expectedValue, "invalid registration details");
     }
 
     //TODO: what's the expected behaviour (pass i think)
@@ -428,13 +408,13 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
         uint80 renewalLength = 1200;
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
 
@@ -456,11 +436,8 @@ contract TestSldRegistrationManager is Test {
         startHoax(address(0x99999999));
         manager.renewSubdomain{value: 3.29 ether}(label, parentNamehash, renewalLength);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength,
-            uint96 actualRegistrationPrice
-        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = //uint96 actualRegistrationPrice
+        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         console.log("registration time", actualRegistrationTime);
         console.log("registration length", actualRegistrationLength);
@@ -479,13 +456,13 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-        uint256 renewalLength = 1200;
-        bytes32[] memory proofs = new bytes32[](0);
+        uint80 renewalLength = 1200;
 
         address recipient = address(0x5555);
 
@@ -501,7 +478,7 @@ contract TestSldRegistrationManager is Test {
         vm.warp(block.timestamp + (registrationLength * 86400));
 
         vm.expectRevert("invalid domain");
-        manager.renewSubdomain("doesnotexist", parentNamehash, registrationLength);
+        manager.renewSubdomain("doesnotexist", parentNamehash, renewalLength);
 
         vm.expectRevert("invalid domain");
         manager.renewSubdomain(
@@ -517,12 +494,12 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
         uint80 registrationLength = 500;
-        bytes32[] memory proofs = new bytes32[](0);
 
         address recipient = address(0x5555);
 
@@ -582,6 +559,7 @@ contract TestSldRegistrationManager is Test {
         ];
 
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
 
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(3 ether);
         strategy.setMultiYearPricing(prices);
@@ -594,11 +572,11 @@ contract TestSldRegistrationManager is Test {
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, "yo");
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength,
-            uint96 actualRegistrationPrice
-        ) = manager.subdomainRegistrationHistory(subdomainNamehash);
+        // (
+        //     uint80 actualRegistrationTime,
+        //     uint80 actualRegistrationLength,
+        //     uint96 actualRegistrationPrice
+        // ) = manager.subdomainRegistrationHistory(subdomainNamehash);
 
         sld.setMockRegistrationStrategy(parentNamehash, new MockRegistrationStrategy(3 ether));
 
@@ -636,6 +614,8 @@ contract TestSldRegistrationManager is Test {
         uint80 registrationLength = 365;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
+        tld.register(address(0x99), uint256(parentNamehash));
+
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
         console.log("usdOracle", address(strategy));
         strategy.setMultiYearPricing(prices);
@@ -667,14 +647,6 @@ contract TestSldRegistrationManager is Test {
         );
 
         assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
-
-        bytes32 subdomainNamehash = Namehash.getNamehash(parentNamehash, label);
-
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength,
-            uint96 actualRegistrationPrice
-        ) = manager.subdomainRegistrationHistory(subdomainNamehash);
 
         //assert
         for (uint256 i; i < 10; i++) {
@@ -713,7 +685,6 @@ contract TestSldRegistrationManager is Test {
 
     function testPurchaseSingleDomainGetRefundForExcess() public {
         string memory label = "";
-        bytes32 secret = bytes32(0x0);
         uint256 registrationLength = 365 * 2;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
 
@@ -725,7 +696,6 @@ contract TestSldRegistrationManager is Test {
         setUpGlobalStrategy(true);
         addMockOracle();
 
-        bytes32[] memory empty_array;
         address claimant = address(0x6666);
         address tldOwner = address(0x464646);
 
@@ -738,11 +708,12 @@ contract TestSldRegistrationManager is Test {
         tld.register(tldOwner, "yoyo");
 
         vm.warp(6688);
+        uint256 registrationTimestamp = block.timestamp;
 
         hoax(claimant, 2 ether);
         manager.registerSld{value: 2 ether}( //should cost 2 ether
             label,
-            secret,
+            0x0, //secret
             registrationLength,
             parentNamehash,
             claimant
@@ -751,27 +722,32 @@ contract TestSldRegistrationManager is Test {
 
         bytes32 namehash = Namehash.getNamehash(parentNamehash, label);
 
-        (uint80 RegistrationTime, uint80 RegistrationLength, uint96 RegistrationPrice) = manager
-            .subdomainRegistrationHistory(namehash);
+        (, uint80 RegistrationLength, ) = manager.subdomainRegistrationHistory(namehash);
 
         uint80 newRegLength = 400;
+
+        vm.warp(block.timestamp + 420);
         hoax(claimant, 1.095 ether);
         vm.expectRevert("Price too low");
         manager.renewSubdomain{value: 1.095 ether}(label, parentNamehash, newRegLength);
 
         hoax(claimant, 1.096 ether);
+
         manager.renewSubdomain{value: 1.096 ether}(label, parentNamehash, newRegLength);
 
-        (
-            uint80 NewRegistrationTime,
-            uint80 NewRegistrationLength,
-            uint96 NewRegistrationPrice
-        ) = manager.subdomainRegistrationHistory(namehash);
+        (uint80 NewRegistrationTime, uint80 NewRegistrationLength, ) = //uint96NewRegistrationPrice
+        manager.subdomainRegistrationHistory(namehash);
 
         assertEq(
             NewRegistrationLength,
             RegistrationLength + (newRegLength * 86400),
             "new registrationLength not correct"
+        );
+
+        assertEq(
+            NewRegistrationTime,
+            registrationTimestamp,
+            "original registration time incorrect"
         );
     }
 

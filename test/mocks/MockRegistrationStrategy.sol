@@ -13,9 +13,9 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
     }
 
     function getPriceInDollars(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string memory _label,
+        address, // _buyingAddress,
+        bytes32, // _parentNamehash,
+        string memory, // _label,
         uint256 _registrationLength
     ) external view returns (uint256) {
         uint256 annualCost;

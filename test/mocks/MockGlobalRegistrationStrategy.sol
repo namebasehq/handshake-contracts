@@ -11,11 +11,11 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     }
 
     function canRegister(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string calldata _label,
-        uint256 _registrationLength,
-        uint256 _dollarCost
+        address, //_buyingAddress
+        bytes32, //_parentNamehash
+        string calldata, //_label
+        uint256, //_registrationLength
+        uint256 // _dollarCost
     ) external view returns (bool) {
         return shouldRegister;
     }

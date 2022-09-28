@@ -114,7 +114,7 @@ contract TestHandshakeNft is Test {
 
     function testUpdateMetadataWithCorrectServiceFromNotOwnerWalletExpectFail() public {
         string memory value = "return value";
-        MockMetadataService metadata = new MockMetadataService("");
+        MockMetadataService metadata = new MockMetadataService(value);
 
         vm.startPrank(address(0x1337));
         vm.expectRevert("Ownable: caller is not the owner");

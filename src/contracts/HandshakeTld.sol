@@ -50,7 +50,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         _;
     }
 
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+    function royaltyInfo(uint256, uint256 salePrice)
         external
         view
         returns (address receiver, uint256 royaltyAmount)

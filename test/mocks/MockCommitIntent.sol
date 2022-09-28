@@ -22,14 +22,14 @@ contract MockCommitIntent is ICommitIntent {
         MinBlocks = _minBlockWait;
     }
 
-    function commitIntent(bytes32 _namehash) external {}
+    function commitIntent(bytes32) external {}
 
-    function multiCommitIntent(bytes32[] calldata _namehash) external {}
+    function multiCommitIntent(bytes32[] calldata) external {}
 
     function allowedCommit(
-        bytes32 _namehash,
-        bytes32 _secret,
-        address _addr
+        bytes32, // _namehash,
+        bytes32, // _secret,
+        address // _addr
     ) external view returns (bool) {
         return Allowed;
     }

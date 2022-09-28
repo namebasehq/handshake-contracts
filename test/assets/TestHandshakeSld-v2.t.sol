@@ -122,8 +122,6 @@ contract TestHandshakeSld_v2 is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        bytes32[] memory emptyArr;
-
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -155,9 +153,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -189,8 +184,6 @@ contract TestHandshakeSld_v2 is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -231,8 +224,6 @@ contract TestHandshakeSld_v2 is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        bytes32[] memory emptyArr;
-
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -270,8 +261,6 @@ contract TestHandshakeSld_v2 is Test {
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
 
-        bytes32[] memory emptyArr;
-
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -292,8 +281,6 @@ contract TestHandshakeSld_v2 is Test {
         uint256 tldId = uint256(parent_hash);
         assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
-        address approvedAddress = address(0x558822);
-
         address notTldOwner = address(0x9988332211);
         vm.startPrank(notTldOwner);
         vm.expectRevert("not authorised");
@@ -306,9 +293,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -344,9 +328,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -378,9 +359,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -410,7 +388,7 @@ contract TestHandshakeSld_v2 is Test {
         uint256 royaltyPercent = 1;
         sld.setRoyaltyPayoutAmount(tldId, royaltyPercent);
 
-        (address addy, uint256 amount) = sld.royaltyInfo(expectedsldId, 300);
+        (, uint256 amount) = sld.royaltyInfo(expectedsldId, 300);
 
         assertEq(amount, 3, "incorrect royalty amount");
 
@@ -422,8 +400,6 @@ contract TestHandshakeSld_v2 is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -458,9 +434,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
-
-        bytes32[] memory emptyArr;
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
@@ -488,15 +461,14 @@ contract TestHandshakeSld_v2 is Test {
         vm.expectRevert("10% maximum royalty on SLD");
         sld.setRoyaltyPayoutAmount({_id: tldId, _amount: royaltyPercent});
         (, uint256 amount) = sld.royaltyInfo(expectedsldId, 100);
-
+        assertEq(amount, 0);
         vm.stopPrank();
     }
 
     function testAddRegistrationStrategyToTldDomain_pass() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
-        address sldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -506,7 +478,6 @@ contract TestHandshakeSld_v2 is Test {
 
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
 
-        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
         tld.addApprovedAddress(tldOwner, uint256(parentNamehash));
         sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
 
@@ -518,7 +489,6 @@ contract TestHandshakeSld_v2 is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address notTldOwner = address(0x232323);
-        address payoutAddress = address(0x22886644);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));

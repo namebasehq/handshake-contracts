@@ -13,10 +13,11 @@ import "structs/SubdomainRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
+import "./HasUsdOracle.sol";
 
 import {console} from "forge-std/console.sol";
 
-contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentManager {
+contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentManager, HasUsdOracle {
     using ERC165Checker for address;
 
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
@@ -26,8 +27,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
     IHandshakeTld public tld;
 
     ICommitIntent public commitIntent;
-
-    IPriceOracle public usdOracle;
 
     constructor(
         IHandshakeTld _tld,
@@ -48,6 +47,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         bytes32 _parentNamehash,
         address _recipient
     ) external payable {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        require(commitIntent.allowedCommit(sldNamehash, _secret, msg.sender), "not allowed");
         require(labelValidator.isValidLabel(_label), "invalid label");
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
@@ -72,7 +73,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
             "failed global strategy"
         );
 
-        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
         require(canRegister(sldNamehash), "domain already registered");
 
         sld.registerSld(
@@ -92,14 +92,15 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
-        require(priceInWei <= msg.value, "price too low");
+        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+        // require(priceInWei <= msg.value, "price too low");
 
-        uint256 refund = msg.value - priceInWei;
+        //  uint256 refund = msg.value - priceInWei;
 
-        console.log("value in contract", address(this).balance);
-        if (refund > 0) {
-            payable(msg.sender).transfer(refund);
-        }
+        //  console.log("value in contract", address(this).balance);
+        //  if (refund > 0) {
+        //      payable(msg.sender).transfer(refund);
+        //  }
     }
 
     function renewSubdomain(
@@ -116,6 +117,8 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         detail.RegistrationLength = detail.RegistrationLength + (_registrationLength * 1 days);
 
         subdomainRegistrationHistory[subdomainNamehash] = detail;
+
+        console.log("renew start time", detail.RegistrationTime);
 
         uint256 priceInDollars = getRenewalPricePerDay(
             _parentNamehash,

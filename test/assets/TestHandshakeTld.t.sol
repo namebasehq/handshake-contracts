@@ -49,7 +49,7 @@ contract TestHandshakeTld is Test {
 
     function testMintFromUnauthorisedAddress() public {
         string memory domain = "test";
-        uint256 tldId = uint256(getTldNamehash(domain));
+
         vm.expectRevert("not authorised");
         tld.register(address(0x1339), domain);
     }
@@ -67,7 +67,7 @@ contract TestHandshakeTld is Test {
     function testMintCheckLabelToHashMapUpdated() public {
         string memory domain = "test";
         bytes32 namehash = getTldNamehash(domain);
-        uint256 tldId = uint256(namehash);
+
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
@@ -109,7 +109,7 @@ contract TestHandshakeTld is Test {
     function testUpdateDefaultSldRegistrationStrategyFromNotTldOwner() public {
         string memory domain = "test";
         bytes32 tldHash = getTldNamehash(domain);
-        uint256 tldId = uint256(tldHash);
+
         address tldOwnerAddr = address(0x6942);
         address notTldOwnerAddr = address(0x004204);
         address sldRegistrationStrategy = address(0x133737);
