@@ -39,7 +39,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
 
     function register(address _addr, string calldata _domain) external {
         // TLD node and token ID is full namehash with root 0x0 as parent
-        bytes32 namehash = getTldNamehash(_domain);
+        bytes32 namehash = Namehash.getTldNamehash(_domain);
         require(address(claimManager) == msg.sender, "not authorised");
         _mint(_addr, uint256(namehash));
         namehashToLabelMap[namehash] = _domain;
@@ -58,15 +58,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         uint256 divisor = royaltyPayoutAmount.div(10);
         uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
         return (royaltyPayoutAddress, amount);
-    }
-
-    function getNamehash(bytes32 _parentHash, string memory _label)
-        internal
-        pure
-        override
-        returns (bytes32)
-    {
-        return Namehash.getNamehash(_parentHash, _label);
     }
 
     function ownerOf(uint256 _id)
@@ -88,7 +79,4 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
-    function getTldNamehash(string memory _label) internal pure returns (bytes32) {
-        return Namehash.getTldNamehash(_label);
-    }
 }
