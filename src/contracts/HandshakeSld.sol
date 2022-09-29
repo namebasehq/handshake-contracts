@@ -25,7 +25,7 @@ import {console} from "forge-std/console.sol";
  * @author Sam Ward
  * @notice erc721 subdomain contract
  */
-contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
+contract HandshakeSld is HandshakeNft, IHandshakeSld {
     using ERC165Checker for address;
 
     // a map of string labels
@@ -46,7 +46,6 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
 
     constructor(IHandshakeTld _tld, ISldRegistrationManager _registrationManager)
         HandshakeNft("SLD", "Handshake SLD")
-        PaymentManager(msg.sender)
     {
         handshakeTldContract = _tld;
         registrationManager = _registrationManager;
@@ -230,16 +229,6 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
                 ++i;
             }
         }
-    }
-
-    /**
-     * @notice Set the payout address for the 5% that goes to the handshake wallet
-     * @dev Cannot be zero address
-     * @param _addr Address to set the payout.
-     */
-    function setHandshakeWalletAddress(address _addr) public onlyOwner {
-        require(_addr != address(0), "cannot set to zero address");
-        handshakeWalletPayoutAddress = _addr;
     }
 
     /**
