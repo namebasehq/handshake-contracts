@@ -92,7 +92,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
-        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+        distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
     }
 
     function renewSubdomain(
@@ -110,8 +110,6 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
 
         subdomainRegistrationHistory[subdomainNamehash] = detail;
 
-        console.log("renew start time", detail.RegistrationTime);
-
         uint256 priceInDollars = getRenewalPricePerDay(
             _parentNamehash,
             _label,
@@ -121,7 +119,11 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
             1 ether;
 
-        require(priceInWei <= msg.value, "Price too low");
+        distributePrimaryFunds(
+            ownerOf(uint256(subdomainNamehash)),
+            tld.ownerOf(uint256(_parentNamehash)),
+            priceInWei
+        );
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
