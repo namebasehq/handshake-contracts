@@ -13,6 +13,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
     ITldClaimManager public claimManager;
 
+    // a map of string labels
+    mapping(bytes32 => string) public namehashToLabelMap;
     mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
 
     address public claimManagerAddress;

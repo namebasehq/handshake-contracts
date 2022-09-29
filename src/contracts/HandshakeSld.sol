@@ -20,9 +20,16 @@ import "interfaces/ISldRegistrationManager.sol";
 
 import {console} from "forge-std/console.sol";
 
+/**
+ * @title Decentralised subdomain NFTs
+ * @author Sam Ward
+ * @notice erc721 subdomain contract
+ */
 contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
     using ERC165Checker for address;
 
+    // a map of string labels
+    mapping(bytes32 => string) public namehashToLabelMap;
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public royaltyPayoutAddressMap;
     mapping(bytes32 => bytes32) public namehashToParentMap;
@@ -45,6 +52,15 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         registrationManager = _registrationManager;
     }
 
+    /**
+     * @notice Register and mint SLD NFT
+     * @dev This function can only be called by the
+     *      registration manager contract
+     * @param _to The address that the SLD will be minted to.
+     *            Zero address will be minted to msg.sender
+     * @param _tldNamehash The bytes32 representation of the TLD
+     * @param _sldNamehash The bytes32 representation of the SLD
+     */
     function registerSld(
         address _to,
         bytes32 _tldNamehash,
@@ -54,34 +70,78 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         namehashToParentMap[_sldNamehash] = _tldNamehash;
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId)
+    /**
+     * @notice Register and mint SLD NFT
+     * @dev This function is custom owner/approved checking function.
+     * @param _operator The address that is being checked
+     * @param _tokenId The token ID of the subdomain NFT to be checked
+     * @return _allowed Is the address the owner or on the accepted list
+     */
+    function isApprovedOrOwner(address _operator, uint256 _tokenId)
         public
         view
         override(HandshakeNft, IHandshakeSld)
-        returns (bool)
+        returns (bool _allowed)
     {
-        return HandshakeNft.isApprovedOrOwner(spender, tokenId);
+        _allowed = HandshakeNft.isApprovedOrOwner(_operator, _tokenId);
     }
 
+    /**
+     * @notice Check the owner of a specified token.
+     * @dev This function returns back the owner of an NFT. Will revert if the token does
+     *      not exist.
+     * @param _tokenId The token ID of the subdomain NFT to be checked
+     * @return _addr Owner of NFT
+     */
+    function ownerOf(uint256 _tokenId)
+        public
+        view
+        override(HandshakeNft, IHandshakeSld)
+        returns (address _addr)
+    {
+        _addr = super.ownerOf(_tokenId);
+    }
+
+    /**
+     * @notice Get the registration strategy for a TLD
+     * @dev This function gets the registration strategy of a top level domain. Will revert if
+     *      the strategy is not set.
+     * @param _parentNamehash Bytes32 representation of the top level domain
+     * @return _strategy Linked registration strategy to the top level domain
+     */
     function getRegistrationStrategy(bytes32 _parentNamehash)
         public
         view
-        returns (ISldRegistrationStrategy)
+        returns (ISldRegistrationStrategy _strategy)
     {
-        ISldRegistrationStrategy strategy = registrationStrategy[_parentNamehash];
-        if (address(strategy) == address(0)) {
+        _strategy = registrationStrategy[_parentNamehash];
+        if (address(_strategy) == address(0)) {
             revert MissingRegistrationStrategy();
         }
-        return strategy;
     }
 
-    function setRegistrationStrategy(uint256 _id, ISldRegistrationStrategy _strategy)
+    /**
+     * @notice Set the registration strategy for a TLD
+     * @dev This function sets the registration strategy of a top level domain. Must be
+     *      set by the owner of the top level domain
+     * @param _tldId uint256 representation of the top level domain
+     * @param _strategy Linked registration strategy to the top level domain. It should
+     *                  implement ISldRegistrationStrategy interface
+     */
+    function setRegistrationStrategy(uint256 _tldId, ISldRegistrationStrategy _strategy)
         public
-        onlyParentApprovedOrOwner(_id)
+        onlyParentApprovedOrOwner(_tldId)
     {
-        registrationStrategy[bytes32(_id)] = _strategy;
+        registrationStrategy[bytes32(_tldId)] = _strategy;
     }
 
+    /**
+     * @notice Set the % royalty amount
+     * @dev This function sets the royalty percentage for EIP-2981 function. This
+     *      function can only be run by the owner of the top level domain.
+     * @param _id uint256 representation of the top level domain
+     * @param _amount Percentage to be set. Should be between 1-10%.
+     */
     function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
         public
         onlyParentApprovedOrOwner(_id)
@@ -90,13 +150,20 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         royaltyPayoutAmountMap[bytes32(_id)] = _amount;
     }
 
+    /**
+     * @notice Set the royalty payout address. This defaults to the owner of the
+     *         top level domain in the first instance.
+     * @dev This function sets the royalty payout wallet for EIP-2981 function. This
+     *      function can only be run by the owner of the top level domain.
+     * @param _id uint256 representation of the top level domain
+     * @param _addr Address to be set for the on-chain royalties to be sent to.
+     */
     function setRoyaltyPayoutAddress(uint256 _id, address _addr)
         public
         onlyParentApprovedOrOwner(_id)
     {
         require(_addr != address(0), "cannot set to zero address");
-        address parentOwner = exists(_id) ? ownerOf(_id) : handshakeTldContract.ownerOf(_id);
-        royaltyPayoutAddressMap[bytes32(_id)][parentOwner] = _addr;
+        royaltyPayoutAddressMap[bytes32(_id)][handshakeTldContract.ownerOf(_id)] = _addr;
     }
 
     function getSingleSubdomainDetails(
@@ -128,22 +195,31 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
         return detail;
     }
 
+    /**
+     * @notice Get multiple subdomain details, which includes the price and NFT details
+     * @dev Input arrays should all be the same length.
+     * @param _recipients Array of the recipients. Generally will just be the same address.
+     * @param _parentIds Array of the parent IDs
+     * @param _labels Array of the subdomain labels to be queried.
+     * @param _registrationLengths Array of the length of registration (days)
+     * @return _details
+     */
     function getSubdomainDetails(
         address[] calldata _recipients,
         uint256[] calldata _parentIds,
         string[] calldata _labels,
         uint256[] calldata _registrationLengths
-    ) external view returns (SubdomainDetail[] memory) {
+    ) external view returns (SubdomainDetail[] memory _details) {
         uint256 len = _parentIds.length;
         require(
             (len ^ _recipients.length ^ _labels.length ^ _registrationLengths.length) == 0,
             "array lengths are different"
         );
 
-        SubdomainDetail[] memory arr = new SubdomainDetail[](len);
+        _details = new SubdomainDetail[](len);
 
         for (uint256 i; i < len; ) {
-            arr[i] = getSingleSubdomainDetails(
+            _details[i] = getSingleSubdomainDetails(
                 _recipients[i],
                 _parentIds[i],
                 _labels[i],
@@ -154,14 +230,40 @@ contract HandshakeSld is HandshakeNft, PaymentManager, IHandshakeSld {
                 ++i;
             }
         }
-        return arr;
     }
 
+    /**
+     * @notice Set the payout address for the 5% that goes to the handshake wallet
+     * @dev Cannot be zero address
+     * @param _addr Address to set the payout.
+     */
     function setHandshakeWalletAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
         handshakeWalletPayoutAddress = _addr;
     }
 
+    /**
+     * @notice Gets the fully qualified domain name including TLD
+     * @dev This function will get the full domain name sld.tld.
+     *      It will revert if the domain does not exist.
+     * @param _sldNamehash bytes32 representation of the sub domain
+     * @return _fullDomain
+     */
+    function name(bytes32 _sldNamehash) external view returns (string memory _fullDomain) {
+        bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
+        require(tldNamehash != 0x0, "domain does not exist");
+        string memory tldLabel = handshakeTldContract.namehashToLabelMap(tldNamehash);
+        string memory sldLabel = namehashToLabelMap[_sldNamehash];
+
+        _fullDomain = string(abi.encodePacked(sldLabel, ".", tldLabel));
+    }
+
+    /**
+     * @notice Gets the royalty information for a subdomain
+     * @dev This function will get EIP-2981 royalty information based on the TLD
+     * @param tokenId uint256 representation of the sub domain
+     * @param salePrice this does not link to any specific currency
+     */
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view

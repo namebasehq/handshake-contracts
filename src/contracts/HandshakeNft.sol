@@ -18,9 +18,6 @@ abstract contract HandshakeNft is ERC721, Ownable {
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
 
-    // a map of string labels
-    mapping(bytes32 => string) public namehashToLabelMap;
-
     IMetadataService public metadata;
 
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}

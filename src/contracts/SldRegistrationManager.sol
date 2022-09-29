@@ -75,11 +75,9 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
 
         require(canRegister(sldNamehash), "domain already registered");
 
-        sld.registerSld(
-            _recipient == address(0) ? msg.sender : _recipient,
-            _parentNamehash,
-            sldNamehash
-        );
+        _recipient = _recipient == address(0) ? msg.sender : _recipient;
+
+        sld.registerSld(_recipient, _parentNamehash, sldNamehash);
 
         addRegistrationDetails(
             sldNamehash,
@@ -120,7 +118,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
             1 ether;
 
         distributePrimaryFunds(
-            ownerOf(uint256(subdomainNamehash)),
+            sld.ownerOf(uint256(subdomainNamehash)),
             tld.ownerOf(uint256(_parentNamehash)),
             priceInWei
         );

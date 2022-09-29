@@ -736,7 +736,7 @@ contract TestSldRegistrationManager is Test {
 
         vm.warp(block.timestamp + 420);
         hoax(claimant, 1.095 ether);
-        vm.expectRevert("Price too low");
+        vm.expectRevert("not enough ether");
         manager.renewSubdomain{value: 1.095 ether}(label, parentNamehash, newRegLength);
 
         hoax(claimant, 1.096 ether);
