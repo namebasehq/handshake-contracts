@@ -45,10 +45,6 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @return address currently marked as the owner of the given token ID
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
-        // TODO: implement expirations
-        // require(expiries[tokenId] > block.timestamp);
-        console.log("ownerOf");
-        console.log(tokenId);
         return super.ownerOf(tokenId);
     }
 

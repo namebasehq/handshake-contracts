@@ -40,8 +40,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     IGlobalRegistrationRules public contractRegistrationStrategy;
     ISldRegistrationManager public registrationManager;
 
-    uint256 private DECIMAL_MULTIPLIER = 1000;
-
     error MissingRegistrationStrategy();
 
     constructor(IHandshakeTld _tld, ISldRegistrationManager _registrationManager)
@@ -65,6 +63,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         bytes32 _tldNamehash,
         bytes32 _sldNamehash
     ) external isRegistrationManager {
+        if (hasExpired(_sldNamehash)) {
+            _burn(uint256(_sldNamehash));
+        }
         _mint(_to, uint256(_sldNamehash));
         namehashToParentMap[_sldNamehash] = _tldNamehash;
     }
@@ -88,7 +89,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     /**
      * @notice Check the owner of a specified token.
      * @dev This function returns back the owner of an NFT. Will revert if the token does
-     *      not exist.
+     *      not exist or has expired.
      * @param _tokenId The token ID of the subdomain NFT to be checked
      * @return _addr Owner of NFT
      */
@@ -98,7 +99,15 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         override(HandshakeNft, IHandshakeSld)
         returns (address _addr)
     {
-        _addr = super.ownerOf(_tokenId);
+        require(!hasExpired(bytes32(_tokenId)), "sld expired");
+        _addr = HandshakeNft.ownerOf(_tokenId);
+    }
+
+    function hasExpired(bytes32 _sldNamehash) private view returns (bool _hasExpired) {
+        (uint80 regTime, uint96 regLength, ) = registrationManager.subdomainRegistrationHistory(
+            _sldNamehash
+        );
+        _hasExpired = regTime + regLength <= block.timestamp;
     }
 
     /**

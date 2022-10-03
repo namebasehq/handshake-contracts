@@ -46,7 +46,7 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         approvedMap[_id] = _operator;
     }
 
-    function namehashToLabelMap(bytes32 _namehash) external view returns (string memory) {
+    function namehashToLabelMap(bytes32) external pure returns (string memory) {
         require(false, "not implemented");
     }
 }
