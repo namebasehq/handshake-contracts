@@ -7,6 +7,7 @@ import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
 
 contract TldClaimManager is Ownable, ITldClaimManager {
+    //TODO: remove bools to improve gas usage
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
     mapping(bytes32 => address) public tldClaimantMap;
