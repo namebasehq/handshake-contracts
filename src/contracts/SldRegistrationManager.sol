@@ -15,8 +15,6 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 
-import {console} from "forge-std/console.sol";
-
 contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentManager, HasUsdOracle {
     using ERC165Checker for address;
 
@@ -256,6 +254,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[
             subdomainNamehash
         ];
+
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;

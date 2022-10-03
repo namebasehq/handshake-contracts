@@ -15,21 +15,16 @@ abstract contract PaymentManager {
         address _tldOwner,
         uint256 _funds
     ) internal {
-        uint256 contractFunds = address(this).balance;
-        require(contractFunds >= _funds, "not enough ether");
-        if (contractFunds > 0) {
+        require(address(this).balance >= _funds, "not enough ether");
+        if (address(this).balance > 0) {
             uint256 handshakeShare = (_funds * 5) / 100;
+
+            if (address(this).balance > _funds) {
+                payable(_sldOwner).transfer(address(this).balance - _funds);
+            }
 
             payable(_tldOwner).transfer(_funds - handshakeShare);
             payable(handshakeWalletPayoutAddress).transfer(handshakeShare);
-
-            if (contractFunds > _funds) {
-                uint256 returnFunds = contractFunds - _funds;
-                (bool success, ) = payable(msg.sender).call{value: returnFunds}("");
-                if (!success) {
-                    payable(_sldOwner).transfer(returnFunds);
-                }
-            }
         }
     }
 }

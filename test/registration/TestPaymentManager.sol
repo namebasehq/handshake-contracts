@@ -43,7 +43,7 @@ contract TestPaymentManager is Test {
         assertEq(address(paymentManager).balance, 0, "balance of contract should be zero");
         assertEq(payoutAddress.balance, onePercent * 5, "payout wallet should get 5% of funds");
         assertEq(
-            sender.balance,
+            sldOwner.balance,
             totalFunds - spentFunds,
             "balance of sldOwner should be returned overspend"
         );

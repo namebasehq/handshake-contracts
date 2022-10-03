@@ -48,5 +48,6 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
 
     function namehashToLabelMap(bytes32) external pure returns (string memory) {
         require(false, "not implemented");
+        return "";
     }
 }

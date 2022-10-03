@@ -654,12 +654,14 @@ contract TestSldRegistrationManager is Test {
             recipient
         );
 
-        assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
+        assertEq(recipient.balance, 0.11 ether, "balance not correct");
 
         //assert
         for (uint256 i; i < 10; i++) {
             uint256 actual = manager.getRenewalPricePerDay(parentNamehash, label, (i + 1) * 365);
+
             uint256 expected = prices[i] / 365;
+
             assertGt(actual, 0);
             assertEq(actual, expected);
         }

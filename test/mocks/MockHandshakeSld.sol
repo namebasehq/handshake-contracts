@@ -22,7 +22,7 @@ contract MockHandshakeSld is IHandshakeSld {
         return idToAddressToApproved[tokenId][spender];
     }
 
-    function ownerOf(uint256 _id) external view returns (address) {
+    function ownerOf(uint256) external pure returns (address) {
         return address(0x4);
     }
 
