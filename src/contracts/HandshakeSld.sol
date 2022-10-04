@@ -26,8 +26,6 @@ import {console} from "forge-std/console.sol";
  * @notice erc721 subdomain contract
  */
 contract HandshakeSld is HandshakeNft, IHandshakeSld {
-    using ERC165Checker for address;
-
     // a map of string labels
     mapping(bytes32 => string) public namehashToLabelMap;
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;

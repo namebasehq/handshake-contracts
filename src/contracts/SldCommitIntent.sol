@@ -86,7 +86,6 @@ contract SldCommitIntent is ICommitIntent, Ownable {
      * @param _combinedHashes array of keccak256 hashes of sld namehash / bytes32 secret / msg.sender
      */
     function multiCommitIntent(bytes32[] calldata _combinedHashes) external {
-
         for (uint256 i; i < _combinedHashes.length; ) {
             commitIntent(_combinedHashes[i]);
 

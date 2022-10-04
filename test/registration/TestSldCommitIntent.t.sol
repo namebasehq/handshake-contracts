@@ -37,7 +37,6 @@ contract TestSldCommitIntent is Test {
         //Arrange
         bytes32 node = bytes32(uint256(666));
         uint256 startBlock = 10;
-        uint256 maxBlocks = intent.maxBlockWaitForCommit();
         uint256 minBlocks = 2;
         bytes32 secret = bytes32(uint256(42424242));
         intent.updateMinBlockWaitForCommit(minBlocks);
@@ -148,7 +147,6 @@ contract TestSldCommitIntent is Test {
         intent.updateMinBlockWaitForCommit(0);
 
         //Act
-        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, address(this)));
         vm.roll(startBlock);
         intent.commitIntent(node);
         vm.roll(startBlock + maxBlocks - 1);
