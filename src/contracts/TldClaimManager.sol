@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
+import "interfaces/ILabelValidator.sol";
+import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
 
 /**
@@ -13,7 +15,7 @@ import {Namehash} from "utils/Namehash.sol";
  * @notice This contract is for managing the TLDs that can be claimed
  *         TLD managers can add allowed TLDs that can be minted by address
  */
-contract TldClaimManager is Ownable, ITldClaimManager {
+contract TldClaimManager is Ownable, ITldClaimManager, HasLabelValidator {
     //TODO: remove bools to improve gas usage
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
@@ -24,7 +26,7 @@ contract TldClaimManager is Ownable, ITldClaimManager {
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-    constructor() {}
+    constructor(ILabelValidator _validator) HasLabelValidator(_validator) {}
 
     /**
      * @notice Helper function to check if an address can claim a TLD
@@ -94,6 +96,17 @@ contract TldClaimManager is Ownable, ITldClaimManager {
     function updateAllowedTldManager(address _addr, bool _allowed) external onlyOwner {
         allowedTldManager[_addr] = _allowed;
         emit UpdateAllowedTldManager(_addr, _allowed);
+    }
+
+    /**
+     * @notice Update the label validator contract. This just contains a function that checks the label is acceptable
+     * @dev This should implement the ILabelValidator interface. Can only be run from the contract owner wallet
+     *
+     * @param _validator Address of the label validator. This can be updated in the future if required.
+     */
+    function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
+        labelValidator = _validator;
+        emit NewLabelValidator(address(_validator));
     }
 
     modifier onlyAuthorisedTldManager() {

@@ -7,15 +7,18 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "interfaces/ITldClaimManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
+import "test/mocks/MockLabelValidator.sol";
+import "interfaces/ILabelValidator.sol";
 
 contract TestTldClaimManager is Test {
     ITldClaimManager internal manager;
     HandshakeTld internal nft;
+    ILabelValidator internal labelValidator;
 
     function setUp() public {
-        manager = new TldClaimManager();
+        labelValidator = new MockLabelValidator(true);
+        manager = new TldClaimManager(labelValidator);
         nft = new HandshakeTld(manager);
-        //nft.setTldClaimManager(manager);
     }
 
     function testAddTldManagerWallet() public {

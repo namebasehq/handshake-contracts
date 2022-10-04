@@ -19,6 +19,7 @@ import "test/mocks/MockCommitIntent.sol";
 import "test/mocks/MockSldRegistrationManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/ICommitIntent.sol";
+import "interfaces/ILabelValidator.sol";
 
 contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
@@ -38,8 +39,10 @@ contract TestHandshakeSld is Test {
     HandshakeSld sld;
     MockHandshakeTld tld;
     MockSldRegistrationManager manager;
+    MockLabelValidator labelValidator;
 
     function setUp() public {
+        labelValidator = new MockLabelValidator(true);
         tld = new MockHandshakeTld();
         manager = new MockSldRegistrationManager();
         sld = new HandshakeSld(tld, manager);

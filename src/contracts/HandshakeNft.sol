@@ -10,6 +10,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "contracts/HasLabelValidator.sol";
+import "interfaces/ILabelValidator.sol";
 
 // base class for both SLD and TLDs
 abstract contract HandshakeNft is ERC721, Ownable {

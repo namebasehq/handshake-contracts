@@ -14,12 +14,18 @@ import "src/utils/Namehash.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
+import "./HasLabelValidator.sol";
 
-contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentManager, HasUsdOracle {
+contract SldRegistrationManager is
+    Ownable,
+    ISldRegistrationManager,
+    PaymentManager,
+    HasUsdOracle,
+    HasLabelValidator
+{
     using ERC165Checker for address;
 
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
-    ILabelValidator public labelValidator;
     IGlobalRegistrationRules public globalStrategy;
     IHandshakeSld public sld;
     IHandshakeTld public tld;
@@ -31,12 +37,12 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         IHandshakeSld _sld,
         ICommitIntent _commitIntent,
         IPriceOracle _oracle,
+        ILabelValidator _validator,
         address _handshakeWallet
-    ) PaymentManager(_handshakeWallet) {
+    ) PaymentManager(_handshakeWallet) HasUsdOracle(_oracle) HasLabelValidator(_validator) {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
-        updatePriceOracle(_oracle);
     }
 
     /**
@@ -155,6 +161,7 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
      */
     function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
         labelValidator = _validator;
+        emit NewLabelValidator(address(_validator));
     }
 
     /**

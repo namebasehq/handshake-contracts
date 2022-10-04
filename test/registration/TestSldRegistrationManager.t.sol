@@ -23,17 +23,26 @@ contract TestSldRegistrationManager is Test {
     MockHandshakeSld sld;
     MockHandshakeTld tld;
     MockCommitIntent commitIntent;
+    MockLabelValidator labelValidator;
 
     fallback() external payable {}
 
     receive() external payable {}
 
     function setUp() public {
+        labelValidator = new MockLabelValidator(true);
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();
         commitIntent = new MockCommitIntent(true);
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
-        manager = new SldRegistrationManager(tld, sld, commitIntent, oracle, address(this));
+        manager = new SldRegistrationManager(
+            tld,
+            sld,
+            commitIntent,
+            oracle,
+            labelValidator,
+            address(this)
+        );
     }
 
     function addMockOracle() private {

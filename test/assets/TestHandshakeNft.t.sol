@@ -7,6 +7,7 @@ import "contracts/HandshakeNft.sol";
 
 import "test/mocks/MockMetadataService.sol";
 import "test/mocks/MockCommitIntent.sol";
+import "test/mocks/MockLabelValidator.sol";
 
 contract TestNft is HandshakeNft {
     constructor() HandshakeNft("HNSNFT", "HandshakeNFT") {}

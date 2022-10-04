@@ -13,6 +13,8 @@ import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "interfaces/ISldRegistrationManager.sol";
+import "interfaces/ILabelValidator.sol";
+import "test/mocks/MockLabelValidator.sol";
 
 contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
@@ -21,6 +23,7 @@ contract TestHandshakeTld is Test {
 
     ITldClaimManager claimManager;
     ISldRegistrationManager registrationManager;
+    ILabelValidator validator;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH =
@@ -35,6 +38,7 @@ contract TestHandshakeTld is Test {
     function setUp() public {
         claimManager = new MockClaimManager();
         registrationManager = new MockSldRegistrationManager();
+        //validator = new MockLabelValidator(true);
         tld = new HandshakeTld(claimManager);
         sld = new HandshakeSld(tld, registrationManager);
     }
