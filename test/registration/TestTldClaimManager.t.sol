@@ -9,16 +9,19 @@ import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
 import "test/mocks/MockLabelValidator.sol";
 import "interfaces/ILabelValidator.sol";
+import "test/mocks/MockMetadataService.sol";
 
 contract TestTldClaimManager is Test {
     ITldClaimManager internal manager;
     HandshakeTld internal nft;
     ILabelValidator internal labelValidator;
+    MockMetadataService internal metadata;
 
     function setUp() public {
+        metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
         manager = new TldClaimManager(labelValidator);
-        nft = new HandshakeTld(manager);
+        nft = new HandshakeTld(manager, metadata);
     }
 
     function testAddTldManagerWallet() public {

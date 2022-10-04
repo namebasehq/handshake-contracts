@@ -8,6 +8,7 @@ import {Namehash} from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
 import "test/mocks/MockSldRegistrationManager.sol";
+import "test/mocks/MockMetadataService.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
@@ -38,9 +39,10 @@ contract TestHandshakeTld is Test {
     function setUp() public {
         claimManager = new MockClaimManager();
         registrationManager = new MockSldRegistrationManager();
-        //validator = new MockLabelValidator(true);
-        tld = new HandshakeTld(claimManager);
-        sld = new HandshakeSld(tld, registrationManager);
+        MockMetadataService metadata = new MockMetadataService("base_url/");
+        tld = new HandshakeTld(claimManager, metadata);
+        sld = new HandshakeSld(tld, metadata);
+        sld.setRegistrationManager(registrationManager);
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {

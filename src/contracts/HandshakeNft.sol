@@ -23,7 +23,13 @@ abstract contract HandshakeNft is ERC721, Ownable {
 
     IMetadataService public metadata;
 
-    constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}
+    constructor(
+        string memory _symbol,
+        string memory _name,
+        IMetadataService _metadata
+    ) ERC721(_symbol, _name) {
+        metadata = _metadata;
+    }
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
         require(address(metadata) != address(0), "Metadata service is not implemented");

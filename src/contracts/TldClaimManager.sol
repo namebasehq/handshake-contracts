@@ -77,6 +77,7 @@ contract TldClaimManager is Ownable, ITldClaimManager, HasLabelValidator {
         bytes32 tldNamehash;
 
         for (uint256 i; i < _addr.length; ) {
+            require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];
             tldProviderMap[tldNamehash] = msg.sender;

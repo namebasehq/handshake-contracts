@@ -12,6 +12,7 @@ import "test/mocks/MockClaimManager.sol";
 import "test/mocks/MockCommitIntent.sol";
 import "test/mocks/MockLabelValidator.sol";
 import "test/mocks/MockHandshakeTld.sol";
+import "test/mocks/MockMetadataService.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockUsdOracle.sol";
 import "test/mocks/MockGlobalRegistrationStrategy.sol";
@@ -40,12 +41,14 @@ contract TestHandshakeSld is Test {
     MockHandshakeTld tld;
     MockSldRegistrationManager manager;
     MockLabelValidator labelValidator;
+    MockMetadataService metadata;
 
     function setUp() public {
         labelValidator = new MockLabelValidator(true);
         tld = new MockHandshakeTld();
         manager = new MockSldRegistrationManager();
-        sld = new HandshakeSld(tld, manager);
+        sld = new HandshakeSld(tld, metadata);
+        sld.setRegistrationManager(manager);
     }
 
     function addSubdomainRegistrationHistory(bytes32 _sldNamehash, uint256 _registrationLength)

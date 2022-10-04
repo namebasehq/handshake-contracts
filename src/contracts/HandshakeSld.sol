@@ -40,11 +40,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
 
     error MissingRegistrationStrategy();
 
-    constructor(IHandshakeTld _tld, ISldRegistrationManager _registrationManager)
-        HandshakeNft("SLD", "Handshake SLD")
+    constructor(IHandshakeTld _tld, IMetadataService _metadata)
+        HandshakeNft("SLD", "Handshake SLD", _metadata)
     {
         handshakeTldContract = _tld;
-        registrationManager = _registrationManager;
     }
 
     /**
@@ -139,6 +138,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         onlyParentApprovedOrOwner(_tldId)
     {
         registrationStrategy[bytes32(_tldId)] = _strategy;
+    }
+
+    function setRegistrationManager(ISldRegistrationManager _registrationManager) public onlyOwner {
+        registrationManager = _registrationManager;
     }
 
     /**
