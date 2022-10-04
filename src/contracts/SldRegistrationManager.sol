@@ -38,11 +38,13 @@ contract SldRegistrationManager is
         ICommitIntent _commitIntent,
         IPriceOracle _oracle,
         ILabelValidator _validator,
+        IGlobalRegistrationRules _globalRules,
         address _handshakeWallet
     ) PaymentManager(_handshakeWallet) HasUsdOracle(_oracle) HasLabelValidator(_validator) {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
+        globalStrategy = _globalRules;
     }
 
     /**
