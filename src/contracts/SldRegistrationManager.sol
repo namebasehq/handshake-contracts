@@ -30,8 +30,9 @@ contract SldRegistrationManager is Ownable, ISldRegistrationManager, PaymentMana
         IHandshakeTld _tld,
         IHandshakeSld _sld,
         ICommitIntent _commitIntent,
-        IPriceOracle _oracle
-    ) PaymentManager(msg.sender) {
+        IPriceOracle _oracle,
+        address _handshakeWallet
+    ) PaymentManager(_handshakeWallet) {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
