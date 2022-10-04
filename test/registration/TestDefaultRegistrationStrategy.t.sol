@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
+import {Namehash} from "utils/Namehash.sol";
 
 import "contracts/DefaultRegistrationStrategy.sol";
 import "test/mocks/MockHandshakeSld.sol";
@@ -102,9 +103,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
+        bytes32 full_hash = Namehash.getNamehash(namehash, label);
 
         assertEq(strategy.premiumNames(full_hash), price);
     }
@@ -183,15 +182,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
-        bytes32 full_hash2 = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash)
-        );
-        bytes32 full_hash3 = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash)
-        );
+        bytes32 full_hash = Namehash.getNamehash(namehash, label);
+        bytes32 full_hash2 = Namehash.getNamehash(namehash, label2);
+        bytes32 full_hash3 = Namehash.getNamehash(namehash, label3);
 
         assertEq(strategy.premiumNames(full_hash), price);
         assertEq(strategy.premiumNames(full_hash2), price2);
@@ -213,10 +206,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
-
+        bytes32 full_hash = Namehash.getNamehash(namehash, label);
         assertEq(strategy.reservedNames(full_hash), claimer);
     }
 
@@ -245,15 +235,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
-        bytes32 full_hash2 = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label2)), namehash)
-        );
-        bytes32 full_hash3 = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label3)), namehash)
-        );
+        bytes32 full_hash = Namehash.getNamehash(namehash, label);
+        bytes32 full_hash2 = Namehash.getNamehash(namehash, label2);
+        bytes32 full_hash3 = Namehash.getNamehash(namehash, label3);
 
         assertEq(strategy.reservedNames(full_hash), claimer);
         assertEq(strategy.reservedNames(full_hash2), claimer2);
@@ -313,13 +297,9 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsFromPremiumName_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
+        bytes32 full_namehash = Namehash.getNamehash(namehash, label);
         uint256 price = 50;
         stdstore
             .target(address(strategy))
@@ -344,13 +324,9 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsFromReservedName_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
+        bytes32 full_namehash = Namehash.getNamehash(namehash, label);
         address addr = address(0x335577);
         stdstore
             .target(address(strategy))
@@ -378,13 +354,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithDifferentLengths_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -430,13 +400,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithDifferentLengthsMultipleYears_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory arr = new uint256[](5);
 
@@ -482,8 +446,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testMultiYearDiscountWithOver50Percent_fail() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
 
         uint256[] memory multiYearDiscount = new uint256[](3);
@@ -499,8 +461,6 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testMultiYearDiscountWithIncorrectDiscountSequence_fail() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
 
         uint256[] memory multiYearDiscount = new uint256[](3);
@@ -516,10 +476,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscount_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
 
         uint256[] memory lengthPrices = new uint256[](1);
 
@@ -550,11 +507,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscountNotLessThanOneDollarPerYear_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-
         uint256[] memory lengthPrices = new uint256[](1);
 
         lengthPrices[0] = 1;
@@ -584,13 +537,7 @@ contract TestDefaultRegistrationStrategy is Test {
     }
 
     function testGetPriceInDollarsWithMultiYearDiscountAndLengthPrices_pass() public {
-        uint256 regDays = 365;
-
         bytes32 namehash = bytes32(uint256(0x5464654));
-        string memory label = "label";
-        bytes32 full_namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
 
         uint256[] memory lengthPrices = new uint256[](3);
 

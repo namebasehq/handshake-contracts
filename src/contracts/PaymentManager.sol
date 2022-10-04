@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+import {console} from "forge-std/console.sol";
+
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
 
@@ -13,17 +15,16 @@ abstract contract PaymentManager {
         address _tldOwner,
         uint256 _funds
     ) internal {
-        uint256 contractFunds = address(this).balance;
-
-        if (contractFunds > 0) {
+        require(address(this).balance >= _funds, "not enough ether");
+        if (address(this).balance > 0) {
             uint256 handshakeShare = (_funds * 5) / 100;
+
+            if (address(this).balance > _funds) {
+                payable(_sldOwner).transfer(address(this).balance - _funds);
+            }
 
             payable(_tldOwner).transfer(_funds - handshakeShare);
             payable(handshakeWalletPayoutAddress).transfer(handshakeShare);
-
-            if (contractFunds > _funds) {
-                payable(_sldOwner).transfer(contractFunds - _funds);
-            }
         }
     }
 }

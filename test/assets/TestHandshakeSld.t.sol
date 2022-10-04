@@ -45,12 +45,27 @@ contract TestHandshakeSld is Test {
         sld = new HandshakeSld(tld, manager);
     }
 
+    function addSubdomainRegistrationHistory(bytes32 _sldNamehash, uint256 _registrationLength)
+        private
+    {
+        uint128[10] memory arr;
+
+        manager.addSubdomainDetail(
+            _sldNamehash,
+            uint80(block.timestamp),
+            uint80(_registrationLength),
+            uint96(0),
+            arr
+        );
+    }
+
     function testMintSldFromRegistryAddress_success() public {
         vm.startPrank(address(manager));
 
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         bytes32 sldNamehash = bytes32(uint256(0x446688));
+        addSubdomainRegistrationHistory(sldNamehash, 100);
 
         sld.registerSld(to, tldNamehash, sldNamehash);
 
@@ -75,7 +90,7 @@ contract TestHandshakeSld is Test {
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         bytes32 sldNamehash = bytes32(uint256(0x446688));
-
+        addSubdomainRegistrationHistory(sldNamehash, 100);
         sld.registerSld(to, tldNamehash, sldNamehash);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
@@ -92,6 +107,8 @@ contract TestHandshakeSld is Test {
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         bytes32 sldNamehash = bytes32(uint256(0x446688));
 
+        addSubdomainRegistrationHistory(sldNamehash, 100);
+
         sld.registerSld(to, tldNamehash, sldNamehash);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
@@ -104,6 +121,17 @@ contract TestHandshakeSld is Test {
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         bytes32 sldNamehash = bytes32(uint256(0x446688));
+
+        uint256 registrationLength = 100 days;
+        uint128[10] memory arr;
+
+        manager.addSubdomainDetail(
+            sldNamehash,
+            uint80(block.timestamp),
+            uint80(registrationLength),
+            uint96(0),
+            arr
+        );
 
         tld.register(address(manager), uint256(tldNamehash));
 
@@ -131,6 +159,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -163,6 +192,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -194,6 +224,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -233,6 +264,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -270,6 +302,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.startPrank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
         vm.stopPrank();
@@ -303,6 +336,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -338,6 +372,8 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -369,6 +405,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -410,6 +447,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -444,6 +482,7 @@ contract TestHandshakeSld is Test {
         tld.register(tldOwner, tldName);
 
         bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
         sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
 
@@ -506,5 +545,77 @@ contract TestHandshakeSld is Test {
 
         vm.expectRevert(MissingRegistrationStrategy.selector);
         sld.getRegistrationStrategy(parentNamehash);
+    }
+
+    function testExpiredTokenRevertsOnOwnerOf() public {
+        address to = address(0x123456789);
+        bytes32 tldNamehash = bytes32(uint256(0x224466));
+        bytes32 sldNamehash = bytes32(uint256(0x446688));
+
+        uint256 registrationLength = 100 days;
+        uint128[10] memory arr;
+
+        manager.addSubdomainDetail(
+            sldNamehash,
+            uint80(block.timestamp),
+            uint80(registrationLength),
+            uint96(0),
+            arr
+        );
+
+        stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
+
+        vm.startPrank(address(manager));
+
+        sld.registerSld(to, tldNamehash, sldNamehash);
+
+        vm.warp(block.timestamp + registrationLength - 1);
+        assertEq(sld.ownerOf(uint256(sldNamehash)), to, "owner of sld not correct");
+
+        vm.warp(block.timestamp + 1);
+
+        vm.expectRevert("sld expired");
+        sld.ownerOf(uint256(sldNamehash));
+    }
+
+    function testExpiredTokenRemintToDifferentWallet_success() public {
+        address to = address(0x123456789);
+        address to2 = address(0x6942069);
+        bytes32 tldNamehash = bytes32(uint256(0x224466));
+        bytes32 sldNamehash = bytes32(uint256(0x446688));
+
+        uint256 registrationLength = 100 days;
+        uint128[10] memory arr;
+
+        manager.addSubdomainDetail(
+            sldNamehash,
+            uint80(block.timestamp),
+            uint80(registrationLength),
+            uint96(0),
+            arr
+        );
+
+        stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
+
+        vm.startPrank(address(manager));
+
+        sld.registerSld(to, tldNamehash, sldNamehash);
+
+        vm.warp(block.timestamp + registrationLength + 1);
+
+        sld.registerSld(to2, tldNamehash, sldNamehash);
+
+        //simulate updating the registration history details
+        manager.addSubdomainDetail(
+            sldNamehash,
+            uint80(block.timestamp),
+            uint80(registrationLength),
+            uint96(0),
+            arr
+        );
+
+        assertEq(sld.ownerOf(uint256(sldNamehash)), to2, "owner of token not correct");
+        assertEq(sld.balanceOf(to), 0, "owner 1 should have zero balance");
+        assertEq(sld.balanceOf(to2), 1, "owner 2 should have 1 balance");
     }
 }

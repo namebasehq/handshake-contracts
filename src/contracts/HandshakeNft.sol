@@ -18,9 +18,6 @@ abstract contract HandshakeNft is ERC721, Ownable {
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
 
-    // a map of string labels
-    mapping(bytes32 => string) public namehashToLabelMap;
-
     IMetadataService public metadata;
 
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}
@@ -48,10 +45,6 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @return address currently marked as the owner of the given token ID
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
-        // TODO: implement expirations
-        // require(expiries[tokenId] > block.timestamp);
-        console.log("ownerOf");
-        console.log(tokenId);
         return super.ownerOf(tokenId);
     }
 
@@ -107,15 +100,5 @@ abstract contract HandshakeNft is ERC721, Ownable {
      */
     function exists(uint256 tokenId) public view returns (bool) {
         return ERC721._exists(tokenId);
-    }
-
-    // TODO: swap param order
-    function getNamehash(bytes32 _parentHash, string memory _label)
-        internal
-        pure
-        virtual
-        returns (bytes32)
-    {
-        return Namehash.getNamehash(_parentHash, _label);
     }
 }

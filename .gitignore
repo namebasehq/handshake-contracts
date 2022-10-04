@@ -7,3 +7,5 @@ lib/
 .vscode/
 .DS_Store
 .env
+.github/
+.gas-snapshot

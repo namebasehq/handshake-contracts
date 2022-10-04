@@ -11,4 +11,6 @@ interface IHandshakeTld {
     function isApprovedOrOwner(address _operator, uint256 _id) external view returns (bool);
 
     function setTldClaimManager(ITldClaimManager _manager) external;
+
+    function namehashToLabelMap(bytes32 _namehash) external view returns (string memory);
 }

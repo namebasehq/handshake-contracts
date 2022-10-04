@@ -6,7 +6,7 @@ import "interfaces/IMetadataService.sol";
 contract NftMetadataService is IMetadataService {
     string private baseUri;
 
-    constructor(string memory _baseUri) public {
+    constructor(string memory _baseUri) {
         baseUri = _baseUri;
     }
 

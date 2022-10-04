@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+import "structs/SubdomainRegistrationDetail.sol";
+
 interface ISldRegistrationManager {
     function registerSld(
         string calldata _label,
@@ -21,4 +23,13 @@ interface ISldRegistrationManager {
         string calldata _label,
         uint256 _registrationLength
     ) external view returns (uint256);
+
+    function subdomainRegistrationHistory(bytes32 _subdomainNamehash)
+        external
+        view
+        returns (
+            uint80,
+            uint80,
+            uint96
+        );
 }

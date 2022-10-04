@@ -13,6 +13,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     using SafeMath for uint256;
     ITldClaimManager public claimManager;
 
+    // a map of string labels
+    mapping(bytes32 => string) public namehashToLabelMap;
     mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
 
     address public claimManagerAddress;
@@ -66,7 +68,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override(HandshakeNft, IHandshakeTld)
         returns (address)
     {
-        return super.ownerOf(_id);
+        return HandshakeNft.ownerOf(_id);
     }
 
     function isApprovedOrOwner(address _operator, uint256 _id)
@@ -75,8 +77,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override(HandshakeNft, IHandshakeTld)
         returns (bool)
     {
-        address owner = ownerOf(_id);
-        return _operator == owner || isApprovedForAll(owner, _operator);
+        return _isApprovedOrOwner(_operator, _id);
     }
-
 }

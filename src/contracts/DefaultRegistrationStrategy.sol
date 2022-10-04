@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+import {Namehash} from "utils/Namehash.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IHandshakeSld.sol";
-import {console} from "forge-std/console.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable {
     IHandshakeSld private subdomainContract;
@@ -17,13 +17,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
 
-    function getNamehash(string memory _label, bytes32 _parentHash) private pure returns (bytes32) {
-        bytes32 encoded_label = keccak256(abi.encodePacked(_label));
-        bytes32 big_hash = keccak256(abi.encodePacked(_parentHash, encoded_label));
-
-        return big_hash;
-    }
-
     constructor(IHandshakeSld _sld) {
         subdomainContract = _sld;
     }
@@ -33,9 +26,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string calldata _label,
         uint256 _priceInDollarsPerYear
     ) private {
-        premiumNames[
-            keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))
-        ] = _priceInDollarsPerYear;
+        premiumNames[Namehash.getNamehash(_parentNamehash, _label)] = _priceInDollarsPerYear;
     }
 
     function setReservedName(
@@ -43,9 +34,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string calldata _label,
         address _claimant
     ) private {
-        reservedNames[
-            keccak256(abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash))
-        ] = _claimant;
+        reservedNames[Namehash.getNamehash(_parentNamehash, _label)] = _claimant;
     }
 
     function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
@@ -104,10 +93,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string[] calldata _labels,
         uint256[] calldata _priceInDollarsPerYear
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        uint256 len = _labels.length;
-        require(len == _priceInDollarsPerYear.length, "array lengths do not match");
+        require(_labels.length == _priceInDollarsPerYear.length, "array lengths do not match");
 
-        for (uint256 i; i < len; ) {
+        for (uint256 i; i < _labels.length; ) {
             setPremiumName(_parentNamehash, _labels[i], _priceInDollarsPerYear[i]);
 
             unchecked {
@@ -121,10 +109,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string[] calldata _labels,
         address[] calldata _claimants
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        uint256 len = _labels.length;
-        require(len == _claimants.length, "array lengths do not match");
+        require(_labels.length == _claimants.length, "array lengths do not match");
 
-        for (uint256 i; i < len; ) {
+        for (uint256 i; i < _labels.length; ) {
             setReservedName(_parentNamehash, _labels[i], _claimants[i]);
 
             unchecked {
@@ -139,9 +126,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string memory _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
-        bytes32 namehash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(_label)), _parentNamehash)
-        );
+        bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
         uint256 annualPrice = premiumNames[namehash];
         if (reservedNames[namehash] == _buyingAddress) {
@@ -165,7 +150,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         address _buyingAddress,
         bytes32 _parentNamehash,
         string calldata _label,
-        bytes32[] calldata _proofs,
         uint256 _registrationLength
     ) external view returns (uint256) {
         return getPriceInDollars(_buyingAddress, _parentNamehash, _label, _registrationLength);
@@ -175,14 +159,13 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         require(_years > 0, "minimum reg is 1 year");
 
         uint256[] memory discounts = multiYearDiscount[_parentNamehash];
-        uint256 arrLength = discounts.length;
 
-        if (arrLength == 0) {
+        if (discounts.length == 0) {
             return 0;
-        } else if (arrLength > _years - 1) {
+        } else if (discounts.length > _years - 1) {
             return discounts[_years - 1];
         } else {
-            return discounts[arrLength - 1];
+            return discounts[discounts.length - 1];
         }
     }
 

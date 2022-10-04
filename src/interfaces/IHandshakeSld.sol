@@ -12,6 +12,8 @@ interface IHandshakeSld {
         bytes32 _sldNamehash
     ) external;
 
+    function ownerOf(uint256 _id) external view returns (address);
+
     function getRegistrationStrategy(bytes32 _parentNamehash)
         external
         view

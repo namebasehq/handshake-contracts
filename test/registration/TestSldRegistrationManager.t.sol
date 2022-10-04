@@ -26,6 +26,8 @@ contract TestSldRegistrationManager is Test {
 
     fallback() external payable {}
 
+    receive() external payable {}
+
     function setUp() public {
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();
@@ -391,8 +393,11 @@ contract TestSldRegistrationManager is Test {
 
         manager.renewSubdomain{value: 5 ether}(label, parentNamehash, renewalLength);
 
-        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = // uint96 actualRegistrationPrice
-        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
         uint256 actualValue = block.timestamp + ((registrationLength + renewalLength) * 1 days);
@@ -436,8 +441,11 @@ contract TestSldRegistrationManager is Test {
         startHoax(address(0x99999999));
         manager.renewSubdomain{value: 3.29 ether}(label, parentNamehash, renewalLength);
 
-        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, ) = //uint96 actualRegistrationPrice
-        manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength, //uint96 actualRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         console.log("registration time", actualRegistrationTime);
         console.log("registration length", actualRegistrationLength);
@@ -646,12 +654,14 @@ contract TestSldRegistrationManager is Test {
             recipient
         );
 
-        assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
+        assertEq(recipient.balance, 0.11 ether, "balance not correct");
 
         //assert
         for (uint256 i; i < 10; i++) {
             uint256 actual = manager.getRenewalPricePerDay(parentNamehash, label, (i + 1) * 365);
+
             uint256 expected = prices[i] / 365;
+
             assertGt(actual, 0);
             assertEq(actual, expected);
         }
@@ -728,15 +738,18 @@ contract TestSldRegistrationManager is Test {
 
         vm.warp(block.timestamp + 420);
         hoax(claimant, 1.095 ether);
-        vm.expectRevert("Price too low");
+        vm.expectRevert("not enough ether");
         manager.renewSubdomain{value: 1.095 ether}(label, parentNamehash, newRegLength);
 
         hoax(claimant, 1.096 ether);
 
         manager.renewSubdomain{value: 1.096 ether}(label, parentNamehash, newRegLength);
 
-        (uint80 NewRegistrationTime, uint80 NewRegistrationLength, ) = //uint96NewRegistrationPrice
-        manager.subdomainRegistrationHistory(namehash);
+        (
+            uint80 NewRegistrationTime,
+            uint80 NewRegistrationLength, //uint96NewRegistrationPrice
+
+        ) = manager.subdomainRegistrationHistory(namehash);
 
         assertEq(
             NewRegistrationLength,

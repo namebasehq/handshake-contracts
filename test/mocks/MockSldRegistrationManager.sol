@@ -9,6 +9,31 @@ import "interfaces/ISldRegistrationManager.sol";
 import "structs/SubdomainRegistrationDetail.sol";
 
 contract MockSldRegistrationManager is ISldRegistrationManager {
+    mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
+
+    function addSubdomainDetail(
+        bytes32 _subdomainNamehash,
+        SubdomainRegistrationDetail memory _detail
+    ) private {
+        subdomainRegistrationHistory[_subdomainNamehash] = _detail;
+    }
+
+    function addSubdomainDetail(
+        bytes32 _subdomainNamehash,
+        uint80 _registrationTime,
+        uint80 _registrationLength,
+        uint96 _registrationPrice,
+        uint128[10] calldata _registrationPriceSnapshot
+    ) public {
+        SubdomainRegistrationDetail memory detail = SubdomainRegistrationDetail(
+            _registrationTime,
+            _registrationLength,
+            _registrationPrice,
+            _registrationPriceSnapshot
+        );
+        addSubdomainDetail(_subdomainNamehash, detail);
+    }
+
     function registerSld(
         string calldata _label,
         bytes32 _secret,
