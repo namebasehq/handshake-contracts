@@ -12,6 +12,7 @@ contract NftMetadataService is IMetadataService {
     }
 
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
+        //can use nft.name(_namehash) to get domain name for embedded SVG.
         return "";
     }
 
