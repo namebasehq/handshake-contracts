@@ -76,9 +76,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
     }
 
     /**
-     * public version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
+     * @notice public version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
      * @param spender address of the spender to query
      * @param tokenId uint256 ID of the token to be transferred
+     *
      * @return bool whether the spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
     function isApprovedOrOwner(address spender, uint256 tokenId)
@@ -91,7 +92,17 @@ abstract contract HandshakeNft is ERC721, Ownable {
     }
 
     /**
-     * modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
+     * @notice returns back the string representation of the name. It makes more sense to have it here than on the resolver as the resolver
+     *         can be updated and we will likely use the name string in the metadata class
+     * @dev should override this function in the inherited class
+     * @param _namehash bytes32 representaion of the domain
+     *
+     * @return _name fully qualified name of the domain / NFT
+     */
+    function name(bytes32 _namehash) external view virtual returns (string memory _name) {}
+
+    /**
+     * @notice modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
      * @param tokenId uint256 ID of the token to be transferred
      */
     modifier onlyApprovedOrOwner(uint256 tokenId) {

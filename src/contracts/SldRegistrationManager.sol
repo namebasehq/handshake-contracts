@@ -94,7 +94,7 @@ contract SldRegistrationManager is
 
         _recipient = _recipient == address(0) ? msg.sender : _recipient;
 
-        sld.registerSld(_recipient, _parentNamehash, sldNamehash);
+        sld.registerSld(_recipient, _parentNamehash, _label);
 
         addRegistrationDetails(
             sldNamehash,

@@ -37,7 +37,7 @@ contract MockHandshakeSld is IHandshakeSld {
     function registerSld(
         address _to,
         bytes32 _tldNamehash,
-        bytes32 _sldNamehash
+        string calldata _label
     ) external {}
 
     function registrationStrategy(bytes32 _subdomainNamehash)

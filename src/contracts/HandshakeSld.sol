@@ -53,18 +53,20 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _to The address that the SLD will be minted to.
      *            Zero address will be minted to msg.sender
      * @param _tldNamehash The bytes32 representation of the TLD
-     * @param _sldNamehash The bytes32 representation of the SLD
+     * @param _label The label of the subdomain
      */
     function registerSld(
         address _to,
         bytes32 _tldNamehash,
-        bytes32 _sldNamehash
+        string calldata _label
     ) external isRegistrationManager {
-        if (hasExpired(_sldNamehash)) {
-            _burn(uint256(_sldNamehash));
+        bytes32 sldNamehash = Namehash.getNamehash(_tldNamehash, _label);
+        if (hasExpired(sldNamehash)) {
+            _burn(uint256(sldNamehash));
         }
-        _mint(_to, uint256(_sldNamehash));
-        namehashToParentMap[_sldNamehash] = _tldNamehash;
+        _mint(_to, uint256(sldNamehash));
+        namehashToParentMap[sldNamehash] = _tldNamehash;
+        namehashToLabelMap[sldNamehash] = _label;
     }
 
     /**
@@ -248,7 +250,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _sldNamehash bytes32 representation of the sub domain
      * @return _fullDomain
      */
-    function name(bytes32 _sldNamehash) external view returns (string memory _fullDomain) {
+    function name(bytes32 _sldNamehash) external view override returns (string memory _fullDomain) {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
         require(tldNamehash != 0x0, "domain does not exist");
         string memory tldLabel = handshakeTldContract.namehashToLabelMap(tldNamehash);

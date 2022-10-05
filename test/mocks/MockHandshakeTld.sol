@@ -14,12 +14,22 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract MockHandshakeTld is IHandshakeTld, ERC721 {
     mapping(uint256 => address) private approvedMap;
 
+    string public label;
+
     constructor() ERC721("test", "test") {}
 
     function register(address _addr, string calldata _domain) external {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         uint256 id = uint256(namehash);
         _mint(_addr, id);
+    }
+
+    function name(bytes32) public view returns (string memory) {
+        return label;
+    }
+
+    function setLabel(string calldata _label) public {
+        label = _label;
     }
 
     function register(address _addr, uint256 _id) external {
@@ -46,8 +56,7 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         approvedMap[_id] = _operator;
     }
 
-    function namehashToLabelMap(bytes32) external pure returns (string memory) {
-        require(false, "not implemented");
-        return "";
+    function namehashToLabelMap(bytes32 _b) external view returns (string memory) {
+        return (name(_b));
     }
 }

@@ -10,3 +10,4 @@ interfaces/=src/interfaces/
 structs/=src/structs/
 utils/=src/utils/
 test/=test/
+proxy/=lib/foundry-upgrades/src/utils/

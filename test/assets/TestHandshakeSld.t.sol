@@ -70,10 +70,11 @@ contract TestHandshakeSld is Test {
 
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "label12345";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
         addSubdomainRegistrationHistory(sldNamehash, 100);
 
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
         assertEq(sld.balanceOf(to), 1, "balance incorrect");
@@ -84,10 +85,11 @@ contract TestHandshakeSld is Test {
 
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "hiya";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
 
         vm.expectRevert("not authorised");
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
     }
 
     function testMintDuplicateSld_fail() public {
@@ -95,15 +97,16 @@ contract TestHandshakeSld is Test {
 
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "hello";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
         addSubdomainRegistrationHistory(sldNamehash, 100);
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
         assertEq(sld.balanceOf(to), 1, "balance incorrect");
 
         vm.expectRevert("ERC721: token already minted");
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
     }
 
     function testCheckParentNamehashIsCorrectAfterMint() public {
@@ -111,11 +114,12 @@ contract TestHandshakeSld is Test {
 
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "onemoretime";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
 
         addSubdomainRegistrationHistory(sldNamehash, 100);
 
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "not owner of token");
         assertEq(sld.balanceOf(to), 1, "balance incorrect");
@@ -126,7 +130,8 @@ contract TestHandshakeSld is Test {
         console.log("manager address", address(manager));
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "yo123";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
 
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
@@ -141,7 +146,7 @@ contract TestHandshakeSld is Test {
 
         tld.register(address(manager), uint256(tldNamehash));
 
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         assertEq(
             sld.namehashToParentMap(sldNamehash),
@@ -155,7 +160,7 @@ contract TestHandshakeSld is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
+        string memory label = "thislabel";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -164,18 +169,14 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
-
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         vm.prank(tldOwner);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
@@ -188,7 +189,7 @@ contract TestHandshakeSld is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-
+        string memory label = "thisisthelabel";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -197,18 +198,15 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, tldOwner);
@@ -220,7 +218,7 @@ contract TestHandshakeSld is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
+        string memory label = "heeey";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -229,18 +227,15 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         address newTldOwner = address(0x553311);
 
@@ -260,7 +255,7 @@ contract TestHandshakeSld is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
+        string memory label = "yoooo";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -269,18 +264,15 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         address approvedAddress = address(0x558822);
 
@@ -298,7 +290,7 @@ contract TestHandshakeSld is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
+        string memory label = "yoyoyo";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -307,18 +299,13 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.startPrank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
         vm.stopPrank();
-        // test.test
-        uint256 expectedsldId = uint256(subdomainNamehash);
-
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
 
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         address notTldOwner = address(0x9988332211);
         vm.startPrank(notTldOwner);
@@ -332,7 +319,7 @@ contract TestHandshakeSld is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-
+        string memory label = "testtest";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -341,18 +328,15 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         uint256 royaltyPercent = 10;
 
@@ -370,26 +354,23 @@ contract TestHandshakeSld is Test {
         address sldOwner = address(0x232323);
 
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
-
+        string memory label = "123test";
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
 
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
 
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
 
-        assertEq(expectedsldId, uint256(TEST_sld_NAMEHASH));
-
         uint256 tldId = uint256(parent_hash);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH));
 
         (, uint256 amount) = sld.royaltyInfo(expectedsldId, 100);
 
@@ -401,7 +382,7 @@ contract TestHandshakeSld is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-
+        string memory label = "test";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -410,10 +391,10 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
@@ -443,7 +424,7 @@ contract TestHandshakeSld is Test {
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
         address payoutAddress = address(0x22886644);
-
+        string memory label = "test";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -452,10 +433,10 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
@@ -478,7 +459,7 @@ contract TestHandshakeSld is Test {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
         address sldOwner = address(0x232323);
-
+        string memory label = "test";
         bytes32 parent_hash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -487,10 +468,10 @@ contract TestHandshakeSld is Test {
         vm.prank(tldOwner);
         tld.register(tldOwner, tldName);
 
-        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, "test");
+        bytes32 subdomainNamehash = Namehash.getNamehash(parent_hash, label);
         addSubdomainRegistrationHistory(subdomainNamehash, 100);
         vm.prank(address(manager));
-        sld.registerSld(sldOwner, parent_hash, subdomainNamehash);
+        sld.registerSld(sldOwner, parent_hash, label);
 
         // test.test
         uint256 expectedsldId = uint256(subdomainNamehash);
@@ -556,7 +537,8 @@ contract TestHandshakeSld is Test {
     function testExpiredTokenRevertsOnOwnerOf() public {
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "test123";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
 
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
@@ -573,7 +555,7 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(address(manager));
 
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         vm.warp(block.timestamp + registrationLength - 1);
         assertEq(sld.ownerOf(uint256(sldNamehash)), to, "owner of sld not correct");
@@ -588,7 +570,8 @@ contract TestHandshakeSld is Test {
         address to = address(0x123456789);
         address to2 = address(0x6942069);
         bytes32 tldNamehash = bytes32(uint256(0x224466));
-        bytes32 sldNamehash = bytes32(uint256(0x446688));
+        string memory label = "testing";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
 
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
@@ -605,11 +588,11 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(address(manager));
 
-        sld.registerSld(to, tldNamehash, sldNamehash);
+        sld.registerSld(to, tldNamehash, label);
 
         vm.warp(block.timestamp + registrationLength + 1);
 
-        sld.registerSld(to2, tldNamehash, sldNamehash);
+        sld.registerSld(to2, tldNamehash, label);
 
         //simulate updating the registration history details
         manager.addSubdomainDetail(
@@ -623,5 +606,23 @@ contract TestHandshakeSld is Test {
         assertEq(sld.ownerOf(uint256(sldNamehash)), to2, "owner of token not correct");
         assertEq(sld.balanceOf(to), 0, "owner 1 should have zero balance");
         assertEq(sld.balanceOf(to2), 1, "owner 2 should have 1 balance");
+    }
+
+    function testMintSldCheckNameReturnsCorrectly_success() public {
+        vm.startPrank(address(manager));
+
+        address to = address(0x123456789);
+        string memory tldLabel = "testingtesting123";
+        tld.setLabel(tldLabel);
+        bytes32 tldNamehash = Namehash.getTldNamehash(tldLabel);
+        string memory label = "label12345";
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
+        addSubdomainRegistrationHistory(sldNamehash, 100);
+
+        sld.registerSld(to, tldNamehash, label);
+
+        string memory expectedDomain = string(abi.encodePacked(label, ".", tldLabel));
+
+        assertEq(sld.name(sldNamehash), expectedDomain, "domain name not correct");
     }
 }

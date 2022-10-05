@@ -9,7 +9,7 @@ interface IHandshakeSld {
     function registerSld(
         address _to,
         bytes32 _tldNamehash,
-        bytes32 _sldNamehash
+        string calldata _label
     ) external;
 
     function ownerOf(uint256 _id) external view returns (address);

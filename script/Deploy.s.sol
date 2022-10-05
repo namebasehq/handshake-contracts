@@ -12,27 +12,42 @@ import "contracts/SldCommitIntent.sol";
 import "contracts/SldRegistrationManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/UsdPriceOracle.sol";
+import "proxy/DeployProxy.sol";
 
 contract DeployScript is Script {
-    function setUp() public {}
+    DeployProxy proxyDeployer;
+
+    LabelValidator labelValidator;
+    SldCommitIntent commitIntent;
+    UsdPriceOracle priceOracle;
+    GlobalRegistrationRules globalRules;
+    NftMetadataService metadata;
+
+    function setUp() public {
+        proxyDeployer = new DeployProxy();
+
+        labelValidator = new LabelValidator();
+        commitIntent = new SldCommitIntent();
+        priceOracle = new UsdPriceOracle();
+        globalRules = new GlobalRegistrationRules();
+        metadata = new NftMetadataService("base_url/");
+    }
 
     function run() public {
         vm.startBroadcast();
 
         address ownerWallet = address(0x1337);
 
-        LabelValidator labelValidator = new LabelValidator();
-
-        NftMetadataService metadata = new NftMetadataService("base_url/");
-
         TldClaimManager tldClaimManager = new TldClaimManager(labelValidator);
 
-        HandshakeTld tld = new HandshakeTld(tldClaimManager, metadata);
-        HandshakeSld sld = new HandshakeSld(tld, metadata);
+        address tldClaimManagerProxyAddress = proxyDeployer.deployUupsProxy(
+            address(tldClaimManager),
+            ownerWallet,
+            bytes("")
+        );
 
-        SldCommitIntent commitIntent = new SldCommitIntent();
-        UsdPriceOracle priceOracle = new UsdPriceOracle();
-        GlobalRegistrationRules globalRules = new GlobalRegistrationRules();
+        HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress), metadata);
+        HandshakeSld sld = new HandshakeSld(tld, metadata);
 
         SldRegistrationManager registrationManager = new SldRegistrationManager(
             tld,
@@ -44,7 +59,13 @@ contract DeployScript is Script {
             ownerWallet
         );
 
-        sld.setRegistrationManager(registrationManager);
+        address registrationManagerProxyAddress = proxyDeployer.deployUupsProxy(
+            address(registrationManager),
+            ownerWallet,
+            bytes("")
+        );
+
+        sld.setRegistrationManager(SldRegistrationManager(registrationManagerProxyAddress));
 
         //transfer ownership of ownable contracts
         tldClaimManager.transferOwnership(ownerWallet);
@@ -52,7 +73,6 @@ contract DeployScript is Script {
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
-
 
         vm.stopBroadcast();
     }

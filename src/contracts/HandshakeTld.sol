@@ -54,6 +54,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         _;
     }
 
+    function name(bytes32 _namehash) public view override returns (string memory _name) {
+        _name = namehashToLabelMap[_namehash];
+    }
+
     function royaltyInfo(uint256, uint256 salePrice)
         external
         view

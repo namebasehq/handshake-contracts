@@ -248,14 +248,7 @@ contract TestSldRegistrationManager is Test {
         hoax(sendingAddress, 20 ether);
         vm.expectCall(
             address(manager.sld()),
-            abi.encodeCall(
-                manager.sld().registerSld,
-                (
-                    sendingAddress,
-                    parentNamehash,
-                    0xed072e419684a4889ae9f5a41b9caaf11717570d6bb2af070217e1aec0d61f23
-                )
-            )
+            abi.encodeCall(manager.sld().registerSld, (sendingAddress, parentNamehash, label))
         );
         vm.startPrank(sendingAddress);
         manager.registerSld{value: (uint256(1 ether) / uint256(365)) * registrationLength + 137}(
@@ -283,10 +276,7 @@ contract TestSldRegistrationManager is Test {
         hoax(sendingAddress, 2 ether);
         vm.expectCall(
             address(manager.sld()),
-            abi.encodeCall(
-                manager.sld().registerSld,
-                (recipient, parentNamehash, Namehash.getNamehash(parentNamehash, label))
-            )
+            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
         vm.prank(sendingAddress);
         manager.registerSld{value: 2 ether}(
@@ -334,14 +324,7 @@ contract TestSldRegistrationManager is Test {
 
         vm.expectCall(
             address(manager.sld()),
-            abi.encodeCall(
-                manager.sld().registerSld,
-                (
-                    recipient,
-                    parentNamehash,
-                    0xc9deaae6135f5bffc91df7e1f3e69359942c17c296519680019a467d0e78ddc5
-                )
-            )
+            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
 
         vm.startPrank(sendingAddress);
@@ -647,14 +630,7 @@ contract TestSldRegistrationManager is Test {
         hoax(sendingAddress, 10.11 ether);
         vm.expectCall(
             address(manager.sld()),
-            abi.encodeCall(
-                manager.sld().registerSld,
-                (
-                    recipient,
-                    parentNamehash,
-                    0xc9deaae6135f5bffc91df7e1f3e69359942c17c296519680019a467d0e78ddc5
-                )
-            )
+            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
 
         vm.startPrank(sendingAddress);

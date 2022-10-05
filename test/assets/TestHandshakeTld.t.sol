@@ -71,7 +71,7 @@ contract TestHandshakeTld is Test {
     }
 
     function testMintCheckLabelToHashMapUpdated() public {
-        string memory domain = "test";
+        string memory domain = "testtesttest";
         bytes32 namehash = getTldNamehash(domain);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
@@ -80,6 +80,7 @@ contract TestHandshakeTld is Test {
         tld.register(address(0x1339), domain);
 
         assertEq(domain, tld.namehashToLabelMap(namehash));
+        assertEq(domain, tld.name(namehash)); //alias view function
     }
 
     function testUpdateDefaultSldRegistrationStrategyFromTldOwner() public {
