@@ -11,7 +11,7 @@ import "test/mocks/MockLabelValidator.sol";
 import "test/mocks/MockMetadataService.sol";
 
 contract TestNft is HandshakeNft {
-    constructor() HandshakeNft("HNSNFT", "HandshakeNFT", new MockMetadataService("base_url")) {}
+    constructor() HandshakeNft("HNSNFT", "HandshakeNFT") {}
 
     function checkAuthorised(uint256 _id) public onlyApprovedOrOwner(_id) {
         // only need an empty method here to test the modifier.

@@ -21,7 +21,6 @@ contract DeployScript is Script {
     SldCommitIntent commitIntent;
     UsdPriceOracle priceOracle;
     GlobalRegistrationRules globalRules;
-    NftMetadataService metadata;
 
     function setUp() public {
         proxyDeployer = new DeployProxy();
@@ -30,7 +29,6 @@ contract DeployScript is Script {
         commitIntent = new SldCommitIntent();
         priceOracle = new UsdPriceOracle();
         globalRules = new GlobalRegistrationRules();
-        metadata = new NftMetadataService("base_url/");
     }
 
     function run() public {
@@ -46,8 +44,14 @@ contract DeployScript is Script {
             bytes("")
         );
 
-        HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress), metadata);
-        HandshakeSld sld = new HandshakeSld(tld, metadata);
+        HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress));
+        HandshakeSld sld = new HandshakeSld(tld);
+
+        NftMetadataService tldMetadata = new NftMetadataService(tld);
+        NftMetadataService sldMetadata = new NftMetadataService(sld);
+
+        tld.setMetadataContract(tldMetadata);
+        sld.setMetadataContract(sldMetadata);
 
         SldRegistrationManager registrationManager = new SldRegistrationManager(
             tld,

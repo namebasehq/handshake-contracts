@@ -40,9 +40,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
 
     error MissingRegistrationStrategy();
 
-    constructor(IHandshakeTld _tld, IMetadataService _metadata)
-        HandshakeNft("SLD", "Handshake SLD", _metadata)
-    {
+    constructor(IHandshakeTld _tld) HandshakeNft("SLD", "Handshake SLD") {
         handshakeTldContract = _tld;
     }
 

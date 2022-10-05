@@ -40,9 +40,11 @@ contract TestHandshakeTld is Test {
         claimManager = new MockClaimManager();
         registrationManager = new MockSldRegistrationManager();
         MockMetadataService metadata = new MockMetadataService("base_url/");
-        tld = new HandshakeTld(claimManager, metadata);
-        sld = new HandshakeSld(tld, metadata);
+        tld = new HandshakeTld(claimManager);
+        sld = new HandshakeSld(tld);
         sld.setRegistrationManager(registrationManager);
+        sld.setMetadataContract(metadata);
+        tld.setMetadataContract(metadata);
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {

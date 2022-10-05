@@ -21,9 +21,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount;
 
-    constructor(ITldClaimManager _claimManager, IMetadataService _metadata)
-        HandshakeNft("TLD", "Top Level Domain", _metadata)
-    {
+    constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
         claimManager = _claimManager;
     }
 

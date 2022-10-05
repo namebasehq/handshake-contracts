@@ -44,11 +44,13 @@ contract TestHandshakeSld is Test {
     MockMetadataService metadata;
 
     function setUp() public {
+        metadata = new MockMetadataService("base_uri");
         labelValidator = new MockLabelValidator(true);
         tld = new MockHandshakeTld();
         manager = new MockSldRegistrationManager();
-        sld = new HandshakeSld(tld, metadata);
+        sld = new HandshakeSld(tld);
         sld.setRegistrationManager(manager);
+        sld.setMetadataContract(metadata);
     }
 
     function addSubdomainRegistrationHistory(bytes32 _sldNamehash, uint256 _registrationLength)
