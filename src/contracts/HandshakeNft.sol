@@ -95,6 +95,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
      */
     function name(bytes32 _namehash) external view virtual returns (string memory _name) {}
 
+    function parent(bytes32 _namehash) external view virtual returns (string memory _parentName) {}
+
+    function expiry(bytes32 _namehash) external view virtual returns (uint256 _expiry) {}
+
     /**
      * @notice modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
      * @param tokenId uint256 ID of the token to be transferred

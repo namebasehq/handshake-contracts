@@ -257,6 +257,22 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _fullDomain = string(abi.encodePacked(sldLabel, ".", tldLabel));
     }
 
+    function parent(bytes32 _sldNamehash) external view override returns (string memory _parentName) {
+
+        bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
+        require(tldNamehash != 0x0, "domain does not exist");
+
+        _parentName = handshakeTldContract.namehashToLabelMap(tldNamehash);
+    }
+
+    function expiry(bytes32 _namehash) external view override returns (uint256 _expiry) {
+        (uint80 regTime, uint96 regLength, ) = registrationManager.subdomainRegistrationHistory(
+            _namehash
+        );
+
+        _expiry = regTime + regLength;
+    }
+
     /**
      * @notice Gets the royalty information for a subdomain
      * @dev This function will get EIP-2981 royalty information based on the TLD
