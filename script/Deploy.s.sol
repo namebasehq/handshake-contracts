@@ -66,8 +66,8 @@ contract DeployScript is Script {
         HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress));
         HandshakeSld sld = new HandshakeSld(tld);
 
-        NftMetadataService tldMetadata = new NftMetadataService(tld);
-        NftMetadataService sldMetadata = new NftMetadataService(sld);
+        NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
+        NftMetadataService sldMetadata = new NftMetadataService(sld, "#1f7bac");
 
         tld.setMetadataContract(tldMetadata);
         sld.setMetadataContract(sldMetadata);
