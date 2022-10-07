@@ -257,8 +257,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _fullDomain = string(abi.encodePacked(sldLabel, ".", tldLabel));
     }
 
-    function parent(bytes32 _sldNamehash) external view override returns (string memory _parentName) {
-
+    function parent(bytes32 _sldNamehash)
+        external
+        view
+        override
+        returns (string memory _parentName)
+    {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
         require(tldNamehash != 0x0, "domain does not exist");
 
