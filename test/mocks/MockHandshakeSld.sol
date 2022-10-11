@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.17;
 
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
