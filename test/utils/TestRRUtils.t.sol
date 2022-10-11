@@ -168,5 +168,4 @@ contract TestRRUtils is Test {
             "Invalid keytag (3)"
         );
     }
-
 }

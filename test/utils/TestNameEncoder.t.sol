@@ -20,5 +20,6 @@ contract TestNameEncoder is Test {
         // console.logBytes1(dnsName[0]);
         // console.logBytes1(dnsName[1]);
         assertEq(node, 0x81f536edca1dbdb9582598140d28a86010c4dbb395f128647f1add370d334d89);
+        console.logBytes(dnsName);
     }
 }

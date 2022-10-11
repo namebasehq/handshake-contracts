@@ -63,7 +63,11 @@ abstract contract HandshakeNft is ERC721, Ownable {
         override
         returns (bool)
     {
+        if (!_exists(tokenId)) {
+            return false;
+        }
         address owner = ownerOf(tokenId);
+
         return (spender == owner ||
             getApproved(tokenId) == spender ||
             isApprovedForAll(owner, spender));
@@ -82,6 +86,8 @@ abstract contract HandshakeNft is ERC721, Ownable {
         virtual
         returns (bool)
     {
+        console.log("spender", spender);
+        console.log("tokenId", tokenId);
         return _isApprovedOrOwner(spender, tokenId);
     }
 

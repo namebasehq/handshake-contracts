@@ -36,4 +36,8 @@ contract MockHandshakeNft is HandshakeNft {
     function name(bytes32) public view override returns (string memory _name) {
         _name = DomainName;
     }
+
+    function mint(address _owner, uint256 _id) public {
+        _mint(_owner, _id);
+    }
 }

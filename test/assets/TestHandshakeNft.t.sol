@@ -103,7 +103,7 @@ contract TestHandshakeNft is Test {
 
         nft.mint(address(this), id);
 
-        vm.expectRevert("ERC721: invalid token ID");
+        vm.expectRevert("not approved or owner");
         nft.checkAuthorised(id + 1);
     }
 

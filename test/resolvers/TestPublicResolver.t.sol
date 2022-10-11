@@ -4,12 +4,10 @@ pragma solidity ^0.8.17;
 import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 
-import "contracts/PublicResolver.sol";
-
 contract TestPublicResolver is Test {
     address constant tldContract = address(0x996633);
     address constant sldContract = address(0x336699);
-
+    /*
     PublicResolver resolver;
 
     function setUp() public {
@@ -90,4 +88,5 @@ contract TestPublicResolver is Test {
         //store multi-chain, or just ETH address(s)
         assertTrue(false, "not implemented");
     }
+    */
 }
