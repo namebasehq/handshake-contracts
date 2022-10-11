@@ -2,12 +2,12 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "interfaces/IVersionableResolver.sol";
+import "interfaces/resolvers/IVersionableResolver.sol";
 import "contracts/HandshakeNft.sol";
 
 abstract contract BaseResolver is ERC165, IVersionableResolver {
-    HandshakeNft internal SldContract;
-    HandshakeNft internal TldContract;
+    HandshakeNft internal immutable SldContract;
+    HandshakeNft internal immutable TldContract;
 
     mapping(bytes32 => uint256) public recordVersions;
 
@@ -22,7 +22,7 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
             super.supportsInterface(_interfaceId);
     }
 
-    function incrementVersion(bytes32 _nodehash) internal {
+    function incrementVersion(bytes32 _nodehash) public authorised(_nodehash) {
         unchecked {
             recordVersions[_nodehash]++;
         }
