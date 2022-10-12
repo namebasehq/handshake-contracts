@@ -7,12 +7,26 @@ import "interfaces/resolvers/IAddrResolver.sol";
 import "contracts/resolvers/BaseResolver.sol";
 
 abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolver {
-    function addr(bytes32 node, uint256 coinType) external view returns (bytes memory) {
+    function addr(bytes32 node, uint256 coinType) public view returns (bytes memory) {
         require(false, "not implemented");
     }
 
-    function addr(bytes32 node) external view returns (address payable) {
+    function addr(bytes32 node) public view returns (address payable) {
         require(false, "not implemented");
+    }
+
+    function incrementVersion(bytes32 node) public virtual override authorised(node) {
+        address oldAddress = addr(node);
+
+        super.incrementVersion(node);
+
+        address newAddress = addr(node);
+
+        if (newAddress != oldAddress) {
+            //maybe we need this
+            emit AddrChanged(node, newAddress);
+            emit AddressChanged(node, 60, addr(node, 60));
+        }
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {

@@ -43,4 +43,12 @@ contract DefaultResolver is
         )
         returns (bool)
     {}
+
+    function incrementVersion(bytes32 node)
+        public
+        override(BaseResolver, AddressResolver, ContentHashResolver, DNSResolver)
+        authorised(node)
+    {
+        super.incrementVersion(node);
+    }
 }
