@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-
 /**
  * Includes the interface for the legacy (ETH-only) addr function.
  */
@@ -10,7 +9,6 @@ pragma solidity ^0.8.17;
 //https://github.com/ensdomains/ens-contracts
 interface IAddrResolver {
     event AddrChanged(bytes32 indexed node, address a);
-
 
     /**
      * Returns the address associated with an ENS node.

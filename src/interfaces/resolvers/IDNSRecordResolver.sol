@@ -5,12 +5,7 @@ pragma solidity ^0.8.17;
 //https://github.com/ensdomains/ens-contracts
 interface IDNSRecordResolver {
     // DNSRecordChanged is emitted whenever a given node/name/resource's RRSET is updated.
-    event DNSRecordChanged(
-        bytes32 indexed node,
-        bytes name,
-        uint16 resource,
-        bytes record
-    );
+    event DNSRecordChanged(bytes32 indexed node, bytes name, uint16 resource, bytes record);
     // DNSRecordDeleted is emitted whenever a given node/name/resource's RRSET is deleted.
     event DNSRecordDeleted(bytes32 indexed node, bytes name, uint16 resource);
 
@@ -26,5 +21,4 @@ interface IDNSRecordResolver {
         bytes32 name,
         uint16 resource
     ) external view returns (bytes memory);
-
 }

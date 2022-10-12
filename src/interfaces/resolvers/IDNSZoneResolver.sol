@@ -4,13 +4,8 @@ pragma solidity ^0.8.17;
 //original interfaces taken from ENS as they seem to be the baseline standard currently
 //https://github.com/ensdomains/ens-contracts
 interface IDNSZoneResolver {
-
     // DNSZonehashChanged is emitted whenever a given node's zone hash is updated.
-    event DNSZonehashChanged(
-        bytes32 indexed node,
-        bytes lastzonehash,
-        bytes zonehash
-    );
+    event DNSZonehashChanged(bytes32 indexed node, bytes lastzonehash, bytes zonehash);
 
     /**
      * zonehash obtains the hash for the zone.

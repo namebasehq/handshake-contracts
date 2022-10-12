@@ -4,11 +4,7 @@ pragma solidity ^0.8.17;
 //original interfaces taken from ENS as they seem to be the baseline standard currently
 //https://github.com/ensdomains/ens-contracts
 interface IInterfaceResolver {
-    event InterfaceChanged(
-        bytes32 indexed node,
-        bytes4 indexed interfaceID,
-        address implementer
-    );
+    event InterfaceChanged(bytes32 indexed node, bytes4 indexed interfaceID, address implementer);
 
     /**
      * Returns the address of a contract that implements the specified interface for this name.
@@ -20,8 +16,5 @@ interface IInterfaceResolver {
      * @param interfaceID The EIP 165 interface ID to check for.
      * @return The address that implements this interface, or 0 if the interface is unsupported.
      */
-    function interfaceImplementer(bytes32 node, bytes4 interfaceID)
-        external
-        view
-        returns (address);
+    function interfaceImplementer(bytes32 node, bytes4 interfaceID) external view returns (address);
 }
