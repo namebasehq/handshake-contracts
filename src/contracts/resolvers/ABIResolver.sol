@@ -30,7 +30,15 @@ abstract contract ABIResolver is IABIResolver, BaseResolver {
     }
 
     function ABI(bytes32 node, uint256 contentTypes) external view returns (uint256, bytes memory) {
-        require(false, "not implemented");
+        mapping(uint256 => bytes) storage abiset = versionable_abis[recordVersions[node]][node];
+
+        for (uint256 contentType = 1; contentType <= contentTypes; contentType <<= 1) {
+            if ((contentType & contentTypes) != 0 && abiset[contentType].length > 0) {
+                return (contentType, abiset[contentType]);
+            }
+        }
+
+        return (0, bytes(""));
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {

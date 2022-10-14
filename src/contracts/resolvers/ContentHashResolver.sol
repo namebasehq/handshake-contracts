@@ -13,19 +13,16 @@ abstract contract ContentHashResolver is IContentHashResolver, BaseResolver {
     }
 
     function incrementVersion(bytes32 node) public virtual override authorised(node) {
-        bytes memory oldHash = contenthash(node);
-
         super.incrementVersion(node);
 
-        bytes memory newHash = contenthash(node);
+        bytes memory newHash = bytes("");
 
-        if (keccak256(newHash) != keccak256(oldHash)) {
-            emit ContenthashChanged(node, newHash);
-        }
+        emit ContenthashChanged(node, newHash);
     }
 
     function setContentHash(bytes32 _node, bytes calldata _hash) public authorised(_node) {
         versionable_hashes[recordVersions[_node]][_node] = _hash;
+        emit ContenthashChanged(_node, _hash);
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {

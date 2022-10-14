@@ -28,6 +28,20 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
         }
     }
 
+    function ownerOf(bytes32 _node) internal view returns (address) {
+        uint256 id = uint256(_node);
+
+        if (sldContract.exists(id)) {
+            return sldContract.ownerOf(id);
+        }
+
+        if (tldContract.exists(id)) {
+            return tldContract.ownerOf(id);
+        }
+
+        require(false, "query for none existing token");
+    }
+
     modifier authorised(bytes32 _nodehash) {
         uint256 id = uint256(_nodehash);
         require(
