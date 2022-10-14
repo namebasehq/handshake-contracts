@@ -66,12 +66,17 @@ contract TestBaseResolver is Test {
         vm.startPrank(owner);
 
         for (uint256 i; i < _iterations; i++) {
-            resolver.incrementVersionPublicAuthorisedMethod(bytes32(id));
-            resolver.incrementVersionPublicAuthorisedMethod(bytes32(id2));
+            resolver.incrementVersion(bytes32(id));
+            resolver.incrementVersion(bytes32(id2));
         }
 
         assertEq(resolver.recordVersions(bytes32(id)), _iterations);
         assertEq(resolver.recordVersions(bytes32(id2)), _iterations);
+
+        sld.transferFrom(owner, address(0x696969), id);
+
+        vm.expectRevert("not authorised or owner");
+        resolver.incrementVersion(bytes32(id));
     }
 
     function testAuthorisedModifierFromSldApprovedAddress_success() public {
@@ -85,7 +90,7 @@ contract TestBaseResolver is Test {
         sld.setApprovalForAll(approved, true);
 
         vm.prank(approved);
-        resolver.incrementVersionPublicAuthorisedMethod(bytes32(id));
+        resolver.incrementVersion(bytes32(id));
     }
 
     function testNotAuthorisedSldUser_fail() public {
@@ -97,7 +102,7 @@ contract TestBaseResolver is Test {
 
         vm.prank(notApproved);
         vm.expectRevert("not authorised or owner");
-        resolver.incrementVersionPublicAuthorisedMethod(bytes32(id));
+        resolver.incrementVersion(bytes32(id));
     }
 
     function testNotAuthorisedTldUser_fail() public {
@@ -109,6 +114,6 @@ contract TestBaseResolver is Test {
 
         vm.prank(notApproved);
         vm.expectRevert("not authorised or owner");
-        resolver.incrementVersionPublicAuthorisedMethod(bytes32(id));
+        resolver.incrementVersion(bytes32(id));
     }
 }
