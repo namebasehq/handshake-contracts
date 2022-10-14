@@ -8,13 +8,17 @@ import "contracts/resolvers/BaseResolver.sol";
 
 abstract contract NameResolver is INameResolver, BaseResolver {
     function name(bytes32 node) external view returns (string memory) {
-        string memory domainName = sldContract.name(node);
+        uint256 id = uint256(node);
 
-        if (bytes(domainName).length == 0) {
-            domainName = tldContract.name(node);
+        if (sldContract.exists(id)) {
+            return sldContract.name(node);
         }
 
-        return domainName;
+        if (tldContract.exists(id)) {
+            return tldContract.name(node);
+        }
+
+        return "";
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {

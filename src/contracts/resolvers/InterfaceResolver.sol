@@ -13,12 +13,11 @@ abstract contract InterfaceResolver is IInterfaceResolver, BaseResolver {
         view
         returns (address)
     {
-        require(false, "not implemented");
+        return versionable_interfaces[recordVersions[node]][node][interfaceID];
     }
 
     /**
      * Sets an interface associated with a name.
-     * Setting the address to 0 restores the default behaviour of querying the contract at `addr()` for interface support.
      * @param node The node to update.
      * @param interfaceID The EIP 165 interface ID.
      * @param implementer The address of a contract that implements this interface for this node.
