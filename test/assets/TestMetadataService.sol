@@ -15,10 +15,11 @@ contract TestHandshakeTld is Test {
 
         nft.setParent("domain");
         nft.setExpiry(1234567890);
-        nft.setName("handshake.domain");
         NftMetadataService metadata = new NftMetadataService(nft, "#000000");
 
         bytes32 namehash = Namehash.getTldNamehash("testing");
+
+        nft.setName(namehash, "handshake.domain");
 
         string memory uri = metadata.tokenURI(namehash);
 
@@ -65,10 +66,12 @@ contract TestHandshakeTld is Test {
 
         nft.setParent("");
         nft.setExpiry(0); //zero expiry we should get no expiry or parent name attributes
-        nft.setName("domain");
+
         NftMetadataService metadata = new NftMetadataService(nft, "#cc0000");
 
-        bytes32 namehash = Namehash.getTldNamehash("testing123");
+        bytes32 namehash = Namehash.getTldNamehash("domain");
+
+        nft.setName(namehash, "domain");
 
         string memory uri = metadata.tokenURI(namehash);
 
