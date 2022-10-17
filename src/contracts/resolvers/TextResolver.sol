@@ -23,7 +23,7 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
         bytes32 node,
         string calldata key,
         string calldata value
-    ) external virtual authorised(node) {
+    ) public virtual authorised(node) {
         versionable_texts[recordVersions[node]][node][key] = value;
         emit TextChanged(node, key, key, value);
     }
