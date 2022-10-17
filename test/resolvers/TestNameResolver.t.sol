@@ -12,7 +12,7 @@ contract TestNameResolver is Test {
     MockHandshakeNft tld;
     MockHandshakeNft sld;
 
-    function setup() public {
+    function setUp() public {
         tld = new MockHandshakeNft();
         sld = new MockHandshakeNft();
 

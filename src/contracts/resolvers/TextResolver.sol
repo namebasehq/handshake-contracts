@@ -9,7 +9,7 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
     mapping(uint256 => mapping(bytes32 => mapping(string => string))) versionable_texts;
 
     function text(bytes32 node, string calldata key) external view returns (string memory) {
-        require(false, "not implemented");
+        return versionable_texts[recordVersions[node]][node][key];
     }
 
     /**
