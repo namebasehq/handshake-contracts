@@ -11,6 +11,8 @@ contract MockHandshakeNft is HandshakeNft {
     string public DomainName;
     string public ParentName;
 
+    mapping(bytes32 => string) nodeToName;
+
     constructor() HandshakeNft("test", "test") {}
 
     function setExpiry(uint256 _expiry) public {
@@ -33,11 +35,15 @@ contract MockHandshakeNft is HandshakeNft {
         DomainName = _name;
     }
 
-    function name(bytes32) public view override returns (string memory _name) {
-        _name = DomainName;
-    }
-
     function mint(address _owner, uint256 _id) public {
         _mint(_owner, _id);
+    }
+
+    function name(bytes32 _namehash) external view override returns (string memory _name) {
+        return nodeToName[_namehash];
+    }
+
+    function setName(bytes32 _namehash, string calldata _name) public {
+        nodeToName[_namehash] = _name;
     }
 }

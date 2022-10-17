@@ -51,6 +51,4 @@ contract DefaultResolver is
     {
         super.incrementVersion(node);
     }
-
-    function test() public {}
 }

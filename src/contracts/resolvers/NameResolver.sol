@@ -18,7 +18,7 @@ abstract contract NameResolver is INameResolver, BaseResolver {
             return tldContract.name(node);
         }
 
-        return "";
+        revert("id does not exist");
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {

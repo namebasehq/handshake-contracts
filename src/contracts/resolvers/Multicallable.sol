@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import "interfaces/resolvers/IMulticallable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import {console} from "forge-std/console.sol";
 
 abstract contract Multicallable is IMulticallable, ERC165 {
     function _multicall(bytes32 nodehash, bytes[] calldata data)

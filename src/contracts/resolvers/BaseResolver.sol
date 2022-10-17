@@ -39,7 +39,7 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
             return tldContract.ownerOf(id);
         }
 
-        require(false, "query for none existing token");
+        revert("query for none existing token");
     }
 
     modifier authorised(bytes32 _nodehash) {
