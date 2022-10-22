@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
@@ -15,7 +15,7 @@ import {Namehash} from "utils/Namehash.sol";
  * @notice This contract is for managing the TLDs that can be claimed
  *         TLD managers can add allowed TLDs that can be minted by address
  */
-contract TldClaimManager is Ownable, ITldClaimManager, HasLabelValidator {
+contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator {
     //TODO: remove bools to improve gas usage
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
@@ -27,6 +27,11 @@ contract TldClaimManager is Ownable, ITldClaimManager, HasLabelValidator {
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
     constructor(ILabelValidator _validator) HasLabelValidator(_validator) {}
+
+    function init(ILabelValidator _validator, address _owner) public initializer {
+        labelValidator = _validator;
+        _transferOwnership(_owner);
+    }
 
     /**
      * @notice Helper function to check if an address can claim a TLD
@@ -85,6 +90,16 @@ contract TldClaimManager is Ownable, ITldClaimManager, HasLabelValidator {
                 ++i;
             }
         }
+    }
+
+    function addSingleTldAndClaimant(address _addr, string calldata _domain)
+        external
+        onlyAuthorisedTldManager
+    {
+        require(labelValidator.isValidLabel(_domain), "domain not valid");
+        bytes32 tldNamehash = Namehash.getTldNamehash(_domain);
+        tldClaimantMap[tldNamehash] = _addr;
+        tldProviderMap[tldNamehash] = msg.sender;
     }
 
     /**

@@ -13,24 +13,15 @@ import "contracts/SldCommitIntent.sol";
 import "contracts/SldRegistrationManager.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/UsdPriceOracle.sol";
-import "proxy/DeployProxy.sol";
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract DeployScript is Script {
-    DeployProxy proxyDeployer;
-
     LabelValidator labelValidator;
     SldCommitIntent commitIntent;
     UsdPriceOracle priceOracle;
     GlobalRegistrationRules globalRules;
 
-    function setUp() public {
-        proxyDeployer = new DeployProxy();
-
-        labelValidator = new LabelValidator();
-
-        priceOracle = new UsdPriceOracle();
-        globalRules = new GlobalRegistrationRules();
-    }
+    function setUp() public {}
 
     function run() public {
         /*
@@ -52,16 +43,25 @@ contract DeployScript is Script {
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
+
+        labelValidator = new LabelValidator();
+
+        priceOracle = new UsdPriceOracle();
+        globalRules = new GlobalRegistrationRules();
+
         commitIntent = new SldCommitIntent();
-        address ownerWallet = address(0x70997970C51812dc3A010C7d01b50e0d17dc79C8); //second wallet in anvil
+        address ownerWallet = address(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC); //second wallet in anvil
 
         TldClaimManager tldClaimManager = new TldClaimManager(labelValidator);
 
-        address tldClaimManagerProxyAddress = proxyDeployer.deployUupsProxy(
+        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(tldClaimManager),
             ownerWallet,
             bytes("")
         );
+        address tldClaimManagerProxyAddress = address(uups);
+
+        console.log("tldclaimmanager", tldClaimManagerProxyAddress);
 
         HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress));
         HandshakeSld sld = new HandshakeSld(tld);
@@ -82,34 +82,26 @@ contract DeployScript is Script {
             ownerWallet
         );
 
-        address registrationManagerProxyAddress = proxyDeployer.deployUupsProxy(
+        TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(registrationManager),
             ownerWallet,
             bytes("")
         );
+        address registrationManagerProxyAddress = address(uups2);
 
         sld.setRegistrationManager(SldRegistrationManager(registrationManagerProxyAddress));
 
+        console.log("here");
         //transfer ownership of ownable contracts
-        tldClaimManager.transferOwnership(ownerWallet);
-        registrationManager.transferOwnership(ownerWallet);
+
+        TldClaimManager(tldClaimManagerProxyAddress).init(labelValidator, ownerWallet);
+
+        console.log("owner", TldClaimManager(tldClaimManagerProxyAddress).owner());
+
+        //registrationManager.transferOwnership(ownerWallet);
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
-
-        console.log("Sld address", address(sld));
-        console.log("Tld address", address(tld));
-        console.log("SldCommitIntent address", address(commitIntent));
-        console.log(
-            "SldRegistrationManager (proxy) address",
-            address(registrationManagerProxyAddress)
-        );
-        console.log("TldClaimManager (proxy) address", address(tldClaimManagerProxyAddress));
-        console.log("TldMetadata address", address(tldMetadata));
-        console.log("SldMetadata address", address(sldMetadata));
-        console.log("LabelValidator address", address(labelValidator));
-        console.log("PriceOracle address", address(priceOracle));
-        console.log("GlobalRegistrationRules address", address(globalRules));
 
         vm.stopBroadcast();
     }
