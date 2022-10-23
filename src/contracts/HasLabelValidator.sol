@@ -7,9 +7,5 @@ import "contracts/UsdPriceOracle.sol";
 contract HasLabelValidator {
     ILabelValidator public labelValidator;
 
-    constructor(ILabelValidator _validator) {
-        labelValidator = _validator;
-    }
-
     event NewLabelValidator(address indexed _labelValidator);
 }

@@ -38,14 +38,18 @@ contract TestSldRegistrationManager is Test {
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
         globalStrategy = new MockGlobalRegistrationStrategy(true);
         manager = new SldRegistrationManager(
-            tld,
+
+        );
+
+        console.log('owner', manager.owner());
+        manager.init(            tld,
             sld,
             commitIntent,
             oracle,
             labelValidator,
             globalStrategy,
-            address(this)
-        );
+            address(this),
+            address(this));
     }
 
     function addMockOracle() private {

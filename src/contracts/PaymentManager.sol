@@ -6,10 +6,6 @@ import {console} from "forge-std/console.sol";
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
 
-    constructor(address _handshakeWalletAddress) {
-        handshakeWalletPayoutAddress = _handshakeWalletAddress;
-    }
-
     function distributePrimaryFunds(
         address _sldOwner,
         address _tldOwner,

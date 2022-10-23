@@ -12,7 +12,7 @@ import "interfaces/ILabelValidator.sol";
 import "test/mocks/MockMetadataService.sol";
 
 contract TestTldClaimManager is Test {
-    ITldClaimManager internal manager;
+    TldClaimManager internal manager;
     HandshakeTld internal nft;
     ILabelValidator internal labelValidator;
     MockMetadataService internal metadata;
@@ -20,7 +20,8 @@ contract TestTldClaimManager is Test {
     function setUp() public {
         metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
-        manager = new TldClaimManager(labelValidator);
+        manager = new TldClaimManager();
+        manager.init(labelValidator, address(this));
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata);
     }

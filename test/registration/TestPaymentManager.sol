@@ -7,7 +7,9 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "contracts/PaymentManager.sol";
 
 contract PaymentManagerForTesting is PaymentManager {
-    constructor(address _paymentWallet) PaymentManager(_paymentWallet) {}
+    constructor(address _paymentWallet) PaymentManager() {
+        handshakeWalletPayoutAddress = _paymentWallet;
+    }
 
     function payableFunction(
         address _sldOwner,

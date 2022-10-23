@@ -26,7 +26,7 @@ contract NftMetadataService is IMetadataService {
             interfaceID == this.tokenURI.selector;
     }
 
-    function json(
+    function json2(
         string memory _name,
         string memory _parentName,
         uint256 _expiry
@@ -47,6 +47,40 @@ contract NftMetadataService is IMetadataService {
                 _expiry.toString(),
                 "}"
             )
+        );
+        string memory end = "]}";
+
+        data = abi.encodePacked(start, nftName, description, image, attributeStart);
+
+        //parent domains do not expire
+        if (_expiry > 0) {
+            data = abi.encodePacked(data, parentName, expiryText);
+        }
+
+        data = abi.encodePacked(data, end);
+
+        return string(data);
+    }
+
+    function json(
+        string memory _name,
+        string memory _parentName,
+        uint256 _expiry
+    ) private view returns (string memory) {
+        bytes memory data;
+
+        string memory start = "data:application/json;utf8,{";
+        bytes memory nftName = abi.encodePacked('"name": "', _name, '",');
+        string memory description = '"description": "Transferable Handshake Domain",';
+        bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
+        string memory attributeStart = '"attributes":[';
+        bytes memory parentName = 
+            abi.encodePacked('{"trait_type" : "parent name", "value" : "', _parentName, '"},');
+        bytes memory expiryText = 
+            abi.encodePacked(
+                '{"trait_type" : "expiry", "display_type": "date", "value": ',
+                _expiry.toString(),
+                "}"
         );
         string memory end = "]}";
 

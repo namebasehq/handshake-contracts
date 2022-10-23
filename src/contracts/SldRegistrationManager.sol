@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ILabelValidator.sol";
@@ -17,7 +17,7 @@ import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 
 contract SldRegistrationManager is
-    Ownable,
+    OwnableUpgradeable,
     ISldRegistrationManager,
     PaymentManager,
     HasUsdOracle,
@@ -32,19 +32,25 @@ contract SldRegistrationManager is
 
     ICommitIntent public commitIntent;
 
-    constructor(
-        IHandshakeTld _tld,
+
+    function init(        IHandshakeTld _tld,
         IHandshakeSld _sld,
         ICommitIntent _commitIntent,
         IPriceOracle _oracle,
         ILabelValidator _validator,
         IGlobalRegistrationRules _globalRules,
-        address _handshakeWallet
-    ) PaymentManager(_handshakeWallet) HasUsdOracle(_oracle) HasLabelValidator(_validator) {
-        sld = _sld;
-        tld = _tld;
-        commitIntent = _commitIntent;
-        globalStrategy = _globalRules;
+        address _handshakeWallet,
+        address _owner) public initializer {
+
+            sld = _sld;
+            tld = _tld;
+            commitIntent = _commitIntent;
+            globalStrategy = _globalRules;
+            handshakeWalletPayoutAddress = _handshakeWallet;
+            usdOracle = _oracle;
+            labelValidator = _validator;
+            _transferOwnership(_owner);
+
     }
 
     /**

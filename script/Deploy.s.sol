@@ -41,8 +41,8 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/Deploy.s.sol:DeployScript --private-key $PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+        
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
         labelValidator = new LabelValidator();
 
@@ -50,20 +50,21 @@ contract DeployScript is Script {
         globalRules = new GlobalRegistrationRules();
 
         commitIntent = new SldCommitIntent();
-        address ownerWallet = address(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC); //second wallet in anvil
+        address ownerWallet = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC; //second wallet in anvil
+        address deployerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        TldClaimManager tldClaimManager = new TldClaimManager(labelValidator);
+        //TldClaimManager tldClaimManager = new TldClaimManager();
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
-            address(tldClaimManager),
+            address(new TldClaimManager()),
             ownerWallet,
             bytes("")
         );
-        address tldClaimManagerProxyAddress = address(uups);
+     
 
-        console.log("tldclaimmanager", tldClaimManagerProxyAddress);
+        console.log("tldclaimmanager", address(uups));
 
-        HandshakeTld tld = new HandshakeTld(TldClaimManager(tldClaimManagerProxyAddress));
+        HandshakeTld tld = new HandshakeTld(TldClaimManager(address(uups)));
         HandshakeSld sld = new HandshakeSld(tld);
 
         NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
@@ -72,32 +73,29 @@ contract DeployScript is Script {
         tld.setMetadataContract(tldMetadata);
         sld.setMetadataContract(sldMetadata);
 
-        SldRegistrationManager registrationManager = new SldRegistrationManager(
-            tld,
+        TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
+            address(new SldRegistrationManager()),
+            ownerWallet,
+            bytes("")
+        );
+
+        SldRegistrationManager(address(uups2)).init(            tld,
             sld,
             commitIntent,
             priceOracle,
             labelValidator,
             globalRules,
-            ownerWallet
-        );
-
-        TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
-            address(registrationManager),
             ownerWallet,
-            bytes("")
-        );
-        address registrationManagerProxyAddress = address(uups2);
+            deployerWallet);
 
-        sld.setRegistrationManager(SldRegistrationManager(registrationManagerProxyAddress));
 
-        console.log("here");
+        sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
+
         //transfer ownership of ownable contracts
 
-        TldClaimManager(tldClaimManagerProxyAddress).init(labelValidator, ownerWallet);
+        TldClaimManager(address(uups)).init(labelValidator, ownerWallet);
 
-        console.log("owner", TldClaimManager(tldClaimManagerProxyAddress).owner());
-
+ 
         //registrationManager.transferOwnership(ownerWallet);
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
