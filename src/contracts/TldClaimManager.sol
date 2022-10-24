@@ -26,9 +26,9 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 
-
-    function init(ILabelValidator _validator, address _owner) public initializer {
+    function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld) public initializer {
         labelValidator = _validator;
+        handshakeTldContract = _tld;
         _transferOwnership(_owner);
     }
 

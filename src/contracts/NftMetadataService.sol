@@ -74,13 +74,15 @@ contract NftMetadataService is IMetadataService {
         string memory description = '"description": "Transferable Handshake Domain",';
         bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
         string memory attributeStart = '"attributes":[';
-        bytes memory parentName = 
-            abi.encodePacked('{"trait_type" : "parent name", "value" : "', _parentName, '"},');
-        bytes memory expiryText = 
-            abi.encodePacked(
-                '{"trait_type" : "expiry", "display_type": "date", "value": ',
-                _expiry.toString(),
-                "}"
+        bytes memory parentName = abi.encodePacked(
+            '{"trait_type" : "parent name", "value" : "',
+            _parentName,
+            '"},'
+        );
+        bytes memory expiryText = abi.encodePacked(
+            '{"trait_type" : "expiry", "display_type": "date", "value": ',
+            _expiry.toString(),
+            "}"
         );
         string memory end = "]}";
 

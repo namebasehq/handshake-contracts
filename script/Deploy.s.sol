@@ -41,7 +41,6 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/Deploy.s.sol:DeployScript --private-key $PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
-        
         vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
         labelValidator = new LabelValidator();
@@ -57,15 +56,14 @@ contract DeployScript is Script {
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(new TldClaimManager()),
-            ownerWallet,
+            deployerWallet,
             bytes("")
         );
-     
-
-        console.log("tldclaimmanager", address(uups));
 
         HandshakeTld tld = new HandshakeTld(TldClaimManager(address(uups)));
         HandshakeSld sld = new HandshakeSld(tld);
+
+
 
         NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
         NftMetadataService sldMetadata = new NftMetadataService(sld, "#1f7bac");
@@ -75,32 +73,42 @@ contract DeployScript is Script {
 
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
-            ownerWallet,
+            deployerWallet,
             bytes("")
         );
 
-        SldRegistrationManager(address(uups2)).init(            tld,
+        SldRegistrationManager(address(uups2)).init(
+            tld,
             sld,
             commitIntent,
             priceOracle,
             labelValidator,
             globalRules,
             ownerWallet,
-            deployerWallet);
-
+            deployerWallet
+        );
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
         //transfer ownership of ownable contracts
 
-        TldClaimManager(address(uups)).init(labelValidator, ownerWallet);
+        TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld);
 
- 
         //registrationManager.transferOwnership(ownerWallet);
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
 
         vm.stopBroadcast();
+
+        console.log("labelValidator", address(labelValidator));
+        console.log("priceOracle", address(priceOracle));
+        console.log("globalRules", address(globalRules));
+        console.log("commitIntent", address(commitIntent));
+
+        console.log("tldClaimManager", address(uups));
+        console.log("SldRegistrationManager", address(uups2));
+        console.log("tld", address(tld));
+        console.log("sld", address(sld));
     }
 }

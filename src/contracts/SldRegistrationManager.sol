@@ -32,25 +32,24 @@ contract SldRegistrationManager is
 
     ICommitIntent public commitIntent;
 
-
-    function init(        IHandshakeTld _tld,
+    function init(
+        IHandshakeTld _tld,
         IHandshakeSld _sld,
         ICommitIntent _commitIntent,
         IPriceOracle _oracle,
         ILabelValidator _validator,
         IGlobalRegistrationRules _globalRules,
         address _handshakeWallet,
-        address _owner) public initializer {
-
-            sld = _sld;
-            tld = _tld;
-            commitIntent = _commitIntent;
-            globalStrategy = _globalRules;
-            handshakeWalletPayoutAddress = _handshakeWallet;
-            usdOracle = _oracle;
-            labelValidator = _validator;
-            _transferOwnership(_owner);
-
+        address _owner
+    ) public initializer {
+        sld = _sld;
+        tld = _tld;
+        commitIntent = _commitIntent;
+        globalStrategy = _globalRules;
+        handshakeWalletPayoutAddress = _handshakeWallet;
+        usdOracle = _oracle;
+        labelValidator = _validator;
+        _transferOwnership(_owner);
     }
 
     /**
