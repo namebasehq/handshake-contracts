@@ -39,7 +39,7 @@ contract DeployScript is Script {
 
         //run these commands to deploy to localhost blockchain
         //source .test-env
-        //forge script script/Deploy.s.sol:DeployScript --private-key $PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
+        //forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
         vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
@@ -49,8 +49,8 @@ contract DeployScript is Script {
         globalRules = new GlobalRegistrationRules();
 
         commitIntent = new SldCommitIntent();
-        address ownerWallet = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC; //second wallet in anvil
-        address deployerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        address ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
+        address deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
 
         //TldClaimManager tldClaimManager = new TldClaimManager();
 
