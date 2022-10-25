@@ -67,9 +67,9 @@ contract TestTldClaimManager is Test {
         addresses[0] = allowed_address;
         vm.startPrank(allowed_address);
         manager.addTldAndClaimant(addresses, domains);
-        manager.claimTld("badass");
+        manager.claimTld("badass", msg.sender);
         vm.expectRevert("not eligible to claim");
-        manager.claimTld("badass");
+        manager.claimTld("badass", msg.sender);
         vm.stopPrank();
     }
 
@@ -87,7 +87,7 @@ contract TestTldClaimManager is Test {
         manager.addTldAndClaimant(addresses, domains);
         assertFalse(manager.canClaim(allowed_address, "notbadass"));
         vm.expectRevert("not eligible to claim");
-        manager.claimTld("notbadass");
+        manager.claimTld("notbadass", msg.sender);
         vm.stopPrank();
     }
 
@@ -108,7 +108,7 @@ contract TestTldClaimManager is Test {
         vm.startPrank(address(0x131313)); //wallet should only be allowed to claim "notbadass"
         assertFalse(manager.canClaim(other_address, "badass"));
         vm.expectRevert("not eligible to claim");
-        manager.claimTld("badass");
+        manager.claimTld("badass", msg.sender);
         vm.stopPrank();
     }
 

@@ -24,7 +24,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
     IHandshakeTld public handshakeTldContract;
 
-    event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
+    
 
     function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld) public initializer {
         labelValidator = _validator;
@@ -55,11 +55,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      *
      * @param _domain string domain TLD
      */
-    function claimTld(string calldata _domain) external {
+    function claimTld(string calldata _domain, address _addr) external {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.register(msg.sender, _domain);
+        handshakeTldContract.register(_addr, _domain);
+
+        emit TldClaimed(msg.sender, _domain, uint256(namehash));
     }
 
     /**
@@ -85,20 +87,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];
             tldProviderMap[tldNamehash] = msg.sender;
+
+            emit AllowedTldMintUpdate(_addr[i], msg.sender, _domain[i]);
+
             unchecked {
                 ++i;
             }
         }
-    }
-
-    function addSingleTldAndClaimant(address _addr, string calldata _domain)
-        external
-        onlyAuthorisedTldManager
-    {
-        require(labelValidator.isValidLabel(_domain), "domain not valid");
-        bytes32 tldNamehash = Namehash.getTldNamehash(_domain);
-        tldClaimantMap[tldNamehash] = _addr;
-        tldProviderMap[tldNamehash] = msg.sender;
     }
 
     /**

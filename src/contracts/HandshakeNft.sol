@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {console} from "forge-std/console.sol";
 import {Namehash} from "utils/Namehash.sol";
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -15,7 +15,7 @@ import "contracts/HasLabelValidator.sol";
 import "interfaces/ILabelValidator.sol";
 
 // base class for both SLD and TLDs
-abstract contract HandshakeNft is ERC721, Ownable {
+abstract contract HandshakeNft is ERC721Enumerable, Ownable {
     using ERC165Checker for address;
 
     // token uri for metadata service uses namehash as the input value
@@ -47,7 +47,7 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to query the owner of
      * @return address currently marked as the owner of the given token ID
      */
-    function ownerOf(uint256 tokenId) public view virtual override returns (address) {
+    function ownerOf(uint256 tokenId) public view virtual override(ERC721, IERC721) returns (address) {
         return super.ownerOf(tokenId);
     }
 

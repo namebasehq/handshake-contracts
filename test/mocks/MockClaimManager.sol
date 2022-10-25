@@ -6,7 +6,7 @@ import "interfaces/ITldClaimManager.sol";
 contract MockClaimManager is ITldClaimManager {
     function canClaim(address _addr, bytes32 _namehash) external view returns (bool) {}
 
-    function claimTld(string calldata _domain) external {}
+    function claimTld(string calldata _domain, address _addr) external {}
 
     function setHandshakeTldContract(IHandshakeTld _tld) external {}
 
