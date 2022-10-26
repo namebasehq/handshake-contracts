@@ -6,22 +6,23 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Namehash} from "utils/Namehash.sol";
 
 import "contracts/DefaultRegistrationStrategy.sol";
-import "test/mocks/MockHandshakeSld.sol";
+import "test/mocks/MockHandshakeTld.sol";
 
 contract TestDefaultRegistrationStrategy is Test {
     using stdStorage for StdStorage;
 
     DefaultRegistrationStrategy strategy;
-    MockHandshakeSld sld;
+    MockHandshakeTld tld;
 
     function setUp() public {
-        sld = new MockHandshakeSld();
-        strategy = new DefaultRegistrationStrategy(sld);
+        tld = new MockHandshakeTld();
+        strategy = new DefaultRegistrationStrategy(tld);
     }
 
     function testSetLengthPrices_pass() public {
         bytes32 namehash = bytes32(uint256(0x1234));
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
 
         uint256[] memory prices = new uint256[](4);
 
@@ -39,8 +40,8 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testSetLengthPricesInvalidSequence_fail() public {
         bytes32 namehash = bytes32(uint256(0x1234));
-        sld.addMapping(uint256(namehash), address(this), true);
-
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
         uint256[] memory prices = new uint256[](3);
 
         prices[0] = 15;
@@ -53,7 +54,8 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testSetLengthPricesWithMoreThanTenCharacters_fail() public {
         bytes32 namehash = bytes32(uint256(0x1234));
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
 
         uint256[] memory prices = new uint256[](11);
 
@@ -75,8 +77,8 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testSetLengthPricesFromNotApprovedWallet_fail() public {
         bytes32 namehash = bytes32(uint256(0x1234));
-        sld.addMapping(uint256(namehash), address(this), true);
-
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
         uint256[] memory prices = new uint256[](3);
 
         prices[0] = 15;
@@ -92,8 +94,8 @@ contract TestDefaultRegistrationStrategy is Test {
         uint256 price = 456;
         string memory label = "label";
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](1);
         uint256[] memory prices = new uint256[](1);
@@ -112,8 +114,8 @@ contract TestDefaultRegistrationStrategy is Test {
         uint256 price = 456;
         string memory label = "label";
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](1);
         uint256[] memory prices = new uint256[](1);
@@ -136,8 +138,8 @@ contract TestDefaultRegistrationStrategy is Test {
         address claimer = address(0x77899);
         string memory label = "label";
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](1);
         address[] memory claimers = new address[](1);
@@ -166,8 +168,8 @@ contract TestDefaultRegistrationStrategy is Test {
         string memory label3 = "label3";
 
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](3);
         uint256[] memory prices = new uint256[](3);
@@ -195,8 +197,8 @@ contract TestDefaultRegistrationStrategy is Test {
         address claimer = address(0x77899);
         string memory label = "label";
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](1);
         address[] memory claimers = new address[](1);
@@ -219,8 +221,8 @@ contract TestDefaultRegistrationStrategy is Test {
         string memory label2 = "label2";
         string memory label3 = "label3";
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](3);
         address[] memory claimers = new address[](3);
@@ -253,8 +255,8 @@ contract TestDefaultRegistrationStrategy is Test {
         string memory label2 = "label2";
 
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](2);
         address[] memory claimers = new address[](3);
@@ -279,8 +281,8 @@ contract TestDefaultRegistrationStrategy is Test {
         string memory label3 = "label3";
 
         bytes32 namehash = bytes32(uint256(0x1234));
-
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         string[] memory labels = new string[](3);
         uint256[] memory prices = new uint256[](2);
@@ -364,7 +366,8 @@ contract TestDefaultRegistrationStrategy is Test {
         arr[3] = 26;
         arr[4] = 25;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
 
         strategy.setLengthCost(namehash, arr);
 
@@ -410,7 +413,8 @@ contract TestDefaultRegistrationStrategy is Test {
         arr[3] = 26;
         arr[4] = 25;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
 
         strategy.setLengthCost(namehash, arr);
 
@@ -454,7 +458,8 @@ contract TestDefaultRegistrationStrategy is Test {
         multiYearDiscount[1] = 5;
         multiYearDiscount[2] = 51;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
 
         vm.expectRevert("max 50% discount");
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
@@ -462,14 +467,14 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testMultiYearDiscountWithIncorrectDiscountSequence_fail() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
-
+        tld.register(address(this), uint256(namehash));
         uint256[] memory multiYearDiscount = new uint256[](3);
 
         multiYearDiscount[0] = 0;
         multiYearDiscount[1] = 50;
         multiYearDiscount[2] = 49;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
 
         vm.expectRevert("must be more or equal to previous year");
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
@@ -477,7 +482,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testGetPriceInDollarsWithMultiYearDiscount_pass() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
-
+        tld.register(address(this), uint256(namehash));
         uint256[] memory lengthPrices = new uint256[](1);
 
         lengthPrices[0] = 25;
@@ -488,7 +493,7 @@ contract TestDefaultRegistrationStrategy is Test {
         multiYearDiscount[1] = 5;
         multiYearDiscount[2] = 10;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
 
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
@@ -518,7 +523,8 @@ contract TestDefaultRegistrationStrategy is Test {
         multiYearDiscount[1] = 5;
         multiYearDiscount[2] = 10;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
 
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
@@ -538,7 +544,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function testGetPriceInDollarsWithMultiYearDiscountAndLengthPrices_pass() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
-
+        tld.register(address(this), uint256(namehash));
         uint256[] memory lengthPrices = new uint256[](3);
 
         lengthPrices[0] = 25;
@@ -551,7 +557,7 @@ contract TestDefaultRegistrationStrategy is Test {
         multiYearDiscount[1] = 5;
         multiYearDiscount[2] = 10;
 
-        sld.addMapping(uint256(namehash), address(this), true);
+        tld.addMapping(uint256(namehash), address(this), true);
 
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);

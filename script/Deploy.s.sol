@@ -11,6 +11,7 @@ import "contracts/LabelValidator.sol";
 import "contracts/NftMetadataService.sol";
 import "contracts/SldCommitIntent.sol";
 import "contracts/SldRegistrationManager.sol";
+import "contracts/DefaultRegistrationStrategy.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/UsdPriceOracle.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
@@ -90,6 +91,8 @@ contract DeployScript is Script {
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
+        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(tld);
+
         //transfer ownership of ownable contracts
 
         TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld);
@@ -110,5 +113,6 @@ contract DeployScript is Script {
         console.log("SldRegistrationManager", address(uups2));
         console.log("tld", address(tld));
         console.log("sld", address(sld));
+        console.log("defaultRegistrationStrategy", address(strategy));
     }
 }

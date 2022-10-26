@@ -6,10 +6,10 @@ import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "interfaces/IHandshakeSld.sol";
+import "interfaces/IHandshakeTld.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable {
-    IHandshakeSld private subdomainContract;
+    IHandshakeTld private tldContract;
 
     mapping(bytes32 => address) public reservedNames;
     mapping(bytes32 => uint256) public premiumNames;
@@ -17,8 +17,8 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
 
-    constructor(IHandshakeSld _sld) {
-        subdomainContract = _sld;
+    constructor(IHandshakeTld _tld) {
+        tldContract = _tld;
     }
 
     function setPremiumName(
@@ -183,7 +183,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
         require(
-            subdomainContract.isApprovedOrOwner(msg.sender, uint256(_namehash)),
+            tldContract.isApprovedOrOwner(msg.sender, uint256(_namehash)),
             "not approved or owner"
         );
 

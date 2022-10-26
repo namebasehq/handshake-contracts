@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract MockHandshakeTld is IHandshakeTld, ERC721 {
     mapping(uint256 => address) private approvedMap;
-
+    mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
     string public label;
 
     constructor() ERC721("test", "test") {}
@@ -48,6 +48,15 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
     function isApprovedOrOwner(address _operator, uint256 _id) external view returns (bool) {
         address owner = ownerOf(_id);
         return _operator == owner || isApprovedForAll(owner, _operator);
+    }
+
+
+    function addMapping(
+        uint256 _id,
+        address _addr,
+        bool _approved
+    ) public {
+        idToAddressToApproved[_id][_addr] = _approved;
     }
 
     function setTldClaimManager(ITldClaimManager _manager) external {}
