@@ -23,7 +23,6 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     mapping(bytes32 => address) public tldProviderMap;
 
     IHandshakeTld public handshakeTldContract;
-
     
 
     function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld) public initializer {

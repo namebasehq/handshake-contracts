@@ -270,6 +270,8 @@ contract SldRegistrationManager is
             subdomainNamehash
         ];
 
+        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
@@ -277,7 +279,7 @@ contract SldRegistrationManager is
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+        
         uint256 price = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,

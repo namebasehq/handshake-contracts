@@ -120,9 +120,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         returns (ISldRegistrationStrategy _strategy)
     {
         _strategy = registrationStrategy[_parentNamehash];
-        if (address(_strategy) == address(0)) {
-            revert MissingRegistrationStrategy();
-        }
+        require(address(_strategy) != address(0), "registration strategy not set");
     }
 
     /**

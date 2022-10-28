@@ -532,7 +532,7 @@ contract TestHandshakeSld is Test {
         vm.expectRevert("not authorised");
         sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
 
-        vm.expectRevert(MissingRegistrationStrategy.selector);
+        vm.expectRevert("registration strategy not set");
         sld.getRegistrationStrategy(parentNamehash);
     }
 
