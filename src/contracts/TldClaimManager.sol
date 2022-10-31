@@ -8,6 +8,7 @@ import "interfaces/ITldClaimManager.sol";
 import "interfaces/ILabelValidator.sol";
 import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
+import "interfaces/IResolver.sol";
 
 /**
  * @title Tld claim manager contract
@@ -23,11 +24,16 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     mapping(bytes32 => address) public tldProviderMap;
 
     IHandshakeTld public handshakeTldContract;
+   
+
+    IResolver public defaultResolver;
     
 
-    function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld) public initializer {
+    function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld, IResolver _resolver) public initializer {
         labelValidator = _validator;
         handshakeTldContract = _tld;
+        
+        defaultResolver = _resolver;
         _transferOwnership(_owner);
     }
 
@@ -48,6 +54,10 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         handshakeTldContract = _tld;
     }
 
+    function setDefaultResolver(IResolver _resolver) external onlyOwner {
+        defaultResolver = _resolver;
+    }
+
     /**
      * @notice This function calls through to the TLD NFT contract and registers TLD NFT.
      * @dev Only whitelisted TLDs can be claimed/minted
@@ -58,7 +68,9 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.register(_addr, _domain);
+        handshakeTldContract.registerWithResolver(_addr, _domain, defaultResolver);
+
+        
 
         emit TldClaimed(msg.sender, _domain, uint256(namehash));
     }

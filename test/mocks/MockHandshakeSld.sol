@@ -38,7 +38,7 @@ contract MockHandshakeSld is IHandshakeSld {
         address _to,
         bytes32 _tldNamehash,
         string calldata _label
-    ) external {}
+    ) external payable {}
 
     function registrationStrategy(bytes32 _subdomainNamehash)
         external

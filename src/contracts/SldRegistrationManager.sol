@@ -106,10 +106,11 @@ contract SldRegistrationManager is
             dollarPrice,
             _registrationLength,
             strategy,
-            _parentNamehash,
+           _parentNamehash,
             _label
         );
 
+        
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
@@ -296,6 +297,7 @@ contract SldRegistrationManager is
     }
 
     function getWeiValueOfDollar() public view returns (uint256) {
+        require(address(0) != address(usdOracle), "usdOracle not set");
         uint256 price = usdOracle.getPrice();
 
         return (1 ether * 100000000) / price;

@@ -14,12 +14,16 @@ import "contracts/SldRegistrationManager.sol";
 import "contracts/DefaultRegistrationStrategy.sol";
 import "contracts/TldClaimManager.sol";
 import "contracts/UsdPriceOracle.sol";
+import "mocks/MockUsdOracle.sol";
+import "contracts/resolvers/DefaultResolver.sol";
+import "interfaces/IPriceOracle.sol";
+
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract DeployScript is Script {
     LabelValidator labelValidator;
     SldCommitIntent commitIntent;
-    UsdPriceOracle priceOracle;
+    IPriceOracle priceOracle;
     GlobalRegistrationRules globalRules;
 
     function setUp() public {}
@@ -46,7 +50,8 @@ contract DeployScript is Script {
 
         labelValidator = new LabelValidator();
 
-        priceOracle = new UsdPriceOracle();
+        //priceOracle = new UsdPriceOracle();
+        priceOracle = new MockUsdOracle(200000000000);
         globalRules = new GlobalRegistrationRules();
 
         commitIntent = new SldCommitIntent();
@@ -93,9 +98,11 @@ contract DeployScript is Script {
 
         DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(tld);
 
+        DefaultResolver resolver = new DefaultResolver(tld, sld);
+
         //transfer ownership of ownable contracts
 
-        TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld);
+        TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld, IResolver(address(resolver)));
 
         //registrationManager.transferOwnership(ownerWallet);
         sld.transferOwnership(ownerWallet);

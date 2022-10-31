@@ -16,6 +16,8 @@ import "interfaces/ISldRegistrationStrategy.sol";
 import "interfaces/ISldRegistrationManager.sol";
 import "interfaces/ILabelValidator.sol";
 import "test/mocks/MockLabelValidator.sol";
+import "mocks/MockRegistrationStrategy.sol";
+import "interfaces/IResolver.sol";
 
 contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
@@ -25,6 +27,8 @@ contract TestHandshakeTld is Test {
     ITldClaimManager claimManager;
     ISldRegistrationManager registrationManager;
     ILabelValidator validator;
+
+    IResolver defaultResolver;
 
     // test
     bytes32 constant TEST_TLD_NAMEHASH =
@@ -45,6 +49,8 @@ contract TestHandshakeTld is Test {
         sld.setRegistrationManager(registrationManager);
         sld.setMetadataContract(metadata);
         tld.setMetadataContract(metadata);
+
+        defaultResolver = IResolver(address(0x888888));
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
@@ -59,7 +65,7 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
 
         vm.expectRevert("not authorised");
-        tld.register(address(0x1339), domain);
+        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
     }
 
     function testMintFromAuthoriseAddress() public {
@@ -68,7 +74,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.register(address(0x1339), domain);
+        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
         assertEq(address(0x1339), tld.ownerOf(tldId));
     }
 
@@ -79,7 +85,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.register(address(0x1339), domain);
+        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
 
         assertEq(domain, tld.namehashToLabelMap(namehash));
         assertEq(domain, tld.name(namehash)); //alias view function
@@ -98,7 +104,7 @@ contract TestHandshakeTld is Test {
         stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
             address(sld.handshakeTldContract())
         );
-        sld.handshakeTldContract().register(tldOwnerAddr, domain);
+        sld.handshakeTldContract().registerWithResolver(tldOwnerAddr, domain, defaultResolver);
         assertEq(tldId, uint256(TEST_TLD_NAMEHASH), "parent id not as expected");
 
         emit log_named_address(
@@ -128,7 +134,7 @@ contract TestHandshakeTld is Test {
             address(this)
         );
 
-        sld.handshakeTldContract().register(tldOwnerAddr, domain);
+        sld.handshakeTldContract().registerWithResolver(tldOwnerAddr, domain, defaultResolver);
 
         vm.startPrank(notTldOwnerAddr);
 
@@ -212,4 +218,6 @@ contract TestHandshakeTld is Test {
         (, uint256 amount) = tld.royaltyInfo(0, smallestSaleAmount);
         assertEq(amount, 0);
     }
+
+
 }

@@ -15,7 +15,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
 
     // a map of string labels
     mapping(bytes32 => string) public namehashToLabelMap;
-    mapping(bytes32 => ISldRegistrationStrategy) public sldDefaultRegistrationStrategy;
 
     address public claimManagerAddress;
     address public royaltyPayoutAddress;
@@ -39,13 +38,21 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         royaltyPayoutAmount = _amount;
     }
 
-    function register(address _addr, string calldata _domain) external {
-        // TLD node and token ID is full namehash with root 0x0 as parent
-        bytes32 namehash = Namehash.getTldNamehash(_domain);
+    function registerWithResolver(address _addr, string calldata _domain, IResolver _resolver) external {
         require(address(claimManager) == msg.sender, "not authorised");
+        bytes32 namehash = Namehash.getTldNamehash(_domain);
+
+        
         _mint(_addr, uint256(namehash));
         namehashToLabelMap[namehash] = _domain;
+        tokenResolverMap[namehash] = _resolver;
     }
+
+    function setResolver(bytes32 _namehash, IResolver _resolver) override(IHandshakeTld, HandshakeNft) public {
+        HandshakeNft.setResolver(_namehash, _resolver);
+    }
+
+
 
     modifier tldOwner(bytes32 _namehash) {
         require(msg.sender == ownerOf(uint256(_namehash)), "Caller is not owner of TLD");

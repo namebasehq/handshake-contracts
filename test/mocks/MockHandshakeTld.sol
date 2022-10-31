@@ -8,6 +8,7 @@ import "contracts/HandshakeNft.sol";
 import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
+import "interfaces/IResolver.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
@@ -36,6 +37,11 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         _mint(_addr, _id);
     }
 
+    function registerWithResolver(address _addr, string calldata _domain, IResolver _resolver) external {
+        
+       
+    }
+
     function ownerOf(uint256 _tokenId)
         public
         view
@@ -50,6 +56,9 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
+    function setResolver(bytes32 _namehash, IResolver _resolver) public {
+
+    }
 
     function addMapping(
         uint256 _id,

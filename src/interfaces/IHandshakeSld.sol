@@ -10,7 +10,7 @@ interface IHandshakeSld {
         address _to,
         bytes32 _tldNamehash,
         string calldata _label
-    ) external;
+    ) external payable;
 
     function ownerOf(uint256 _id) external view returns (address);
 

@@ -10,10 +10,13 @@ import "contracts/HandshakeTld.sol";
 import "test/mocks/MockLabelValidator.sol";
 import "interfaces/ILabelValidator.sol";
 import "test/mocks/MockMetadataService.sol";
+import "mocks/MockHandshakeSld.sol";
 
 contract TestTldClaimManager is Test {
     TldClaimManager internal manager;
     HandshakeTld internal nft;
+    IHandshakeSld internal sld;
+    IResolver internal resolver;
     ILabelValidator internal labelValidator;
     MockMetadataService internal metadata;
 
@@ -21,10 +24,10 @@ contract TestTldClaimManager is Test {
         metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
         manager = new TldClaimManager();
-       
+        sld = new MockHandshakeSld();
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata); 
-        manager.init(labelValidator, address(this), nft);
+        manager.init(labelValidator, address(this), nft, resolver);
     }
 
     function testAddTldManagerWallet() public {
@@ -67,9 +70,9 @@ contract TestTldClaimManager is Test {
         addresses[0] = allowed_address;
         vm.startPrank(allowed_address);
         manager.addTldAndClaimant(addresses, domains);
-        manager.claimTld("badass", msg.sender);
+        manager.claimTld("badass", allowed_address);
         vm.expectRevert("not eligible to claim");
-        manager.claimTld("badass", msg.sender);
+        manager.claimTld("badass", allowed_address);
         vm.stopPrank();
     }
 

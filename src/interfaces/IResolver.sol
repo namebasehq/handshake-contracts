@@ -2,17 +2,16 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IABIResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IDNSRecordResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IDNSZoneResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IInterfaceResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IPubkeyResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
+import "interfaces/resolvers/IABIResolver.sol";
+import "interfaces/resolvers/IAddressResolver.sol";
+import "interfaces/resolvers/IAddrResolver.sol";
+import "interfaces/resolvers/IContentHashResolver.sol";
+import "interfaces/resolvers/IDNSRecordResolver.sol";
+import "interfaces/resolvers/IDNSZoneResolver.sol";
+import "interfaces/resolvers/IInterfaceResolver.sol";
+import "interfaces/resolvers/INameResolver.sol";
+import "interfaces/resolvers/ITextResolver.sol";
+
 
 /**
  * A generic resolver interface which includes all the functions including the ones deprecated
@@ -27,59 +26,7 @@ interface IResolver is
     IDNSZoneResolver,
     IInterfaceResolver,
     INameResolver,
-    IPubkeyResolver,
-    ITextResolver,
-    IExtendedResolver
+    ITextResolver
 {
-    /* Deprecated events */
-    event ContentChanged(bytes32 indexed node, bytes32 hash);
-
-    function setABI(
-        bytes32 node,
-        uint256 contentType,
-        bytes calldata data
-    ) external;
-
-    function setAddr(bytes32 node, address addr) external;
-
-    function setAddr(
-        bytes32 node,
-        uint256 coinType,
-        bytes calldata a
-    ) external;
-
-    function setContenthash(bytes32 node, bytes calldata hash) external;
-
-    function setDnsrr(bytes32 node, bytes calldata data) external;
-
-    function setName(bytes32 node, string calldata _name) external;
-
-    function setPubkey(
-        bytes32 node,
-        bytes32 x,
-        bytes32 y
-    ) external;
-
-    function setText(
-        bytes32 node,
-        string calldata key,
-        string calldata value
-    ) external;
-
-    function setInterface(
-        bytes32 node,
-        bytes4 interfaceID,
-        address implementer
-    ) external;
-
-    function multicall(bytes[] calldata data) external returns (bytes[] memory results);
-
-    /* Deprecated functions */
-    function content(bytes32 node) external view returns (bytes32);
-
-    function multihash(bytes32 node) external view returns (bytes memory);
-
-    function setContent(bytes32 node, bytes32 hash) external;
-
-    function setMultihash(bytes32 node, bytes calldata hash) external;
+ 
 }

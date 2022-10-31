@@ -57,7 +57,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         address _to,
         bytes32 _tldNamehash,
         string calldata _label
-    ) external isRegistrationManager {
+    ) external payable isRegistrationManager {
         bytes32 sldNamehash = Namehash.getNamehash(_tldNamehash, _label);
         if (hasExpired(sldNamehash)) {
             _burn(uint256(sldNamehash));
@@ -101,10 +101,14 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     }
 
     function hasExpired(bytes32 _sldNamehash) private view returns (bool _hasExpired) {
+
+        if (_exists(uint256(_sldNamehash))){
         (uint80 regTime, uint96 regLength, ) = registrationManager.subdomainRegistrationHistory(
             _sldNamehash
-        );
-        _hasExpired = regTime + regLength <= block.timestamp;
+        );   
+           _hasExpired = regTime + regLength <= block.timestamp;   
+        }
+
     }
 
     /**

@@ -35,24 +35,27 @@ contract TestSldCommitIntent is Test {
 
     function testCommitIntentNotAllowedBeforeMinBlockWait() public {
         //Arrange
-        bytes32 node = bytes32(uint256(666));
+        bytes32 node = bytes32(0x9d3bcd6c70edbcdf7dc4002356a779c04f426f06dca69fd2b02612f792ab105e);
         uint256 startBlock = 10;
         uint256 minBlocks = 2;
-        bytes32 secret = bytes32(uint256(42424242));
+        bytes32 secret = bytes32( 0x9da869e517336d3a77597c10622b00783b237f7f024b1a64c28c6902b4862e33);
         intent.updateMinBlockWaitForCommit(minBlocks);
+        address addr = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
         //Act
-        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, address(this)));
+        vm.startPrank(addr);
+        bytes32 combinedHash = keccak256(abi.encodePacked(node, secret, addr));
+        assertEq(combinedHash, 0x51d93c738d42bfd27f4a24f97bc19920c9fc7fdb3f2541c9ce54592224f74a73);
         vm.roll(startBlock);
         intent.commitIntent(combinedHash);
         vm.roll(startBlock + minBlocks - 1);
 
         //Assert
-        bool allowed = intent.allowedCommit(node, secret, address(this));
+        bool allowed = intent.allowedCommit(node, secret, addr);
         assertFalse(allowed);
 
-        vm.roll(startBlock + minBlocks + 1);
-        allowed = intent.allowedCommit(node, secret, address(this));
+        vm.roll(startBlock + minBlocks + 2);
+        allowed = intent.allowedCommit(node, secret, addr);
         assertTrue(allowed);
     }
 

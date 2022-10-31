@@ -5,6 +5,7 @@ import "interfaces/ICommitIntent.sol";
 import "interfaces/ILabelValidator.sol";
 import "contracts/LabelValidator.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "forge-std/console.sol";
 
 /**
  * @title Subdomain intent to register
@@ -18,10 +19,10 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         // 1x 256 bit slots
     }
 
-    mapping(bytes32 => CommitData) private nodeIntentBlockNumber;
+    mapping(bytes32 => CommitData) public nodeIntentBlockNumber;
 
-    uint256 public maxBlockWaitForCommit = 30;
-    uint256 public minBlockWaitForCommit = 3;
+    uint256 public maxBlockWaitForCommit = 0x400;
+    uint256 public minBlockWaitForCommit = 8;
 
     constructor() {}
 

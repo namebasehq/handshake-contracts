@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "interfaces/IHandshakeTld.sol";
 
+
 interface ITldClaimManager {
     function canClaim(address _addr, bytes32 _namehash) external view returns (bool);
 

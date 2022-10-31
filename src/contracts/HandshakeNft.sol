@@ -13,6 +13,7 @@ import "interfaces/ISldRegistrationStrategy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "contracts/HasLabelValidator.sol";
 import "interfaces/ILabelValidator.sol";
+import "interfaces/IResolver.sol";
 
 // base class for both SLD and TLDs
 abstract contract HandshakeNft is ERC721Enumerable, Ownable {
@@ -20,6 +21,8 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
 
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
+
+    mapping(bytes32 => IResolver) public tokenResolverMap;
 
     IMetadataService public metadata;
 
@@ -36,6 +39,10 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
             "does not implement tokenUri method"
         );
         metadata = _metadata;
+    }
+
+    function setResolver(bytes32 _namehash, IResolver _resolver) virtual public onlyApprovedOrOwner(uint256(_namehash)){
+        tokenResolverMap[_namehash] = _resolver;
     }
 
     function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
