@@ -212,6 +212,28 @@ contract TestDefaultRegistrationStrategy is Test {
         assertEq(strategy.reservedNames(full_hash), claimer);
     }
 
+
+    function testSetReservedNameAndClaimFromOtherWallet_fail() public {
+        address claimer = address(0x77899);
+        string memory label = "label";
+        bytes32 namehash = bytes32(uint256(0x1234));
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        string[] memory labels = new string[](1);
+        address[] memory claimers = new address[](1);
+
+        labels[0] = label;
+        claimers[0] = claimer;
+
+        strategy.setReservedNames(namehash, labels, claimers);
+
+        bytes32 full_hash = Namehash.getNamehash(namehash, label);
+        
+        vm.expectRevert("reserved name");
+        strategy.getPriceInDollars(address(0x420), namehash, label, 365);
+    }
+
     function testSetMultipleReservedNamesAndClaim_pass() public {
         address claimer = address(0x77899);
         address claimer2 = address(0x998877);

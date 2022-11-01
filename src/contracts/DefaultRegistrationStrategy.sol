@@ -126,12 +126,19 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         string memory _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
+        require(_registrationLength > 364, "minimum reg is 1 year");
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
         uint256 annualPrice = premiumNames[namehash];
         if (reservedNames[namehash] == _buyingAddress) {
+            //reserved names always $1 per year.
             return (_registrationLength * 1 ether) / 365;
-        } else if (annualPrice > 0) {
+        } 
+        else {
+            require(reservedNames[namehash] == address(0), "reserved name");
+        }
+        
+        if (annualPrice > 0) {
             //if it's a premium name then just use the annual rate on it.
             uint256 totalPrice = (annualPrice * 1 ether * _registrationLength) / 365;
 
@@ -146,17 +153,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         }
     }
 
-    function getPriceInDollarsWithProofs(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string calldata _label,
-        uint256 _registrationLength
-    ) external view returns (uint256) {
-        return getPriceInDollars(_buyingAddress, _parentNamehash, _label, _registrationLength);
-    }
 
     function getDiscount(bytes32 _parentNamehash, uint256 _years) private view returns (uint256) {
-        require(_years > 0, "minimum reg is 1 year");
+        
 
         uint256[] memory discounts = multiYearDiscount[_parentNamehash];
 
@@ -177,7 +176,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     {
         return
             interfaceId == this.getPriceInDollars.selector ||
-            interfaceId == this.getPriceInDollarsWithProofs.selector ||
             super.supportsInterface(interfaceId);
     }
 
