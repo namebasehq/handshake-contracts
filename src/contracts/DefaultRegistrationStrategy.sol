@@ -17,6 +17,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
 
+    event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
+    event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
+
     constructor(IHandshakeTld _tld) {
         tldContract = _tld;
     }
@@ -27,6 +30,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         uint256 _priceInDollarsPerYear
     ) private {
         premiumNames[Namehash.getNamehash(_parentNamehash, _label)] = _priceInDollarsPerYear;
+        emit PremiumNameSet(_parentNamehash, _priceInDollarsPerYear, _label);
     }
 
     function setReservedName(
@@ -35,6 +39,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         address _claimant
     ) private {
         reservedNames[Namehash.getNamehash(_parentNamehash, _label)] = _claimant;
+        emit ReservedNameSet(_parentNamehash, _claimant, _label);
     }
 
     function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
