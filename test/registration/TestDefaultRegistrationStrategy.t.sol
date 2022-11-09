@@ -358,23 +358,31 @@ contract TestDefaultRegistrationStrategy is Test {
             .with_key(full_namehash)
             .checked_write(addr);
 
+            uint256[] memory prices = new uint256[](1);
+            prices[0] = 10;
+
+        tld.register(address(this), uint256(namehash));
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, prices);
+
         uint256 actualPrice = strategy.getPriceInDollars(addr, namehash, label, 365);
-        assertEq(actualPrice, 1 ether);
+        assertEq(actualPrice, 10 ether);
 
         //it should round this one up to the next dollar
         actualPrice = strategy.getPriceInDollars(addr, namehash, label, 366);
-        assertEq(actualPrice, 1002739726027397260);
+        assertEq(actualPrice, 10027397260273972602);
 
         //it should round this one another dollar
         actualPrice = strategy.getPriceInDollars(addr, namehash, label, 373);
-        assertEq(actualPrice, 1021917808219178082);
+        assertEq(actualPrice, 10219178082191780821);
 
         actualPrice = strategy.getPriceInDollars(addr, namehash, label, 365 * 2);
-        assertEq(actualPrice, 2 ether);
+        assertEq(actualPrice, 20 ether);
 
         //should be $500 for 10 years
         actualPrice = strategy.getPriceInDollars(addr, namehash, label, 3650);
-        assertEq(actualPrice, 10 ether);
+        assertEq(actualPrice, 100 ether);
     }
 
     function testGetPriceInDollarsWithDifferentLengths_pass() public {

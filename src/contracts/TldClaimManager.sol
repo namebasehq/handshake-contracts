@@ -72,7 +72,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
         
 
-        emit TldClaimed(msg.sender, _domain, uint256(namehash));
+        emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }
 
     /**

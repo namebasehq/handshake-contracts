@@ -17,7 +17,7 @@ interface ITldClaimManager {
 
     function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external;
 
-    event TldClaimed(address indexed _to, string _label, uint256 indexed _id);
+    event TldClaimed(address indexed _to, uint256 indexed _id, string _label);
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);
 

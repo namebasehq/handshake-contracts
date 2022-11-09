@@ -74,7 +74,6 @@ contract SldRegistrationManager is
         require(labelValidator.isValidLabel(_label), "invalid label");
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-
         require(address(strategy) != address(0), "no registration strategy");
 
         uint256 dollarPrice = strategy.getPriceInDollars(
@@ -114,6 +113,8 @@ contract SldRegistrationManager is
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+
+        emit RegisterSld(_parentNamehash, _secret, _label);
     }
 
     /**

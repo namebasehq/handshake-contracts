@@ -32,4 +32,6 @@ interface ISldRegistrationManager {
             uint80,
             uint96
         );
+
+    event RegisterSld(bytes32 indexed _tldNamehash, bytes32 _secret, string _label);
 }

@@ -135,13 +135,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
         uint256 annualPrice = premiumNames[namehash];
-        if (reservedNames[namehash] == _buyingAddress) {
-            //reserved names always $1 per year.
-            return (_registrationLength * 1 ether) / 365;
-        } 
-        else {
-            require(reservedNames[namehash] == address(0), "reserved name");
-        }
+
+        require(reservedNames[namehash] == address(0) || reservedNames[namehash] == _buyingAddress, "reserved name");
+
         
         if (annualPrice > 0) {
             //if it's a premium name then just use the annual rate on it.
