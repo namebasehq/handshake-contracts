@@ -16,9 +16,8 @@ interface IDNSRecordResolver {
      * @param resource the ID of the resource as per https://en.wikipedia.org/wiki/List_of_DNS_record_types
      * @return the DNS record in wire format if present, otherwise empty
      */
-    function dnsRecord(
-        bytes32 node,
-        bytes32 name,
-        uint16 resource
-    ) external view returns (bytes memory);
+    function dnsRecord(bytes32 node, bytes32 name, uint16 resource)
+        external
+        view
+        returns (bytes memory);
 }

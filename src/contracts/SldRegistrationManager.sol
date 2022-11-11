@@ -105,11 +105,10 @@ contract SldRegistrationManager is
             dollarPrice,
             _registrationLength,
             strategy,
-           _parentNamehash,
+            _parentNamehash,
             _label
         );
 
-        
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
@@ -281,7 +280,6 @@ contract SldRegistrationManager is
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        
         uint256 price = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,

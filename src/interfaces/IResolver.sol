@@ -12,7 +12,6 @@ import "interfaces/resolvers/IInterfaceResolver.sol";
 import "interfaces/resolvers/INameResolver.sol";
 import "interfaces/resolvers/ITextResolver.sol";
 
-
 /**
  * A generic resolver interface which includes all the functions including the ones deprecated
  */
@@ -28,5 +27,5 @@ interface IResolver is
     INameResolver,
     ITextResolver
 {
- 
+
 }

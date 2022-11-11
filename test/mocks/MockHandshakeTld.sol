@@ -15,6 +15,8 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract MockHandshakeTld is IHandshakeTld, ERC721 {
     mapping(uint256 => address) private approvedMap;
     mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
+    mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
+
     string public label;
 
     constructor() ERC721("test", "test") {}
@@ -37,10 +39,12 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         _mint(_addr, _id);
     }
 
-    function registerWithResolver(address _addr, string calldata _domain, IResolver _resolver) external {
-        
-       
-    }
+    function registerWithResolver(
+        address _addr,
+        string calldata _domain,
+        IResolver _resolver,
+        ISldRegistrationStrategy _strategy
+    ) external {}
 
     function ownerOf(uint256 _tokenId)
         public
@@ -56,15 +60,9 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
-    function setResolver(bytes32 _namehash, IResolver _resolver) public {
+    function setResolver(bytes32 _namehash, IResolver _resolver) public {}
 
-    }
-
-    function addMapping(
-        uint256 _id,
-        address _addr,
-        bool _approved
-    ) public {
+    function addMapping(uint256 _id, address _addr, bool _approved) public {
         idToAddressToApproved[_id][_addr] = _approved;
     }
 

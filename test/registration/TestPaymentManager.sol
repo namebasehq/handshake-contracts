@@ -11,11 +11,10 @@ contract PaymentManagerForTesting is PaymentManager {
         handshakeWalletPayoutAddress = _paymentWallet;
     }
 
-    function payableFunction(
-        address _sldOwner,
-        address _tldOwner,
-        uint256 _funds
-    ) external payable {
+    function payableFunction(address _sldOwner, address _tldOwner, uint256 _funds)
+        external
+        payable
+    {
         distributePrimaryFunds(_sldOwner, _tldOwner, _funds);
     }
 }

@@ -55,11 +55,12 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
      * @param owner The address to set as the owner of the reverse record.
      * @return The node hash of the reverse record.
      */
-    function claimForAddr(
-        address addr,
-        address owner,
-        address resolver
-    ) public override authorised(addr) returns (bytes32) {
+    function claimForAddr(address addr, address owner, address resolver)
+        public
+        override
+        authorised(addr)
+        returns (bytes32)
+    {
         bytes32 labelHash = sha3HexAddress(addr);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         emit ReverseClaimed(addr, reverseNode);
@@ -98,12 +99,11 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
      * @param name The name to set for this address.
      * @return The node hash of the reverse record.
      */
-    function setNameForAddr(
-        address addr,
-        address owner,
-        address resolver,
-        string memory name
-    ) public override returns (bytes32) {
+    function setNameForAddr(address addr, address owner, address resolver, string memory name)
+        public
+        override
+        returns (bytes32)
+    {
         bytes32 nodeHash = claimForAddr(addr, owner, resolver);
         NameResolver(resolver).setName(nodeHash, name);
         return nodeHash;

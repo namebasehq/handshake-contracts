@@ -26,19 +26,14 @@ contract MockHandshakeSld is IHandshakeSld {
         return address(0x4);
     }
 
-    function addMapping(
-        uint256 _id,
-        address _addr,
-        bool _approved
-    ) public {
+    function addMapping(uint256 _id, address _addr, bool _approved) public {
         idToAddressToApproved[_id][_addr] = _approved;
     }
 
-    function registerSld(
-        address _to,
-        bytes32 _tldNamehash,
-        string calldata _label
-    ) external payable {}
+    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
+        external
+        payable
+    {}
 
     function registrationStrategy(bytes32 _subdomainNamehash)
         external

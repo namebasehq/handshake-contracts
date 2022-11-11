@@ -19,11 +19,11 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
      * @param key The key to set.
      * @param value The text data value to set.
      */
-    function setText(
-        bytes32 node,
-        string calldata key,
-        string calldata value
-    ) public virtual authorised(node) {
+    function setText(bytes32 node, string calldata key, string calldata value)
+        public
+        virtual
+        authorised(node)
+    {
         versionable_texts[recordVersions[node]][node][key] = value;
         emit TextChanged(node, key, key, value);
     }

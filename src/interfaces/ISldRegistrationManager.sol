@@ -27,11 +27,7 @@ interface ISldRegistrationManager {
     function subdomainRegistrationHistory(bytes32 _subdomainNamehash)
         external
         view
-        returns (
-            uint80,
-            uint80,
-            uint96
-        );
+        returns (uint80, uint80, uint96);
 
     event RegisterSld(bytes32 indexed _tldNamehash, bytes32 _secret, string _label);
 }

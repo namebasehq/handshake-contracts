@@ -24,15 +24,19 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     mapping(bytes32 => address) public tldProviderMap;
 
     IHandshakeTld public handshakeTldContract;
-   
 
     IResolver public defaultResolver;
-    
+    ISldRegistrationStrategy public defaultRegistrationStrategy;
 
-    function init(ILabelValidator _validator, address _owner, IHandshakeTld _tld, IResolver _resolver) public initializer {
+    function init(
+        ILabelValidator _validator,
+        address _owner,
+        IHandshakeTld _tld,
+        IResolver _resolver
+    ) public initializer {
         labelValidator = _validator;
         handshakeTldContract = _tld;
-        
+
         defaultResolver = _resolver;
         _transferOwnership(_owner);
     }
@@ -68,9 +72,12 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.registerWithResolver(_addr, _domain, defaultResolver);
-
-        
+        handshakeTldContract.registerWithResolver(
+            _addr,
+            _domain,
+            defaultResolver,
+            defaultRegistrationStrategy
+        );
 
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }

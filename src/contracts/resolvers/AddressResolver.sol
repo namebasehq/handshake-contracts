@@ -30,11 +30,10 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
         setAddress(_node, abi.encodePacked(_addr), ETH_COINTYPE);
     }
 
-    function setAddress(
-        bytes32 _node,
-        bytes memory _addr,
-        uint256 _cointype
-    ) public authorised(_node) {
+    function setAddress(bytes32 _node, bytes memory _addr, uint256 _cointype)
+        public
+        authorised(_node)
+    {
         versionable_addresses[recordVersions[_node]][_node][_cointype] = _addr;
 
         emit AddrChanged(_node, bytesToAddress(_addr));

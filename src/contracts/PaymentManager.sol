@@ -6,11 +6,7 @@ import {console} from "forge-std/console.sol";
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
 
-    function distributePrimaryFunds(
-        address _sldOwner,
-        address _tldOwner,
-        uint256 _funds
-    ) internal {
+    function distributePrimaryFunds(address _sldOwner, address _tldOwner, uint256 _funds) internal {
         require(address(this).balance >= _funds, "not enough ether");
         if (address(this).balance > 0) {
             uint256 handshakeShare = (_funds * 5) / 100;

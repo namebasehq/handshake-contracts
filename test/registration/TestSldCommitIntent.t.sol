@@ -38,7 +38,9 @@ contract TestSldCommitIntent is Test {
         bytes32 node = bytes32(0x9d3bcd6c70edbcdf7dc4002356a779c04f426f06dca69fd2b02612f792ab105e);
         uint256 startBlock = 10;
         uint256 minBlocks = 2;
-        bytes32 secret = bytes32( 0x9da869e517336d3a77597c10622b00783b237f7f024b1a64c28c6902b4862e33);
+        bytes32 secret = bytes32(
+            0x9da869e517336d3a77597c10622b00783b237f7f024b1a64c28c6902b4862e33
+        );
         intent.updateMinBlockWaitForCommit(minBlocks);
         address addr = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 

@@ -26,11 +26,11 @@ contract NftMetadataService is IMetadataService {
             interfaceID == this.tokenURI.selector;
     }
 
-    function json2(
-        string memory _name,
-        string memory _parentName,
-        uint256 _expiry
-    ) private view returns (string memory) {
+    function json2(string memory _name, string memory _parentName, uint256 _expiry)
+        private
+        view
+        returns (string memory)
+    {
         bytes memory data;
 
         string memory start = "data:application/json;utf8,{";
@@ -62,11 +62,11 @@ contract NftMetadataService is IMetadataService {
         return string(data);
     }
 
-    function json(
-        string memory _name,
-        string memory _parentName,
-        uint256 _expiry
-    ) private view returns (string memory) {
+    function json(string memory _name, string memory _parentName, uint256 _expiry)
+        private
+        view
+        returns (string memory)
+    {
         bytes memory data;
 
         string memory start = "data:application/json;utf8,{";

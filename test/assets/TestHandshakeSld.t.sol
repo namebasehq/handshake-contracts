@@ -493,49 +493,6 @@ contract TestHandshakeSld is Test {
         vm.stopPrank();
     }
 
-    function testAddRegistrationStrategyToTldDomain_pass() public {
-        string memory tldName = "test";
-        address tldOwner = address(0x44668822);
-        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
-
-        //we can just spoof the claim manager address using cheatcode to pass authorisation
-        tld.setTldClaimManager(ITldClaimManager(tldOwner));
-
-        vm.startPrank(tldOwner);
-        tld.register(tldOwner, tldName);
-
-        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
-
-        tld.addApprovedAddress(tldOwner, uint256(parentNamehash));
-        sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
-
-        ISldRegistrationStrategy expectedStrategy = sld.getRegistrationStrategy(parentNamehash);
-        assertEq(address(expectedStrategy), address(strategy), "incorrects strategy");
-    }
-
-    function testAddRegistrationStrategyToTldNotOwner_fail() public {
-        string memory tldName = "test";
-        address tldOwner = address(0x44668822);
-        address notTldOwner = address(0x232323);
-
-        //we can just spoof the claim manager address using cheatcode to pass authorisation
-        tld.setTldClaimManager(ITldClaimManager(tldOwner));
-
-        vm.prank(tldOwner);
-        tld.register(tldOwner, tldName);
-
-        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
-
-        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
-
-        vm.startPrank(notTldOwner);
-        vm.expectRevert("not authorised");
-        sld.setRegistrationStrategy(uint256(parentNamehash), strategy);
-
-        vm.expectRevert("registration strategy not set");
-        sld.getRegistrationStrategy(parentNamehash);
-    }
-
     function testExpiredTokenRevertsOnOwnerOf() public {
         address to = address(0x123456789);
         bytes32 tldNamehash = bytes32(uint256(0x224466));

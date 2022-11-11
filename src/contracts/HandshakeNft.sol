@@ -19,7 +19,6 @@ import "interfaces/IResolver.sol";
 abstract contract HandshakeNft is ERC721Enumerable, Ownable {
     using ERC165Checker for address;
 
-
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
 
@@ -42,7 +41,11 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
         metadata = _metadata;
     }
 
-    function setResolver(bytes32 _namehash, IResolver _resolver) virtual public onlyApprovedOrOwner(uint256(_namehash)){
+    function setResolver(bytes32 _namehash, IResolver _resolver)
+        public
+        virtual
+        onlyApprovedOrOwner(uint256(_namehash))
+    {
         tokenResolverMap[_namehash] = _resolver;
     }
 
@@ -55,7 +58,13 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
      * @param tokenId uint256 ID of the token to query the owner of
      * @return address currently marked as the owner of the given token ID
      */
-    function ownerOf(uint256 tokenId) public view virtual override(ERC721, IERC721) returns (address) {
+    function ownerOf(uint256 tokenId)
+        public
+        view
+        virtual
+        override(ERC721, IERC721)
+        returns (address)
+    {
         return super.ownerOf(tokenId);
     }
 

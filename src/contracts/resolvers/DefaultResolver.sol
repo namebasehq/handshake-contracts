@@ -16,7 +16,6 @@ import "interfaces/IResolver.sol";
 import "contracts/resolvers/Multicallable.sol";
 
 contract DefaultResolver is
-    
     BaseResolver,
     ABIResolver,
     AddressResolver,

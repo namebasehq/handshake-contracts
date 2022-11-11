@@ -22,11 +22,11 @@ abstract contract InterfaceResolver is IInterfaceResolver, BaseResolver {
      * @param interfaceID The EIP 165 interface ID.
      * @param implementer The address of a contract that implements this interface for this node.
      */
-    function setInterface(
-        bytes32 node,
-        bytes4 interfaceID,
-        address implementer
-    ) external virtual authorised(node) {
+    function setInterface(bytes32 node, bytes4 interfaceID, address implementer)
+        external
+        virtual
+        authorised(node)
+    {
         versionable_interfaces[recordVersions[node]][node][interfaceID] = implementer;
         emit InterfaceChanged(node, interfaceID, implementer);
     }

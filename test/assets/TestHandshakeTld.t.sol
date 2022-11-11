@@ -30,6 +30,8 @@ contract TestHandshakeTld is Test {
 
     IResolver defaultResolver;
 
+    ISldRegistrationStrategy defaultRegistrationStrategy;
+
     // test
     bytes32 constant TEST_TLD_NAMEHASH =
         0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
@@ -51,6 +53,7 @@ contract TestHandshakeTld is Test {
         tld.setMetadataContract(metadata);
 
         defaultResolver = IResolver(address(0x888888));
+        defaultRegistrationStrategy = ISldRegistrationStrategy(address(0x123456789));
     }
 
     function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
@@ -65,7 +68,12 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
 
         vm.expectRevert("not authorised");
-        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
+        tld.registerWithResolver(
+            address(0x1339),
+            domain,
+            defaultResolver,
+            defaultRegistrationStrategy
+        );
     }
 
     function testMintFromAuthoriseAddress() public {
@@ -74,7 +82,12 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
+        tld.registerWithResolver(
+            address(0x1339),
+            domain,
+            defaultResolver,
+            defaultRegistrationStrategy
+        );
         assertEq(address(0x1339), tld.ownerOf(tldId));
     }
 
@@ -85,72 +98,17 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.registerWithResolver(address(0x1339), domain, defaultResolver);
+        tld.registerWithResolver(
+            address(0x1339),
+            domain,
+            defaultResolver,
+            defaultRegistrationStrategy
+        );
 
+        assertEq(domain, tld.namehashToLabelMap(namehash));
         assertEq(domain, tld.namehashToLabelMap(namehash));
         assertEq(domain, tld.name(namehash)); //alias view function
     }
-
-    function testUpdateDefaultSldRegistrationStrategyFromTldOwner() public {
-        string memory domain = "test";
-        uint256 tldId = uint256(getTldNamehash(domain));
-        bytes32 tldHash = bytes32(tldId);
-        address tldOwnerAddr = address(0x6942);
-        MockRegistrationStrategy sldRegistrationStrategy = new MockRegistrationStrategy(0);
-        //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
-            address(this)
-        );
-        stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
-            address(sld.handshakeTldContract())
-        );
-        sld.handshakeTldContract().registerWithResolver(tldOwnerAddr, domain, defaultResolver);
-        assertEq(tldId, uint256(TEST_TLD_NAMEHASH), "parent id not as expected");
-
-        emit log_named_address(
-            "owner is",
-            sld.handshakeTldContract().ownerOf(uint256(TEST_TLD_NAMEHASH))
-        );
-
-        vm.startPrank(tldOwnerAddr);
-        sld.setRegistrationStrategy(tldId, sldRegistrationStrategy);
-
-        assertEq(address(sld.getRegistrationStrategy(tldHash)), address(sldRegistrationStrategy));
-
-        vm.stopPrank();
-    }
-
-    //TODO: check if this duplicate test on Sld contract
-    function testUpdateDefaultSldRegistrationStrategyFromNotTldOwner() public {
-        string memory domain = "test";
-        bytes32 tldHash = getTldNamehash(domain);
-
-        address tldOwnerAddr = address(0x6942);
-        address notTldOwnerAddr = address(0x004204);
-        address sldRegistrationStrategy = address(0x133737);
-
-        //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(sld.handshakeTldContract())).sig("claimManager()").checked_write(
-            address(this)
-        );
-
-        sld.handshakeTldContract().registerWithResolver(tldOwnerAddr, domain, defaultResolver);
-
-        vm.startPrank(notTldOwnerAddr);
-
-        // Tld.updateSldPricingStrategy(bytes32(tldId), ISldRegistrationStrategy(sldRegistrationStrategy));
-        stdstore.target(address(sld)).sig("handshakeTldContract()").checked_write(
-            address(sld.handshakeTldContract())
-        );
-        vm.expectRevert("not authorised");
-        sld.setRegistrationStrategy(
-            uint256(tldHash),
-            ISldRegistrationStrategy(sldRegistrationStrategy)
-        );
-        vm.stopPrank();
-    }
-
-    function testUpdateDefaultSldRegistrationStrategyFromNoneExistingTld() public {}
 
     function testUpdateRoyaltyPercentageFromOwnerWallet() public {
         //10 percent is the max royalty
@@ -219,5 +177,101 @@ contract TestHandshakeTld is Test {
         assertEq(amount, 0);
     }
 
+    function testAddRegistrationStrategyToTldDomain_pass() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.registerWithResolver(tldOwner, tldName, defaultResolver, defaultRegistrationStrategy);
+
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
+
+        tld.setRegistrationStrategy(parentNamehash, strategy);
+
+        ISldRegistrationStrategy expectedStrategy = tld.registrationStrategy(parentNamehash);
+        assertEq(address(expectedStrategy), address(strategy), "incorrects strategy");
+    }
+
+    function testAddRegistrationStrategyToTldDomainByApprovedAddress_pass() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address approved = address(0x420420);
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.registerWithResolver(tldOwner, tldName, defaultResolver, defaultRegistrationStrategy);
+        tld.setApprovalForAll(approved, true);
+
+        vm.stopPrank();
+        vm.startPrank(approved);
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
+
+        tld.setRegistrationStrategy(parentNamehash, strategy);
+
+        ISldRegistrationStrategy expectedStrategy = tld.registrationStrategy(parentNamehash);
+        assertEq(address(expectedStrategy), address(strategy), "incorrects strategy");
+    }
+
+    function testAddRegistrationStrategyToTldNotOwner_fail() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        address notTldOwner = address(0x232323);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.registerWithResolver(tldOwner, tldName, defaultResolver, defaultRegistrationStrategy);
+
+        MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
+
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
+
+        vm.startPrank(notTldOwner);
+        vm.expectRevert("not approved or owner");
+        tld.setRegistrationStrategy(parentNamehash, strategy);
+
+        assertEq(
+            address(tld.registrationStrategy(parentNamehash)),
+            address(defaultRegistrationStrategy)
+        );
+    }
+
+    function testRegisterTldDefaultRegistrationStrategyIsSet() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.registerWithResolver(tldOwner, tldName, defaultResolver, defaultRegistrationStrategy);
+
+        assertEq(
+            address(tld.registrationStrategy(parentNamehash)),
+            address(defaultRegistrationStrategy)
+        );
+    }
+
+    function testRegisterTldDefaultResolverIsSet() public {
+        string memory tldName = "test";
+        address tldOwner = address(0x44668822);
+        bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.startPrank(tldOwner);
+        tld.registerWithResolver(tldOwner, tldName, defaultResolver, defaultRegistrationStrategy);
+
+        assertEq(address(tld.tokenResolverMap(parentNamehash)), address(defaultResolver));
+    }
 }

@@ -51,11 +51,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _tldNamehash The bytes32 representation of the TLD
      * @param _label The label of the subdomain
      */
-    function registerSld(
-        address _to,
-        bytes32 _tldNamehash,
-        string calldata _label
-    ) external payable isRegistrationManager {
+    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
+        external
+        payable
+        isRegistrationManager
+    {
         bytes32 sldNamehash = Namehash.getNamehash(_tldNamehash, _label);
         if (hasExpired(sldNamehash)) {
             _burn(uint256(sldNamehash));
@@ -99,14 +99,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     }
 
     function hasExpired(bytes32 _sldNamehash) private view returns (bool _hasExpired) {
-
-        if (_exists(uint256(_sldNamehash))){
-        (uint80 regTime, uint96 regLength, ) = registrationManager.subdomainRegistrationHistory(
-            _sldNamehash
-        );   
-           _hasExpired = regTime + regLength <= block.timestamp;   
+        if (_exists(uint256(_sldNamehash))) {
+            (uint80 regTime, uint96 regLength, ) = registrationManager.subdomainRegistrationHistory(
+                _sldNamehash
+            );
+            _hasExpired = regTime + regLength <= block.timestamp;
         }
-
     }
 
     /**
@@ -133,7 +131,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _strategy Linked registration strategy to the top level domain. It should
      *                  implement ISldRegistrationStrategy interface
      */
-    function setRegistrationStrategy(uint256 _tldId, ISldRegistrationStrategy _strategy)
+    function aaaaasetRegistrationStrategy(uint256 _tldId, ISldRegistrationStrategy _strategy)
         public
         onlyParentApprovedOrOwner(_tldId)
     {

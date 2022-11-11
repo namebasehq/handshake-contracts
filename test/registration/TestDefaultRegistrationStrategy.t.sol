@@ -212,7 +212,6 @@ contract TestDefaultRegistrationStrategy is Test {
         assertEq(strategy.reservedNames(full_hash), claimer);
     }
 
-
     function testSetReservedNameAndClaimFromOtherWallet_fail() public {
         address claimer = address(0x77899);
         string memory label = "label";
@@ -229,7 +228,7 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setReservedNames(namehash, labels, claimers);
 
         bytes32 full_hash = Namehash.getNamehash(namehash, label);
-        
+
         vm.expectRevert("reserved name");
         strategy.getPriceInDollars(address(0x420), namehash, label, 365);
     }
@@ -358,8 +357,8 @@ contract TestDefaultRegistrationStrategy is Test {
             .with_key(full_namehash)
             .checked_write(addr);
 
-            uint256[] memory prices = new uint256[](1);
-            prices[0] = 10;
+        uint256[] memory prices = new uint256[](1);
+        prices[0] = 10;
 
         tld.register(address(this), uint256(namehash));
         tld.addMapping(uint256(namehash), address(this), true);
