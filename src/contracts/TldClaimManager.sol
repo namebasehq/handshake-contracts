@@ -32,12 +32,14 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         ILabelValidator _validator,
         address _owner,
         IHandshakeTld _tld,
-        IResolver _resolver
+        IResolver _resolver,
+        ISldRegistrationStrategy _strategy
     ) public initializer {
         labelValidator = _validator;
         handshakeTldContract = _tld;
 
         defaultResolver = _resolver;
+        defaultRegistrationStrategy = _strategy;
         _transferOwnership(_owner);
     }
 

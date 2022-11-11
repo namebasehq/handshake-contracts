@@ -19,6 +19,7 @@ contract TestTldClaimManager is Test {
     IResolver internal resolver;
     ILabelValidator internal labelValidator;
     MockMetadataService internal metadata;
+    ISldRegistrationStrategy internal strategy;
 
     function setUp() public {
         metadata = new MockMetadataService("base_url");
@@ -27,7 +28,7 @@ contract TestTldClaimManager is Test {
         sld = new MockHandshakeSld();
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata);
-        manager.init(labelValidator, address(this), nft, resolver);
+        manager.init(labelValidator, address(this), nft, resolver, strategy);
     }
 
     function testAddTldManagerWallet() public {

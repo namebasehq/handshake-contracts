@@ -31,7 +31,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     mapping(bytes32 => uint256) public royaltyPayoutAmountMap;
     mapping(bytes32 => mapping(address => address)) public royaltyPayoutAddressMap;
     mapping(bytes32 => bytes32) public namehashToParentMap;
-    mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
 
     IHandshakeTld public handshakeTldContract;
 
@@ -119,23 +118,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         view
         returns (ISldRegistrationStrategy _strategy)
     {
-        _strategy = registrationStrategy[_parentNamehash];
+        _strategy = handshakeTldContract.registrationStrategy(_parentNamehash);
         require(address(_strategy) != address(0), "registration strategy not set");
-    }
-
-    /**
-     * @notice Set the registration strategy for a TLD
-     * @dev This function sets the registration strategy of a top level domain. Must be
-     *      set by the owner of the top level domain
-     * @param _tldId uint256 representation of the top level domain
-     * @param _strategy Linked registration strategy to the top level domain. It should
-     *                  implement ISldRegistrationStrategy interface
-     */
-    function aaaaasetRegistrationStrategy(uint256 _tldId, ISldRegistrationStrategy _strategy)
-        public
-        onlyParentApprovedOrOwner(_tldId)
-    {
-        registrationStrategy[bytes32(_tldId)] = _strategy;
     }
 
     function setRegistrationManager(ISldRegistrationManager _registrationManager) public onlyOwner {
