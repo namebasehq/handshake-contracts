@@ -38,8 +38,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     IGlobalRegistrationRules public contractRegistrationStrategy;
     ISldRegistrationManager public registrationManager;
 
-    error MissingRegistrationStrategy();
-
     constructor(IHandshakeTld _tld) HandshakeNft("SLD", "Handshake SLD") {
         handshakeTldContract = _tld;
     }

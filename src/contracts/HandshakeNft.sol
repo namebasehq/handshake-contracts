@@ -19,6 +19,7 @@ import "interfaces/IResolver.sol";
 abstract contract HandshakeNft is ERC721Enumerable, Ownable {
     using ERC165Checker for address;
 
+
     // token uri for metadata service uses namehash as the input value
     bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
 
