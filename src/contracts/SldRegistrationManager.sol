@@ -15,6 +15,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
+import "forge-std/console.sol";
 
 contract SldRegistrationManager is
     OwnableUpgradeable,
@@ -26,6 +27,8 @@ contract SldRegistrationManager is
     using ERC165Checker for address;
 
     mapping(bytes32 => SubdomainRegistrationDetail) public subdomainRegistrationHistory;
+    mapping(bytes32 => uint256[10]) public pricesAtRegistration;
+
     IGlobalRegistrationRules public globalStrategy;
     IHandshakeSld public sld;
     IHandshakeTld public tld;
@@ -89,7 +92,7 @@ contract SldRegistrationManager is
                 _parentNamehash,
                 _label,
                 _registrationLength,
-                dollarPrice
+                dollarPrice + 1 //plus 1 wei for rounding issue
             ),
             "failed global strategy"
         );
@@ -213,9 +216,9 @@ contract SldRegistrationManager is
     function getTenYearGuarenteedPricing(bytes32 _subdomainNamehash)
         external
         view
-        returns (uint128[10] memory _history)
+        returns (uint256[10] memory _history)
     {
-        _history = subdomainRegistrationHistory[_subdomainNamehash].RegistrationPriceSnapshot;
+        _history = pricesAtRegistration[_subdomainNamehash];
     }
 
     function addRegistrationDetails(
@@ -226,7 +229,7 @@ contract SldRegistrationManager is
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
-        uint128[10] memory arr;
+        uint256[10] memory arr;
 
         for (uint256 i; i < arr.length; ) {
             uint256 price = _strategy.getPriceInDollars(
@@ -236,8 +239,7 @@ contract SldRegistrationManager is
                 (i + 1) * 365
             );
 
-            //get and save annual cost
-            arr[i] = uint128(price / (i + 1));
+            arr[i] = price / (i + 1);
 
             unchecked {
                 ++i;
@@ -247,9 +249,9 @@ contract SldRegistrationManager is
         subdomainRegistrationHistory[_namehash] = SubdomainRegistrationDetail(
             uint72(block.timestamp),
             uint80(_days * 1 days),
-            uint96(_price),
-            arr
+            uint96(_price)
         );
+        pricesAtRegistration[_namehash] = arr;
     }
 
     /**
@@ -276,7 +278,7 @@ contract SldRegistrationManager is
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
-        uint256 renewalCostPerAnnum = history.RegistrationPriceSnapshot[
+        uint256 renewalCostPerAnnum = pricesAtRegistration[subdomainNamehash][
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
@@ -298,7 +300,7 @@ contract SldRegistrationManager is
     function getWeiValueOfDollar() public view returns (uint256) {
         require(address(0) != address(usdOracle), "usdOracle not set");
         uint256 price = usdOracle.getPrice();
-
+        require(price > 0, "error getting price");
         return (1 ether * 100000000) / price;
     }
 }

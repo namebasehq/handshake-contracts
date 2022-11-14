@@ -356,7 +356,7 @@ contract TestSldRegistrationManager is Test {
         );
         assertEq(actualRegistrationPrice, 1 ether, "registration price incorrect");
 
-        uint128[10] memory pricing = manager.getTenYearGuarenteedPricing(subdomainNamehash);
+        uint256[10] memory pricing = manager.getTenYearGuarenteedPricing(subdomainNamehash);
 
         for (uint256 i; i < 10; i++) {
             //pricing should return back flat rate of 1 dollar per year regardless of length

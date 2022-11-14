@@ -28,8 +28,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         SubdomainRegistrationDetail memory detail = SubdomainRegistrationDetail(
             _registrationTime,
             _registrationLength,
-            _registrationPrice,
-            _registrationPriceSnapshot
+            _registrationPrice
         );
         addSubdomainDetail(_subdomainNamehash, detail);
     }

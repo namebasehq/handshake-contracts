@@ -5,5 +5,4 @@ struct SubdomainRegistrationDetail {
     uint80 RegistrationTime;
     uint80 RegistrationLength;
     uint96 RegistrationPrice;
-    uint128[10] RegistrationPriceSnapshot;
 }
