@@ -263,7 +263,7 @@ contract SldRegistrationManager is
      * @param _registrationLength Registration length in days
      * @return _price Returns the price in dollars (18 decimal precision)
      */
-    function getRenewalPricePerDay(
+    function getRenewalPrice(
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -282,19 +282,29 @@ contract SldRegistrationManager is
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        uint256 price = strategy.getPriceInDollars(
+        uint256 registrationPrice = strategy.getPriceInDollars(
             msg.sender,
             _parentNamehash,
             _label,
             _registrationLength
         );
 
-        uint256 dailyRenewalPrice = renewalCostPerAnnum / 365;
-        uint256 dailyRegistrationPrice = price / _registrationLength;
+        uint256 renewalPrice = renewalCostPerAnnum * _registrationLength / 365;
 
-        _price = dailyRenewalPrice > dailyRegistrationPrice
-            ? dailyRegistrationPrice
-            : dailyRenewalPrice;
+
+        _price = renewalPrice > registrationPrice
+            ? registrationPrice
+            : renewalPrice;
+    }
+
+    function getRenewalPricePerDay(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) public view returns (uint256 _price) {
+
+        uint256 price = getRenewalPrice(_parentNamehash, _label, _registrationLength);
+        _price = price / _registrationLength;
     }
 
     function getWeiValueOfDollar() public view returns (uint256) {
