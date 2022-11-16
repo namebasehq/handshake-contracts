@@ -116,7 +116,7 @@ contract SldRegistrationManager is
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
-        emit RegisterSld(_parentNamehash, _secret, _label);
+        emit RegisterSld(_parentNamehash, _secret, _label, block.timestamp + (_registrationLength * 1 days));
     }
 
     /**
@@ -157,6 +157,8 @@ contract SldRegistrationManager is
             tld.ownerOf(uint256(_parentNamehash)),
             priceInWei
         );
+
+        emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
@@ -269,9 +271,6 @@ contract SldRegistrationManager is
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
         bytes32 subdomainNamehash = Namehash.getNamehash(_parentNamehash, _label);
-        SubdomainRegistrationDetail memory history = subdomainRegistrationHistory[
-            subdomainNamehash
-        ];
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
 
@@ -289,12 +288,10 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        uint256 renewalPrice = renewalCostPerAnnum * _registrationLength / 365;
+        uint256 renewalPrice = ((renewalCostPerAnnum < 1 ether ? 1 ether : renewalCostPerAnnum) *
+            _registrationLength) / 365;
 
-
-        _price = renewalPrice > registrationPrice
-            ? registrationPrice
-            : renewalPrice;
+        _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
     }
 
     function getRenewalPricePerDay(
@@ -302,7 +299,6 @@ contract SldRegistrationManager is
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
-
         uint256 price = getRenewalPrice(_parentNamehash, _label, _registrationLength);
         _price = price / _registrationLength;
     }
