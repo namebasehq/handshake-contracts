@@ -8,7 +8,7 @@ import "contracts/resolvers/DNSResolver.sol";
 import "contracts/resolvers/InterfaceResolver.sol";
 import "contracts/resolvers/NameResolver.sol";
 import "contracts/resolvers/TextResolver.sol";
-import "contracts/resolvers/Multicallable.sol";
+import "src/utils/Multicallable.sol";
 import "contracts/resolvers/BaseResolver.sol";
 import "contracts/HandshakeNft.sol";
 

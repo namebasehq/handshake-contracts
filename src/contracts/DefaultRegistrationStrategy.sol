@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IHandshakeTld.sol";
+import "src/utils/Multicallable.sol";
 
-contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable {
+contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable, Multicallable {
     IHandshakeTld private tldContract;
 
     mapping(bytes32 => address) public reservedNames;
@@ -169,7 +170,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC165, IERC165)
+        override(ERC165, IERC165, Multicallable)
         returns (bool)
     {
         return

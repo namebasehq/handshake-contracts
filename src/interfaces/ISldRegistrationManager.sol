@@ -29,6 +29,11 @@ interface ISldRegistrationManager {
         view
         returns (uint80, uint80, uint96);
 
-    event RegisterSld(bytes32 indexed _tldNamehash, bytes32 _secret, string _label, uint256 _expiry);
+    event RegisterSld(
+        bytes32 indexed _tldNamehash,
+        bytes32 _secret,
+        string _label,
+        uint256 _expiry
+    );
     event RenewSld(bytes32 indexed _tldNamehash, string _label, uint256 _expiry);
 }

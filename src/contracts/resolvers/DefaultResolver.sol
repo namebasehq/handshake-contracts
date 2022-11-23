@@ -13,7 +13,7 @@ import "contracts/resolvers/InterfaceResolver.sol";
 import "contracts/resolvers/NameResolver.sol";
 import "contracts/resolvers/TextResolver.sol";
 import "interfaces/IResolver.sol";
-import "contracts/resolvers/Multicallable.sol";
+import "src/utils/Multicallable.sol";
 
 contract DefaultResolver is
     BaseResolver,

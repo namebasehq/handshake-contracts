@@ -116,7 +116,12 @@ contract SldRegistrationManager is
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
-        emit RegisterSld(_parentNamehash, _secret, _label, block.timestamp + (_registrationLength * 1 days));
+        emit RegisterSld(
+            _parentNamehash,
+            _secret,
+            _label,
+            block.timestamp + (_registrationLength * 1 days)
+        );
     }
 
     /**
