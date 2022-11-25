@@ -8,13 +8,17 @@ import "contracts/resolvers/BaseResolver.sol";
 
 abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolver {
     uint256 private constant ETH_COINTYPE = 60;
+    uint256 private constant OPT_COINTYPE = 69;
 
     mapping(uint256 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_addresses;
 
     function addr(bytes32 _node, uint256 _coinType) public view returns (bytes memory) {
         bytes memory addr = versionable_addresses[recordVersions[_node]][_node][_coinType];
 
-        if (keccak256(addr) == keccak256(bytes(""))) {
+        if (
+            keccak256(addr) == keccak256(bytes("")) &&
+            (_coinType == ETH_COINTYPE || _coinType == OPT_COINTYPE)
+        ) {
             return abi.encodePacked(ownerOf(_node));
         } else {
             return addr;
