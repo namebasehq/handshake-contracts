@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IHandshakeTld.sol";
 import "src/utils/Multicallable.sol";
 
-contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownable, Multicallable {
+contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multicallable {
     IHandshakeTld private tldContract;
 
     mapping(bytes32 => address) public reservedNames;
@@ -17,6 +17,8 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
 
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
+
+    mapping(bytes32 => bool) public isDisabled;
 
     event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
@@ -124,6 +126,13 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
         }
     }
 
+    function setIsDisabled(bytes32 _parentNamehash, bool _isDisabled)
+        external
+        isApprovedOrTokenOwner(_parentNamehash)
+    {
+        isDisabled[_parentNamehash] = _isDisabled;
+    }
+
     function getPriceInDollars(
         address _buyingAddress,
         bytes32 _parentNamehash,
@@ -170,11 +179,13 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, ERC165, Ownabl
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC165, IERC165, Multicallable)
+        override(IERC165, Multicallable)
         returns (bool)
     {
         return
-            interfaceId == this.getPriceInDollars.selector || super.supportsInterface(interfaceId);
+            interfaceId == this.isDisabled.selector ||
+            interfaceId == this.getPriceInDollars.selector ||
+            super.supportsInterface(interfaceId);
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {

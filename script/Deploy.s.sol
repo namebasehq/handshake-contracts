@@ -72,13 +72,19 @@ contract DeployScript is Script {
         HandshakeTld tld = new HandshakeTld(TldClaimManager(address(uups)));
         HandshakeSld sld = new HandshakeSld(tld);
 
+        {
+
+            NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
+            NftMetadataService sldMetadata = new NftMetadataService(sld, "#1f7bac");
+
+            console.log("tld metadata", address(tldMetadata));
+            console.log("sld metadata", address(sldMetadata));        
+            
+            tld.setMetadataContract(tldMetadata);
+            sld.setMetadataContract(sldMetadata);
+        }
 
 
-        NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
-        NftMetadataService sldMetadata = new NftMetadataService(sld, "#1f7bac");
-
-        tld.setMetadataContract(tldMetadata);
-        sld.setMetadataContract(sldMetadata);
 
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
@@ -94,7 +100,7 @@ contract DeployScript is Script {
             labelValidator,
             globalRules,
             ownerWallet,
-            deployerWallet
+            ownerWallet
         );
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
@@ -105,12 +111,28 @@ contract DeployScript is Script {
 
         //transfer ownership of ownable contracts
 
-        TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld, IResolver(address(resolver)), strategy);
+        TldClaimManager(address(uups)).init(
+            labelValidator,
+            ownerWallet,
+            tld,
+            IResolver(address(resolver)),
+            strategy
+        );
 
         //registrationManager.transferOwnership(ownerWallet);
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
+
+        delete ownerWallet;
+
+        {
+            NftMetadataService otherTldMetadata = new NftMetadataService(tld, "#d90e2d"); //red TLD
+            NftMetadataService otherSldMetadata = new NftMetadataService(sld, "#950b96"); //purple SLD
+
+            console.log("tld alternate metadata", address(otherTldMetadata));
+            console.log("sld alternate metadata", address(otherSldMetadata));
+        }
 
         vm.stopBroadcast();
 
@@ -124,5 +146,6 @@ contract DeployScript is Script {
         console.log("tld", address(tld));
         console.log("sld", address(sld));
         console.log("defaultRegistrationStrategy", address(strategy));
+        console.log("resolver", address(resolver));
     }
 }

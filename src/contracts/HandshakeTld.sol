@@ -39,6 +39,14 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         royaltyPayoutAmount = _amount;
     }
 
+    function setRoyaltyPayoutAmountAndAddress(address _addr, uint256 _amount) public onlyOwner {
+        require(_amount < 101, "10% maximum royalty on TLD");
+        require(_addr != address(0), "cannot set to zero address");
+
+        royaltyPayoutAddress = _addr;
+        royaltyPayoutAmount = _amount;
+    }
+
     function registerWithResolver(
         address _addr,
         string calldata _domain,

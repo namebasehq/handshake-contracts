@@ -136,14 +136,21 @@ contract TestAddressResolver is Test {
         uint256 cointype = 60;
 
         //default should resolve to owner of the NFT
-        assertEq(address(bytes20(resolver.addr(bytes32(id), cointype))), owner, "address does not match");
+        assertEq(
+            address(bytes20(resolver.addr(bytes32(id), cointype))),
+            owner,
+            "address does not match"
+        );
 
         vm.prank(owner);
         tld.safeTransferFrom(owner, newOwner, id);
 
-        assertEq(address(bytes20(resolver.addr(bytes32(id), cointype))), newOwner, "address does not match");
+        assertEq(
+            address(bytes20(resolver.addr(bytes32(id), cointype))),
+            newOwner,
+            "address does not match"
+        );
     }
-
 
     function testMintTldFromOwnerAndTransferCheckOptimismAddress() public {
         address owner = address(0x99887766);
@@ -155,12 +162,20 @@ contract TestAddressResolver is Test {
         uint256 cointype = 69;
 
         //default should resolve to owner of the NFT
-        assertEq(address(bytes20(resolver.addr(bytes32(id), cointype))), owner, "address does not match");
+        assertEq(
+            address(bytes20(resolver.addr(bytes32(id), cointype))),
+            owner,
+            "address does not match"
+        );
 
         vm.prank(owner);
         tld.safeTransferFrom(owner, newOwner, id);
 
-        assertEq(address(bytes20(resolver.addr(bytes32(id), cointype))), newOwner, "address does not match");
+        assertEq(
+            address(bytes20(resolver.addr(bytes32(id), cointype))),
+            newOwner,
+            "address does not match"
+        );
     }
 
     function testMintTldFromOwnerAndTransferCheckOtherChainsAddress(uint256 _cointype) public {
@@ -173,11 +188,17 @@ contract TestAddressResolver is Test {
         tld.mint(owner, id);
 
         //default should resolve to owner of the NFT
-        assertFalse(address(bytes20(resolver.addr(bytes32(id), _cointype))) == owner, "address does not match");
+        assertFalse(
+            address(bytes20(resolver.addr(bytes32(id), _cointype))) == owner,
+            "address does not match"
+        );
 
         vm.prank(owner);
         tld.safeTransferFrom(owner, newOwner, id);
 
-        assertFalse(address(bytes20(resolver.addr(bytes32(id), _cointype))) == newOwner, "address does not match");
+        assertFalse(
+            address(bytes20(resolver.addr(bytes32(id), _cointype))) == newOwner,
+            "address does not match"
+        );
     }
 }

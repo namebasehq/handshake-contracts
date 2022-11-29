@@ -77,7 +77,14 @@ contract SldRegistrationManager is
         require(labelValidator.isValidLabel(_label), "invalid label");
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-        require(address(strategy) != address(0), "no registration strategy");
+        require(
+            address(strategy).supportsInterface(type(IERC165).interfaceId) &&
+                strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector) &&
+                strategy.supportsInterface(ISldRegistrationStrategy.isDisabled.selector),
+            "registration strategy does not support interface"
+        );
+
+        require(!strategy.isDisabled(_parentNamehash), "registration strategy disabled");
 
         uint256 dollarPrice = strategy.getPriceInDollars(
             msg.sender,

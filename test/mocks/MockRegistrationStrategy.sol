@@ -7,6 +7,7 @@ import {console} from "forge-std/console.sol";
 contract MockRegistrationStrategy is ISldRegistrationStrategy {
     uint256 public price;
     uint128[10] public multiYearPricing;
+    bool public isDisabledBool;
 
     constructor(uint256 _price) {
         price = _price;
@@ -36,9 +37,18 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
         multiYearPricing = _tenYearPricing;
     }
 
-    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+    function setIsDisabled(bool _bool) external {
+        isDisabledBool = _bool;
+    }
+
+    function isDisabled(bytes32 _parentNamehash) external view returns (bool) {
+        return isDisabledBool;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(IERC165) returns (bool) {
         return
-            interfaceID == this.supportsInterface.selector || // ERC165
-            interfaceID == this.getPriceInDollars.selector;
+            interfaceId == this.supportsInterface.selector ||
+            interfaceId == this.isDisabled.selector ||
+            interfaceId == this.getPriceInDollars.selector;
     }
 }

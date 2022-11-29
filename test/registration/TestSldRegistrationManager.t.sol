@@ -26,6 +26,8 @@ contract TestSldRegistrationManager is Test {
     MockLabelValidator labelValidator;
     MockGlobalRegistrationStrategy globalStrategy;
 
+    ISldRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
+
     fallback() external payable {}
 
     receive() external payable {}
@@ -68,7 +70,6 @@ contract TestSldRegistrationManager is Test {
     }
 
     function setUpRegistrationStrategy(bytes32 _parentNamehash) public {
-        ISldRegistrationStrategy strategy = new MockRegistrationStrategy(1 ether); // $1 per year
         sld.setMockRegistrationStrategy(_parentNamehash, strategy);
     }
 
@@ -292,6 +293,32 @@ contract TestSldRegistrationManager is Test {
         );
     }
 
+    function testPurchaseSldRegistrationDisabled_fail() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true);
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+
+        address recipient = address(0xbadbad);
+
+        stdstore.target(address(strategy)).sig("isDisabledBool()").checked_write(true);
+
+        address sendingAddress = address(0x420);
+        hoax(sendingAddress, 2 ether);
+        vm.expectRevert("registration strategy disabled");
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+    }
+
     function testMintSingleDomainWithNoPriceStrategy_fail() public {
         setUpLabelValidator();
         setUpGlobalStrategy(true);
@@ -306,7 +333,7 @@ contract TestSldRegistrationManager is Test {
         address sendingAddress = address(0x420);
 
         vm.prank(sendingAddress);
-        vm.expectRevert("no registration strategy");
+        vm.expectRevert("registration strategy does not support interface");
         manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
     }
 
