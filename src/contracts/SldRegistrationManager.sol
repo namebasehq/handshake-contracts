@@ -110,14 +110,17 @@ contract SldRegistrationManager is
 
         sld.registerSld(_recipient, _parentNamehash, _label);
 
-        addRegistrationDetails(
-            sldNamehash,
-            dollarPrice,
-            _registrationLength,
-            strategy,
-            _parentNamehash,
-            _label
-        );
+        //we don't save any reg details if the domain is registered by a discounted address (registrar)
+        if (strategy.addressDiscounts(_parentNamehash, msg.sender) == 0) {
+            addRegistrationDetails(
+                sldNamehash,
+                dollarPrice,
+                _registrationLength,
+                strategy,
+                _parentNamehash,
+                _label
+            );
+        }
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 

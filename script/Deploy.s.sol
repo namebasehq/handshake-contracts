@@ -46,7 +46,7 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
-        vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
         labelValidator = new LabelValidator();
 
@@ -58,8 +58,8 @@ contract DeployScript is Script {
         address ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
         address deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
 
-        ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
-        deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
+        // ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
+        // deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
 
         //TldClaimManager tldClaimManager = new TldClaimManager();
 

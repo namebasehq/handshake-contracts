@@ -14,7 +14,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
 
     mapping(bytes32 => address) public reservedNames;
     mapping(bytes32 => uint256) public premiumNames;
-
+    mapping(bytes32 => mapping(address => uint256)) public addressDiscounts;
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
 
@@ -22,6 +22,12 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
 
     event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
+
+    event DiscountedAddressSet(
+        bytes32 indexed _tokenNamehash,
+        address indexed _claimant,
+        uint256 _discount
+    );
 
     constructor(IHandshakeTld _tld) {
         tldContract = _tld;
@@ -126,6 +132,26 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         }
     }
 
+
+    function setAddressDiscounts(
+        bytes32 _parentNamehash,
+        address[] calldata _addresses,
+        uint256[] calldata _discounts
+    ) public isApprovedOrTokenOwner(_parentNamehash) {
+        require(_addresses.length == _discounts.length, "array lengths do not match");
+
+        for (uint256 i; i < _discounts.length; ) {
+            require(_discounts[i] < 101, "maximum 100% discount");
+            addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
+
+            emit DiscountedAddressSet(_parentNamehash, _addresses[i], _discounts[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function setIsDisabled(bytes32 _parentNamehash, bool _isDisabled)
         external
         isApprovedOrTokenOwner(_parentNamehash)
@@ -149,19 +175,26 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             "reserved name"
         );
 
+        uint256 calculatedPrice;
+
         if (annualPrice > 0) {
             //if it's a premium name then just use the annual rate on it.
-            uint256 totalPrice = (annualPrice * 1 ether * _registrationLength) / 365;
-
-            return totalPrice;
+            calculatedPrice = (annualPrice * 1 ether * _registrationLength) / 365;
         } else {
             uint256 totalPrice = (getLengthCost(_parentNamehash, bytes(_label).length) *
                 _registrationLength) / 365;
             uint256 discount = getDiscount(_parentNamehash, _registrationLength / 365);
-            uint256 calculatedPrice = (totalPrice * (100 - discount)) / 100;
-            uint256 minPrice = (_registrationLength * 1 ether) / 365;
-            return calculatedPrice < minPrice ? minPrice : calculatedPrice;
+            calculatedPrice = (totalPrice * (100 - discount)) / 100;
         }
+
+        uint256 addressDiscount = addressDiscounts[_parentNamehash][_buyingAddress];
+
+        if (addressDiscount > 0) {
+            calculatedPrice = calculatedPrice - ((calculatedPrice * addressDiscount) / 100);
+        }
+
+        uint256 minPrice = (_registrationLength * 1 ether) / 365;
+        return calculatedPrice < minPrice ? minPrice : calculatedPrice;
     }
 
     function getDiscount(bytes32 _parentNamehash, uint256 _years) private view returns (uint256) {
@@ -185,6 +218,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         return
             interfaceId == this.isDisabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||
+            interfaceId == this.addressDiscounts.selector ||
             super.supportsInterface(interfaceId);
     }
 

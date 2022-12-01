@@ -119,7 +119,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         returns (ISldRegistrationStrategy _strategy)
     {
         _strategy = handshakeTldContract.registrationStrategy(_parentNamehash);
-        require(address(_strategy) != address(0), "registration strategy not set");
     }
 
     function setRegistrationManager(ISldRegistrationManager _registrationManager) public onlyOwner {

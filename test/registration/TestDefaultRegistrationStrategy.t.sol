@@ -677,4 +677,238 @@ contract TestDefaultRegistrationStrategy is Test {
         vm.expectRevert("not approved or owner");
         strategy.setIsDisabled(namehash, true);
     }
+
+    function testSetup1PercentReductionForAddressFromOwner_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address addr = address(0x225599);
+        uint256 discount = 1;
+        
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+
+        uint256[] memory lengthPrices = new uint256[](3);
+
+        lengthPrices[0] = 25;
+        lengthPrices[1] = 15;
+        lengthPrices[2] = 5;
+
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, lengthPrices);
+
+        string memory label = "test";
+        uint256 registrationLength = 365;
+
+        uint256 price = strategy.getPriceInDollars(addr, namehash, label, registrationLength);
+
+        uint256 expected = 4950000000000000000;
+        assertEq(price, expected, "price should be 1% reduced");
+    }
+
+    function testSetupMultiplePercentReductionForAddressFromOwner_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+
+        address addr = address(0x225599);
+        address addr2 = address(0x55667787);
+
+        uint256 discount = 1;
+        uint256 discount2 = 10;
+        
+        address[] memory arr1 = new address[](2);
+        uint256[] memory arr2 = new uint256[](2);
+
+        arr1[0] = addr;
+        arr1[1] = addr2;
+
+        arr2[0] = discount;
+        arr2[1] = discount2;
+
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+
+        uint256[] memory lengthPrices = new uint256[](3);
+
+        lengthPrices[0] = 25;
+        lengthPrices[1] = 15;
+        lengthPrices[2] = 5;
+
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, lengthPrices);
+
+        string memory label = "test";
+        uint256 registrationLength = 365;
+
+        uint256 price = strategy.getPriceInDollars(addr, namehash, label, registrationLength);
+        uint256 price2 = strategy.getPriceInDollars(addr2, namehash, label, registrationLength);
+
+        uint256 expected = 4950000000000000000;
+        uint256 expected2 = 4500000000000000000;
+
+        assertEq(price, expected, "price should be 1% reduced");
+        assertEq(price2, expected2, "price should be 10% reduced");
+    }
+
+    function testSetup100PercentReductionForAddressFromOwner_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address addr = address(0x225599);
+        uint256 discount = 100;
+
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+
+        uint256[] memory lengthPrices = new uint256[](3);
+
+        lengthPrices[0] = 25;
+        lengthPrices[1] = 15;
+        lengthPrices[2] = 5;
+
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, lengthPrices);
+
+        string memory label = "test";
+        uint256 registrationLength = 365;
+
+        uint256 price = strategy.getPriceInDollars(addr, namehash, label, registrationLength);
+
+        uint256 expected = 1000000000000000000;
+        assertEq(price, expected, "price should be reduced to $1");
+    }
+
+    function testSetup1PercentReductionForAddressFromApprovedAddress_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address approved = address(0x666666);
+
+        tld.setApprovalForAll(approved, true);
+
+        address addr = address(0x225599);
+        uint256 discount = 1;
+
+
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        vm.prank(approved);
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+
+        uint256[] memory lengthPrices = new uint256[](3);
+
+        lengthPrices[0] = 25;
+        lengthPrices[1] = 15;
+        lengthPrices[2] = 5;
+
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, lengthPrices);
+
+        string memory label = "test";
+        uint256 registrationLength = 365;
+
+        uint256 price = strategy.getPriceInDollars(addr, namehash, label, registrationLength);
+
+        uint256 expected = 4950000000000000000;
+        assertEq(price, expected, "price should be 1% reduced");
+    }
+
+    function testSetup100PercentReductionForAddressFromApprovedAddress_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address approved = address(0x666666);
+
+        tld.setApprovalForAll(approved, true);
+
+        address addr = address(0x225599);
+        uint256 discount = 100;
+
+
+
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        vm.prank(approved);
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+
+        uint256[] memory lengthPrices = new uint256[](3);
+
+        lengthPrices[0] = 25;
+        lengthPrices[1] = 15;
+        lengthPrices[2] = 5;
+
+        tld.addMapping(uint256(namehash), address(this), true);
+
+        strategy.setLengthCost(namehash, lengthPrices);
+
+        string memory label = "test";
+        uint256 registrationLength = 365;
+
+        uint256 price = strategy.getPriceInDollars(addr, namehash, label, registrationLength);
+
+        uint256 expected = 1000000000000000000;
+        assertEq(price, expected, "price should be reduced to $1");
+    }
+
+    function testSetup1PercentReductionForAddressFromNotApprovedAddress_fail() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address not_approved = address(0x666666);
+
+        address addr = address(0x225599);
+        uint256 discount = 100;
+
+
+
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        vm.prank(not_approved);
+        vm.expectRevert("not approved or owner");
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+    }
+
+    function testOverMaxPercentReductionFromOwner_fail() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        tld.register(address(this), uint256(namehash));
+
+        address addr = address(0x225599);
+        uint256 discount = 101;
+
+
+        address[] memory arr1 = new address[](1);
+        uint256[] memory arr2 = new uint256[](1);
+
+        arr1[0] = addr;
+        arr2[0] = discount;
+
+        vm.expectRevert("maximum 100% discount");
+        strategy.setAddressDiscounts(namehash, arr1, arr2);
+    }
 }

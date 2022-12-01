@@ -12,4 +12,6 @@ interface ISldRegistrationStrategy is IERC165 {
         string memory _label,
         uint256 _registrationLength
     ) external view returns (uint256);
+
+    function addressDiscounts(bytes32 _namehash, address _addr) external returns (uint256);
 }

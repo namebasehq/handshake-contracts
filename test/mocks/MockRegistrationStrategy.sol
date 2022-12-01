@@ -51,4 +51,8 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == this.isDisabled.selector ||
             interfaceId == this.getPriceInDollars.selector;
     }
+
+    function addressDiscounts(bytes32 _namehash, address _addr) external returns (uint256) {
+        return 0;
+    }
 }
