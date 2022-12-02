@@ -132,7 +132,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         }
     }
 
-
     function setAddressDiscounts(
         bytes32 _parentNamehash,
         address[] calldata _addresses,

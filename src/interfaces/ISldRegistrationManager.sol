@@ -19,6 +19,7 @@ interface ISldRegistrationManager {
     ) external payable;
 
     function getRenewalPricePerDay(
+        address _addr,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength

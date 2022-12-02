@@ -48,6 +48,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     ) external payable {}
 
     function getRenewalPricePerDay(
+        address, //msg.sender
         bytes32, //_parentNamehash
         string calldata, //_label
         uint256 //_registrationLength

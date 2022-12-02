@@ -618,6 +618,7 @@ contract TestSldRegistrationManager is Test {
 
         //need to renew domain and then renew price should be cheapest price
         uint256 renewalPricePerDay = manager.getRenewalPricePerDay(
+            msg.sender,
             parentNamehash,
             "yo",
             _years * 365
@@ -677,7 +678,12 @@ contract TestSldRegistrationManager is Test {
 
         //assert
         for (uint256 i; i < 10; i++) {
-            uint256 actual = manager.getRenewalPricePerDay(parentNamehash, label, (i + 1) * 365);
+            uint256 actual = manager.getRenewalPricePerDay(
+                msg.sender,
+                parentNamehash,
+                label,
+                (i + 1) * 365
+            );
 
             uint256 expected = prices[i] / 365;
 

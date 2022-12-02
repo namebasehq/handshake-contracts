@@ -122,6 +122,12 @@ contract SldRegistrationManager is
             );
         }
 
+        subdomainRegistrationHistory[sldNamehash] = SubdomainRegistrationDetail(
+            uint72(block.timestamp),
+            uint80(_registrationLength * 1 days),
+            uint96(dollarPrice)
+        );
+
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
@@ -159,6 +165,7 @@ contract SldRegistrationManager is
         subdomainRegistrationHistory[subdomainNamehash] = detail;
 
         uint256 priceInDollars = getRenewalPricePerDay(
+            msg.sender,
             _parentNamehash,
             _label,
             _registrationLength
@@ -263,11 +270,6 @@ contract SldRegistrationManager is
             }
         }
 
-        subdomainRegistrationHistory[_namehash] = SubdomainRegistrationDetail(
-            uint72(block.timestamp),
-            uint80(_days * 1 days),
-            uint96(_price)
-        );
         pricesAtRegistration[_namehash] = arr;
     }
 
@@ -281,6 +283,7 @@ contract SldRegistrationManager is
      * @return _price Returns the price in dollars (18 decimal precision)
      */
     function getRenewalPrice(
+        address _addr,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -297,24 +300,31 @@ contract SldRegistrationManager is
         ];
 
         uint256 registrationPrice = strategy.getPriceInDollars(
-            msg.sender,
+            _addr,
             _parentNamehash,
             _label,
             _registrationLength
         );
 
-        uint256 renewalPrice = ((renewalCostPerAnnum < 1 ether ? 1 ether : renewalCostPerAnnum) *
-            _registrationLength) / 365;
+        //renewal snapshot will be missing if the domain is registered by a discounted address
+        if (renewalCostPerAnnum == 0) {
+            _price = registrationPrice;
+        } else {
+            uint256 renewalPrice = ((
+                renewalCostPerAnnum < 1 ether ? 1 ether : renewalCostPerAnnum
+            ) * _registrationLength) / 365;
 
-        _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
+            _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
+        }
     }
 
     function getRenewalPricePerDay(
+        address _addr,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
-        uint256 price = getRenewalPrice(_parentNamehash, _label, _registrationLength);
+        uint256 price = getRenewalPrice(_addr, _parentNamehash, _label, _registrationLength);
         _price = price / _registrationLength;
     }
 

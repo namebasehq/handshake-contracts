@@ -684,7 +684,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         address addr = address(0x225599);
         uint256 discount = 1;
-        
+
         address[] memory arr1 = new address[](1);
         uint256[] memory arr2 = new uint256[](1);
 
@@ -716,13 +716,12 @@ contract TestDefaultRegistrationStrategy is Test {
         bytes32 namehash = bytes32(uint256(0x5464654));
         tld.register(address(this), uint256(namehash));
 
-
         address addr = address(0x225599);
         address addr2 = address(0x55667787);
 
         uint256 discount = 1;
         uint256 discount2 = 10;
-        
+
         address[] memory arr1 = new address[](2);
         uint256[] memory arr2 = new uint256[](2);
 
@@ -802,7 +801,6 @@ contract TestDefaultRegistrationStrategy is Test {
         address addr = address(0x225599);
         uint256 discount = 1;
 
-
         address[] memory arr1 = new address[](1);
         uint256[] memory arr2 = new uint256[](1);
 
@@ -842,8 +840,6 @@ contract TestDefaultRegistrationStrategy is Test {
         address addr = address(0x225599);
         uint256 discount = 100;
 
-
-
         address[] memory arr1 = new address[](1);
         uint256[] memory arr2 = new uint256[](1);
 
@@ -881,8 +877,6 @@ contract TestDefaultRegistrationStrategy is Test {
         address addr = address(0x225599);
         uint256 discount = 100;
 
-
-
         address[] memory arr1 = new address[](1);
         uint256[] memory arr2 = new uint256[](1);
 
@@ -900,7 +894,6 @@ contract TestDefaultRegistrationStrategy is Test {
 
         address addr = address(0x225599);
         uint256 discount = 101;
-
 
         address[] memory arr1 = new address[](1);
         uint256[] memory arr2 = new uint256[](1);

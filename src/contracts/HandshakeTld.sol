@@ -100,7 +100,9 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     {
         uint256 divisor = royaltyPayoutAmount.div(10);
         uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
-        return (royaltyPayoutAddress, amount);
+
+        address payoutAddress = royaltyPayoutAddress == address(0) ? owner() : royaltyPayoutAddress;
+        return (payoutAddress, amount);
     }
 
     function ownerOf(uint256 _id)
