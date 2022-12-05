@@ -35,6 +35,19 @@ contract SldRegistrationManager is
 
     ICommitIntent public commitIntent;
 
+    /**
+
+    @notice Initialize the contract
+    @dev This function is called during contract deployment and sets up the contract's dependencies. It should only be called once.
+    @param _tld Address of the top level domain contract
+    @param _sld Address of the second level domain contract
+    @param _commitIntent Address of the commit intent contract
+    @param _oracle Address of the price oracle contract
+    @param _validator Address of the label validator contract
+    @param _globalRules Address of the global registration rules contract
+    @param _handshakeWallet Address of the Handshake wallet for royalties
+    @param _owner Address of the contract owner
+    */
     function init(
         IHandshakeTld _tld,
         IHandshakeSld _sld,
@@ -318,6 +331,14 @@ contract SldRegistrationManager is
         }
     }
 
+    /**
+     * @dev Calculates the renewal price per day for a domain.
+     * @param _addr Address of the owner of the domain.
+     * @param _parentNamehash Namehash of the parent domain.
+     * @param _label Label of the domain.
+     * @param _registrationLength Length of the registration.
+     * @return _price The renewal price per day for the domain.
+     */
     function getRenewalPricePerDay(
         address _addr,
         bytes32 _parentNamehash,

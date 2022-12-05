@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {console} from "forge-std/console.sol";
-
 import "contracts/HandshakeNft.sol";
 import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
@@ -90,6 +88,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         public
         onlyApprovedOrOwner(uint256(_namehash))
     {
+        require(
+            _strategy.supportsInterface(0x1f4b3f3b),
+            "Registration strategy does not implement ISldRegistrationStrategy"
+        );
         registrationStrategy[_namehash] = _strategy;
     }
 
