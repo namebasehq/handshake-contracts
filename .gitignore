@@ -1,2 +1,13 @@
 cache/
 out/
+node_modules/
+broadcast/
+lib/
+.idea/
+.vscode/
+.DS_Store
+.env
+.github/
+.gas-snapshot
+.js
+
