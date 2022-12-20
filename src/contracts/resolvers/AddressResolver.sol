@@ -13,23 +13,23 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
     mapping(uint256 => mapping(bytes32 => mapping(address => mapping(uint256 => bytes)))) versionable_addresses;
 
     function addr(bytes32 _node, uint256 _coinType) public view returns (bytes memory) {
-        bytes memory addr = versionable_addresses[recordVersions[_node]][_node][ownerOf(_node)][
+        bytes memory addr1 = versionable_addresses[recordVersions[_node]][_node][ownerOf(_node)][
             _coinType
         ];
 
         if (
-            keccak256(addr) == keccak256(bytes("")) &&
+            keccak256(addr1) == keccak256(bytes("")) &&
             (_coinType == ETH_COINTYPE || _coinType == OPT_COINTYPE)
         ) {
             return abi.encodePacked(ownerOf(_node));
         } else {
-            return addr;
+            return addr1;
         }
     }
 
     function addr(bytes32 _node) public view returns (address payable) {
-        address addr = bytesToAddress(addr(_node, ETH_COINTYPE));
-        return payable(addr);
+        address addr1 = bytesToAddress(addr(_node, ETH_COINTYPE));
+        return payable(addr1);
     }
 
     function setAddress(bytes32 _node, address _addr) public authorised(_node) {

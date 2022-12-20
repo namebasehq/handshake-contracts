@@ -115,12 +115,7 @@ contract DeployScript is Script {
 
         //transfer ownership of ownable contracts
 
-        TldClaimManager(address(uups)).init(
-            labelValidator,
-            ownerWallet,
-            tld,
-            strategy
-        );
+        TldClaimManager(address(uups)).init(labelValidator, ownerWallet, tld, strategy);
 
         sld.setDefaultResolver(IResolver(address(resolver)));
         tld.setDefaultResolver(IResolver(address(resolver)));

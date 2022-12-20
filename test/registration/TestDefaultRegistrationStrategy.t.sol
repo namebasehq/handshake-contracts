@@ -227,7 +227,6 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = Namehash.getNamehash(namehash, label);
         vm.expectRevert("reserved name");
         strategy.getPriceInDollars(address(0x420), namehash, label, 365, false);
     }
@@ -251,8 +250,6 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
         strategy.setPremiumNames(namehash, labels, prices);
-
-        bytes32 full_hash = Namehash.getNamehash(namehash, label);
 
         uint256 price = strategy.getPriceInDollars(address(0x420), namehash, label, 365, true);
         assertEq(price, 5 ether);
@@ -395,7 +392,7 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.addMapping(uint256(namehash), address(this), true);
 
         strategy.setLengthCost(namehash, prices);
-
+        console.log("length cost", strategy.getPriceInDollars(addr, namehash, label, 365, false));
         uint256 actualPrice = strategy.getPriceInDollars(addr, namehash, label, 365, false);
         assertEq(actualPrice, 10 ether);
 

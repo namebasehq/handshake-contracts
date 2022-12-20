@@ -3,28 +3,25 @@ pragma solidity ^0.8.17;
 
 import "interfaces/ISldRegistrationStrategy.sol";
 
-
 contract TestingRegistrationStrategy is ISldRegistrationStrategy {
-
     uint256 public lowestLimit;
 
-        function getPriceInDollars(
+    function getPriceInDollars(
         address, // _buyingAddress,
         bytes32, // _parentNamehash,
         string memory, // _label,
         uint256 _registrationLength,
         bool _isRenewal
     ) external view returns (uint256) {
-
         uint256 counter = 0;
         uint256 startingGas = gasleft();
 
-        while(startingGas - gasleft() < lowestLimit) counter++;
-    
+        while (startingGas - gasleft() < lowestLimit) counter++;
+
         if (_isRenewal) {
-            return _registrationLength * 2 ether / 365;
+            return (_registrationLength * 2 ether) / 365;
         } else {
-            return _registrationLength * 3 ether / 365;
+            return (_registrationLength * 3 ether) / 365;
         }
     }
 
@@ -32,13 +29,11 @@ contract TestingRegistrationStrategy is ISldRegistrationStrategy {
         lowestLimit = _limit;
     }
 
-
-    function isDisabled(bytes32 _parentNamehash) external view returns (bool)
-    {
+    function isDisabled(bytes32) external pure returns (bool) {
         return false;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public pure override(IERC165) returns (bool) {
         return
             interfaceId == this.supportsInterface.selector ||
             interfaceId == this.isDisabled.selector ||
@@ -46,9 +41,7 @@ contract TestingRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == this.addressDiscounts.selector;
     }
 
-    function addressDiscounts(bytes32 _namehash, address _addr) external returns (uint256) {
+    function addressDiscounts(bytes32, address) external pure returns (uint256) {
         return 0;
     }
-
-
 }

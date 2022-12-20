@@ -63,7 +63,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         namehashToParentMap[sldNamehash] = _tldNamehash;
         namehashToLabelMap[sldNamehash] = _label;
         tokenResolverMap[sldNamehash] = defaultResolver;
-
     }
 
     /**
@@ -261,7 +260,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _expiry = regTime + regLength;
     }
 
-    function exists(uint256 tokenId) public override view returns (bool) {
+    function exists(uint256 tokenId) public view override returns (bool) {
         return super.exists(tokenId) && hasExpired(bytes32(tokenId)) == false;
     }
 

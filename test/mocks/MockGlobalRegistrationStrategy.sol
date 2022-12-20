@@ -20,7 +20,7 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
         return shouldRegister;
     }
 
-    function minimumDollarPrice() external view returns (uint256) {
+    function minimumDollarPrice() external pure returns (uint256) {
         return 1 ether;
     }
 

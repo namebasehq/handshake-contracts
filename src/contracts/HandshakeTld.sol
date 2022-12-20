@@ -66,11 +66,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         HandshakeNft.setResolver(_namehash, _resolver);
     }
 
-    modifier tldOwner(bytes32 _namehash) {
-        require(msg.sender == ownerOf(uint256(_namehash)), "Caller is not owner of TLD");
-        _;
-    }
-
     function name(bytes32 _namehash) public view override returns (string memory _name) {
         _name = namehashToLabelMap[_namehash];
     }

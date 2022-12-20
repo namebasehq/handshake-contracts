@@ -190,7 +190,7 @@ contract TestSldCommitIntent is Test {
         assertTrue(allowed && allowed2);
     }
 
-    function testCommitIntentWhenActiveCommitExists() public {
+    function testCommitIntentWhenActiveCommitExists_pass() public {
         //Arrange
         bytes32 node = bytes32(uint256(667));
         uint256 startBlock = 10;
@@ -203,7 +203,9 @@ contract TestSldCommitIntent is Test {
         vm.roll(startBlock + 2);
 
         //Assert
-        vm.expectRevert("already been committed");
+        //changed this behaviour as it doesn't really matter if you commit twice
+        //but we save gas on the check
+        //vm.expectRevert("already been committed");
         intent.commitIntent(node);
     }
 

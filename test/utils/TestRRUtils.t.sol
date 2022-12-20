@@ -19,13 +19,13 @@ contract TestRRUtils is Test {
     uint16 constant DNSTYPE_NSEC = 47;
     uint16 constant DNSTYPE_TYPE1234 = 1234;
 
-    function testNameLength() public {
+    function testNameLength() public pure {
         require(hex"00".nameLength(0) == 1, "nameLength('.') == 1");
         require(hex"0361626300".nameLength(4) == 1, "nameLength('.') == 1");
         require(hex"0361626300".nameLength(0) == 5, "nameLength('abc.') == 5");
     }
 
-    function testLabelCount() public {
+    function testLabelCount() public pure {
         require(hex"00".labelCount(0) == 0, "labelCount('.') == 0");
         require(hex"016100".labelCount(0) == 1, "labelCount('a.') == 1");
         require(hex"016201610000".labelCount(0) == 2, "labelCount('b.a.') == 2");
@@ -35,7 +35,7 @@ contract TestRRUtils is Test {
         );
     }
 
-    function testIterateRRs() public {
+    function testIterateRRs() public pure {
         // a. IN A 3600 127.0.0.1
         // b.a. IN A 3600 192.168.1.1
         bytes
@@ -54,7 +54,7 @@ contract TestRRUtils is Test {
         require(i == 2, "Expected 2 records");
     }
 
-    function testCheckTypeBitmapTextType() public {
+    function testCheckTypeBitmapTextType() public pure {
         bytes memory tb = hex"0003000080";
         require(
             tb.checkTypeBitmap(0, DNSTYPE_TEXT) == true,
@@ -62,7 +62,7 @@ contract TestRRUtils is Test {
         );
     }
 
-    function testCheckTypeBitmap() public {
+    function testCheckTypeBitmap() public pure {
         // From https://tools.ietf.org/html/rfc4034#section-4.3
         //    alfa.example.com. 86400 IN NSEC host.example.com. (
         //                               A MX RRSIG NSEC TYPE1234
@@ -90,7 +90,7 @@ contract TestRRUtils is Test {
     }
 
     // Canonical ordering https://tools.ietf.org/html/rfc4034#section-6.1
-    function testCompareNames() public {
+    function testCompareNames() public pure {
         bytes memory bthLabXyz = hex"066274686c61620378797a00";
         bytes memory ethLabXyz = hex"066574686c61620378797a00";
         bytes memory xyz = hex"0378797a00";
@@ -138,7 +138,7 @@ contract TestRRUtils is Test {
         require(bthLabXyz.compareNames(xyz) > 0, "bthLab.xyz comes after xyz");
     }
 
-    function testSerialNumberGt() public {
+    function testSerialNumberGt() public pure {
         require(RRUtils.serialNumberGte(1, 0), "1 >= 0");
         require(!RRUtils.serialNumberGte(0, 1), "!(0 <= 1)");
         require(RRUtils.serialNumberGte(0, 0xFFFFFFFF), "0 >= 0xFFFFFFFF");
@@ -147,7 +147,7 @@ contract TestRRUtils is Test {
         require(RRUtils.serialNumberGte(1, 1), "1 >= 1");
     }
 
-    function testKeyTag() public {
+    function testKeyTag() public pure {
         require(
             hex"0101030803010001a80020a95566ba42e886bb804cda84e47ef56dbd7aec612615552cec906d2116d0ef207028c51554144dfeafe7c7cb8f005dd18234133ac0710a81182ce1fd14ad2283bc83435f9df2f6313251931a176df0da51e54f42e604860dfb359580250f559cc543c4ffd51cbe3de8cfd06719237f9fc47ee729da06835fa452e825e9a18ebc2ecbcf563474652c33cf56a9033bcdf5d973121797ec8089041b6e03a1b72d0a735b984e03687309332324f27c2dba85e9db15e83a0143382e974b0621c18e625ecec907577d9e7bade95241a81ebbe8a901d4d3276e40b114c0a2e6fc38d19c2e6aab02644b2813f575fc21601e0dee49cd9ee96a43103e524d62873d"
                 .computeKeytag() == 19036,

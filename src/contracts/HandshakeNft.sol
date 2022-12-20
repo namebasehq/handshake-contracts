@@ -6,6 +6,7 @@ import {Namehash} from "utils/Namehash.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IMetadataService.sol";
@@ -16,7 +17,7 @@ import "interfaces/ILabelValidator.sol";
 import "interfaces/IResolver.sol";
 
 // base class for both SLD and TLDs
-abstract contract HandshakeNft is ERC721Enumerable, Ownable {
+abstract contract HandshakeNft is ERC721, Ownable {
     using ERC165Checker for address;
 
     // token uri for metadata service uses namehash as the input value
@@ -64,13 +65,7 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
      * @param tokenId uint256 ID of the token to query the owner of
      * @return address currently marked as the owner of the given token ID
      */
-    function ownerOf(uint256 tokenId)
-        public
-        view
-        virtual
-        override(ERC721, IERC721)
-        returns (address)
-    {
+    function ownerOf(uint256 tokenId) public view virtual override(ERC721) returns (address) {
         return super.ownerOf(tokenId);
     }
 
@@ -86,14 +81,13 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
         override
         returns (bool)
     {
-        if (!_exists(tokenId)) {
-            return false;
-        }
-        address owner = ownerOf(tokenId);
+        if (_exists(tokenId)) {
+            address owner = ownerOf(tokenId);
 
-        return (spender == owner ||
-            getApproved(tokenId) == spender ||
-            isApprovedForAll(owner, spender));
+            return (spender == owner ||
+                isApprovedForAll(owner, spender) ||
+                getApproved(tokenId) == spender);
+        }
     }
 
     /**
@@ -143,7 +137,7 @@ abstract contract HandshakeNft is ERC721Enumerable, Ownable {
      * Tokens start existing when they are minted (`_mint`),
      * and stop existing when they are burned (`_burn`).
      */
-    function exists(uint256 tokenId) public virtual view returns (bool) {
+    function exists(uint256 tokenId) public view virtual returns (bool) {
         return ERC721._exists(tokenId);
     }
 }

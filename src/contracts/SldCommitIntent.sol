@@ -34,10 +34,6 @@ contract SldCommitIntent is ICommitIntent, Ownable {
      * @param _combinedHash keccak256 hash of sld namehash / bytes32 secret / msg.sender
      */
     function commitIntent(bytes32 _combinedHash) public {
-        require(
-            nodeIntentBlockNumber[_combinedHash].blockNumber < block.number,
-            "already been committed"
-        );
         CommitData memory data = CommitData(
             uint96(block.number + maxBlockWaitForCommit),
             msg.sender
@@ -53,11 +49,15 @@ contract SldCommitIntent is ICommitIntent, Ownable {
         bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
         CommitData memory data = nodeIntentBlockNumber[combinedHash];
 
-        return
-            data.blockNumber > (block.number + minBlockWaitForCommit) &&
-            (data.blockNumber - maxBlockWaitForCommit + minBlockWaitForCommit) <= //min time to wait
-            block.number &&
-            data.user == _addr;
+        uint256 max = data.blockNumber;
+
+        if (max == 0) {
+            return false;
+        }
+
+        uint256 min = max + minBlockWaitForCommit - maxBlockWaitForCommit;
+
+        return block.number >= min && block.number < max;
     }
 
     /**

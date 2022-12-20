@@ -23,13 +23,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 dollarPrice = 0;
 
         vm.expectRevert(abi.encodePacked("min price $1/year"));
-        rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
     }
 
     function testClaimWithOneDollar_pass() public {

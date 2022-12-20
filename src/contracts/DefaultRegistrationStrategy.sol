@@ -73,12 +73,12 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         for (uint256 i; i < _discounts.length; ) {
             require(_discounts[i] >= currentDiscount, "must be more or equal to previous year");
             currentDiscount = _discounts[i];
-            require(currentDiscount < 51, "max 50% discount");
 
             unchecked {
                 ++i;
             }
         }
+        require(currentDiscount < 51, "max 50% discount");
         multiYearDiscount[_parentNamehash] = _discounts;
     }
 
@@ -87,11 +87,11 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         view
         returns (uint256)
     {
-        uint256[] memory prices = lengthCost[_parentNamehash];
+        uint256[] storage prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
         require(priceCount > 0, "no length prices are set");
 
-        return (_length > priceCount - 1 ? prices[priceCount - 1] : prices[_length - 1]) * 1 ether;
+        return (_length >= priceCount ? prices[priceCount - 1] : prices[_length - 1]) * 1 ether;
     }
 
     function setPremiumNames(
@@ -143,8 +143,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         require(_registrationLength > 364, "minimum reg is 1 year");
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
-        uint256 annualPrice = premiumNames[namehash];
-
         require(
             reservedNames[namehash] == address(0) ||
                 reservedNames[namehash] == _buyingAddress ||
@@ -153,27 +151,28 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         );
 
         uint256 calculatedPrice;
+        uint256 annualPrice = premiumNames[namehash];
 
         if (annualPrice > 0) {
             //if it's a premium name then just use the annual rate on it.
-            calculatedPrice = (annualPrice * 1 ether * _registrationLength) / 365;
+            calculatedPrice = (annualPrice * 1 ether * _registrationLength);
         } else {
             uint256 totalPrice = (getLengthCost(_parentNamehash, bytes(_label).length) *
-                _registrationLength) / 365;
+                _registrationLength);
             uint256 discount = getDiscount(_parentNamehash, _registrationLength / 365);
             calculatedPrice = (totalPrice * (100 - discount)) / 100;
         }
 
-        uint256 minPrice = (_registrationLength * 1 ether) / 365;
-        return calculatedPrice < minPrice ? minPrice : calculatedPrice;
+        uint256 minPrice = (_registrationLength * 1 ether);
+        return (calculatedPrice < minPrice ? minPrice : calculatedPrice) / 365;
     }
 
     function getDiscount(bytes32 _parentNamehash, uint256 _years) private view returns (uint256) {
-        uint256[] memory discounts = multiYearDiscount[_parentNamehash];
+        uint256[] storage discounts = multiYearDiscount[_parentNamehash];
 
         if (discounts.length == 0) {
             return 0;
-        } else if (discounts.length > _years - 1) {
+        } else if (discounts.length >= _years) {
             return discounts[_years - 1];
         } else {
             return discounts[discounts.length - 1];

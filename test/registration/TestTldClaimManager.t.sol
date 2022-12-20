@@ -28,8 +28,7 @@ contract TestTldClaimManager is Test {
         sld = new MockHandshakeSld();
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata);
-        manager.init(labelValidator, address(this), nft,  strategy);
-        
+        manager.init(labelValidator, address(this), nft, strategy);
     }
 
     function testAddTldManagerWallet() public {

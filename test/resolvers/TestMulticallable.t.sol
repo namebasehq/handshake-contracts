@@ -110,7 +110,6 @@ contract TestMulticallable is Test {
 
     function testReadMultipleFunction() public {
         address owner = address(0x99887766);
-        address approved = address(0x112233445566);
 
         uint256 id = 696969;
         bytes32 node = bytes32(id);

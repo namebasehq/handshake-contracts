@@ -20,7 +20,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         uint80 _registrationTime,
         uint80 _registrationLength,
         uint96 _registrationPrice,
-        uint128[10] calldata _registrationPriceSnapshot
+        uint128[10] calldata
     ) public {
         SldRegistrationDetail memory detail = SldRegistrationDetail(
             _registrationTime,
@@ -50,6 +50,5 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         uint256 //_registrationLength
     ) public pure returns (uint256) {
         revert("not implemented");
-        return 0;
     }
 }

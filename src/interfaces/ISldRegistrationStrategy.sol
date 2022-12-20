@@ -13,5 +13,4 @@ interface ISldRegistrationStrategy is IERC165 {
         uint256 _registrationLength,
         bool _isRenewal
     ) external view returns (uint256);
-
 }

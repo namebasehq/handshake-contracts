@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "interfaces/IHandshakeSld.sol";
@@ -140,14 +139,7 @@ contract SldRegistrationManager is
 
         sld.registerSld(_recipient, _parentNamehash, _label);
 
-        addRegistrationDetails(
-            sldNamehash,
-            dollarPrice,
-            _registrationLength,
-            strategy,
-            _parentNamehash,
-            _label
-        );
+        addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
         sldRegistrationHistory[sldNamehash] = SldRegistrationDetail(
             uint72(block.timestamp),
@@ -157,24 +149,14 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
-        require(
-            msg.value >= priceInWei,
-            "insufficient funds"
-            // string(
-            //     abi.encodePacked(
-            //         "insufficient funds ",
-            //         priceInWei.toString(),
-            //         "wei value of dollar ",
-            //         getWeiValueOfDollar().toString(),
-            //         "dollar price ",
-            //         dollarPrice.toString()
-            //     )
-            // )
-        );
+        require(msg.value > priceInWei, "insufficient funds");
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
-        require(commitIntent.allowedCommit(sldNamehash, _secret, msg.sender), "No valid commit intent");
+        require(
+            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
+            "No valid commit intent"
+        );
 
         emit RegisterSld(
             _parentNamehash,
@@ -317,13 +299,11 @@ contract SldRegistrationManager is
 
     function addRegistrationDetails(
         bytes32 _namehash,
-        uint256 _price,
-        uint256 _days,
         ISldRegistrationStrategy _strategy,
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
-        uint80[10] memory arr;
+        uint80[10] storage arr = pricesAtRegistration[_namehash];
 
         for (uint256 i; i < arr.length; ) {
             uint256 price = _strategy.getPriceInDollars(
@@ -340,8 +320,6 @@ contract SldRegistrationManager is
                 ++i;
             }
         }
-
-        pricesAtRegistration[_namehash] = arr;
     }
 
     /**
@@ -366,7 +344,7 @@ contract SldRegistrationManager is
         uint256 registrationYears = (_registrationLength / 365); //get the annual rate
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
-        console.log("registrationYears", registrationYears);
+
         uint256 renewalCostPerAnnum = pricesAtRegistration[sldNamehash][
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
@@ -497,6 +475,7 @@ contract SldRegistrationManager is
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
         uint256 price = getRenewalPrice(_addr, _parentNamehash, _label, _registrationLength);
+
         _price = price / _registrationLength;
     }
 

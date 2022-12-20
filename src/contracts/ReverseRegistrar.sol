@@ -52,10 +52,9 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
     /**
      * @dev Transfers ownership of the reverse record associated with the calling account.
      * @param addr The reverse record to set
-     * @param owner The address to set as the owner of the reverse record.
      * @return The node hash of the reverse record.
      */
-    function claimForAddr(address addr, address owner, address resolver)
+    function claimForAddr(address addr, address, address)
         public
         override
         authorised(addr)

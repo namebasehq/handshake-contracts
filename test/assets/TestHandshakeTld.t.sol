@@ -68,11 +68,7 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
 
         vm.expectRevert("not authorised");
-        tld.registerWithResolver(
-            address(0x1339),
-            domain,
-            defaultRegistrationStrategy
-        );
+        tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
     }
 
     function testMintFromAuthoriseAddress() public {
@@ -81,11 +77,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.registerWithResolver(
-            address(0x1339),
-            domain,
-            defaultRegistrationStrategy
-        );
+        tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
         assertEq(address(0x1339), tld.ownerOf(tldId));
     }
 
@@ -96,11 +88,7 @@ contract TestHandshakeTld is Test {
         //https://book.getfoundry.sh/reference/forge-std/std-storage
         stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
 
-        tld.registerWithResolver(
-            address(0x1339),
-            domain,
-            defaultRegistrationStrategy
-        );
+        tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
 
         assertEq(domain, tld.namehashToLabelMap(namehash));
         assertEq(domain, tld.namehashToLabelMap(namehash));

@@ -18,7 +18,7 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
         bytes32, // _parentNamehash,
         string memory, // _label,
         uint256 _registrationLength,
-        bool _isRenewal
+        bool // _isRenewal
     ) external view returns (uint256) {
         uint256 annualCost;
 
@@ -42,11 +42,11 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
         isDisabledBool = _bool;
     }
 
-    function isDisabled(bytes32 _parentNamehash) external view returns (bool) {
+    function isDisabled(bytes32) external view returns (bool) {
         return isDisabledBool;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public pure override(IERC165) returns (bool) {
         return
             interfaceId == this.supportsInterface.selector ||
             interfaceId == this.isDisabled.selector ||
@@ -54,7 +54,7 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == this.addressDiscounts.selector;
     }
 
-    function addressDiscounts(bytes32 _namehash, address _addr) external returns (uint256) {
+    function addressDiscounts(bytes32, address) external pure returns (uint256) {
         return 0;
     }
 }

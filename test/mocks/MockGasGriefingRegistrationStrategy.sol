@@ -7,14 +7,11 @@ import {console} from "forge-std/console.sol";
 contract MockRevertingRegistrationStrategy is ISldRegistrationStrategy {
     function isDisabled(bytes32 _parentNamehash) external view returns (bool) {}
 
-    function getPriceInDollars(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string memory _label,
-        uint256 _registrationLength,
-        bool _isRenewal
-    ) external view returns (uint256) {
-        uint256 broken = uint256(69420) / uint256(0);
+    function getPriceInDollars(address, bytes32, string memory, uint256, bool)
+        external
+        pure
+        returns (uint256)
+    {
         revert("MockRevertingRegistrationStrategy: revert");
     }
 
@@ -36,13 +33,11 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
 
     function isDisabled(bytes32 _parentNamehash) external view returns (bool) {}
 
-    function getPriceInDollars(
-        address _buyingAddress,
-        bytes32 _parentNamehash,
-        string memory _label,
-        uint256 _registrationLength,
-        bool _isRenewal
-    ) external view returns (uint256) {
+    function getPriceInDollars(address, bytes32, string memory, uint256, bool)
+        external
+        view
+        returns (uint256)
+    {
         //loop until certain gas limit is reached
         uint256 gasLeft = gasleft();
         uint256 target;
@@ -53,9 +48,7 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
             target = gasLeft - gasLimit;
         }
 
-        while (gasleft() > target) {
-            uint256 i = gasleft();
-        }
+        while (gasleft() > target) {}
 
         return 12345 ether;
     }
@@ -67,6 +60,4 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == this.getPriceInDollars.selector ||
             interfaceId == this.isDisabled.selector;
     }
-
-    
 }

@@ -67,11 +67,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         isNodeRegistered[namehash] = true;
-        handshakeTldContract.registerWithResolver(
-            _addr,
-            _domain,
-            defaultRegistrationStrategy
-        );
+        handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }

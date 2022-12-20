@@ -16,7 +16,10 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _dollarCost
     ) external pure returns (bool) {
         require((_registrationLength / DAYS_IN_A_YEAR) > 0, "less than 365 days registration");
-        require(((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice, "min price $1/year");
+        require(
+            ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
+            "min price $1/year"
+        );
         return true;
     }
 
