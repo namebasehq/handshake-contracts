@@ -1486,6 +1486,132 @@ function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass()
     }
 
 
+function testSetupWildcardReduction_pass()
+        public
+    {
+        string memory label = "foo";
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
+
+        uint256 annualCost = 2000 ether; //should be $4000 total
+
+        tld.register(address(this), "yoyo");
+
+        ISldRegistrationStrategy strategy = new MockRegistrationStrategy(annualCost);
+
+        sld.setMockRegistrationStrategy(parentNamehash, strategy);
+        tld.addRegistrationStrategy(parentNamehash, strategy);
+
+        setUpLabelValidator();
+        setUpGlobalStrategy(true);
+        addMockOracle();
+
+        address addr = address(0x225599);
+        uint256 discount = 100;
+
+        address[] memory arr1 = new address[](1);
+        SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
+
+        arr1[0] = address(0); // address(0) is a wildcard
+
+        // uint80 startTimestamp;
+        // uint80 endTimestamp;
+        // uint8 discountPercentage;
+        // bool isRegistration;
+        // bool isRenewal;
+
+        uint80 start = uint80(block.timestamp + 1 days);
+
+        vm.warp(start);
+
+        arr2[0] = SldDiscountSettings(start + 10, start + 30, 50, true, false);
+
+        manager.setAddressDiscounts(parentNamehash, arr1, arr2);
+
+        uint256 price = manager.getRegistrationPrice(
+            strategy,
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(price, annualCost, "registration should be at full cost"); //not started yet
+
+        vm.warp(start + 20);
+
+        price = manager.getRegistrationPrice(
+            strategy,
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(price, 50 ether, "registration should be 50% cost"); //started now
+
+
+        vm.warp(start + 40);
+
+        price = manager.getRegistrationPrice(
+            strategy,
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(price, annualCost, "registration should be at full cost"); //completed now
+
+        hoax(addr, price + 1);
+        manager.registerSld{value: price}(
+            label,
+            bytes32(uint256(555)),
+            registrationLength,
+            parentNamehash,
+            addr
+        );
+        
+
+        uint256 renewalPrice = manager.getRenewalPrice(
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(renewalPrice, annualCost, "renewal price should be full cost"); //renewal is not discounted
+
+        arr2[0] = SldDiscountSettings(start + 50, start + 70, 75, false, true);
+
+
+        vm.warp(start + 60);
+
+        renewalPrice = manager.getRenewalPrice(
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(renewalPrice, 25 ether, "renewal price should be 25% cost"); //renewal is discounted
+
+        vm.warp(start + 80);
+
+        renewalPrice = manager.getRenewalPrice(
+            addr,
+            parentNamehash,
+            label,
+            registrationLength
+        );
+
+        assertEq(renewalPrice, annualCost, "renewal price should be full cost"); //renewal discount has ended
+
+
+    }
+
+
+
 function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass()
         public
     {
