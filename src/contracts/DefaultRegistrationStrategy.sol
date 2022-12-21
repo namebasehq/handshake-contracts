@@ -79,7 +79,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             }
         }
         require(currentDiscount < 51, "max 50% discount");
+
         multiYearDiscount[_parentNamehash] = _discounts;
+    
     }
 
     function getLengthCost(bytes32 _parentNamehash, uint256 _length)

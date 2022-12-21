@@ -39,7 +39,7 @@ contract SldRegistrationManager is
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
     
-    mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
+    mapping(bytes32 => mapping(address => uint256)) public addressDiscounts;
 
     IGlobalRegistrationRules public globalStrategy;
     IHandshakeSld public sld;
@@ -172,7 +172,7 @@ contract SldRegistrationManager is
     function setAddressDiscounts(
         bytes32 _parentNamehash,
         address[] calldata _addresses,
-        SldDiscountSettings[] calldata _discounts
+        uint256[] calldata _discounts
     ) public {
         require(
             tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
@@ -180,7 +180,16 @@ contract SldRegistrationManager is
         );
         require(_addresses.length == _discounts.length, "array lengths do not match");
 
-        
+        for (uint256 i; i < _discounts.length; ) {
+            require(_discounts[i] < 101, "maximum 100% discount");
+            addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
+
+            emit DiscountedAddressSet(_parentNamehash, _addresses[i], _discounts[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /**
@@ -436,7 +445,22 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
+        uint256 addressDiscount = addressDiscounts[_parentNamehash][_addr];
 
+        // We apply the address discount after the strategy has been called so that
+        // we can store the base price in the renewal snapshot
+        if (addressDiscount > 0) {
+            currentPrice = currentPrice - ((currentPrice * addressDiscount) / 100);
+        }
+
+        uint256 minPrice;
+
+        assembly {
+            minPrice := div(mul(_registrationLength, 0xDE0B6B3A7640000), 365)
+        }
+
+        // return current price or 1 ether whichever is higher
+        return currentPrice > minPrice ? currentPrice : minPrice;
     }
 
     /**
