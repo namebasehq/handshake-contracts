@@ -38,7 +38,7 @@ contract SldRegistrationManager is
 
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
-    
+
     mapping(bytes32 => mapping(address => uint256)) public addressDiscounts;
 
     IGlobalRegistrationRules public globalStrategy;

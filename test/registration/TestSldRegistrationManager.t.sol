@@ -693,8 +693,8 @@ contract TestSldRegistrationManager is Test {
         }
     }
 
-    //TODO: this test is crashing the test runner
-    function ignoretestPurchaseSingleDomainGetRefundForExcess() public {
+    //this test was crashing the test runner
+    function testPurchaseSingleDomainGetRefundForExcess() public {
         string memory label = "";
         uint256 registrationLength = 365 * 2;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -862,12 +862,8 @@ contract TestSldRegistrationManager is Test {
 
         address[] memory arr1 = new address[](2);
 
-
         arr1[0] = address(0x225599);
         arr1[1] = address(0x225588);
-
-
-
 
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](2);
 
@@ -877,8 +873,8 @@ contract TestSldRegistrationManager is Test {
         // bool isRegistration;
         // bool isRenewal;
 
-        arr2[0] = SldDiscountSettings(0, 0, 50, true, true);
-        arr2[1] = SldDiscountSettings(0, type(uint80).max, 250, true, true);
+        arr2[0] = SldDiscountSettings(0, type(uint80).max, 50, true, true);
+        arr2[1] = SldDiscountSettings(0, type(uint80).max, 25, true, true);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -1162,7 +1158,7 @@ contract TestSldRegistrationManager is Test {
         // bool isRegistration;
         // bool isRenewal;
 
-        arr2[0] = SldDiscountSettings(0, type(uint80).max, 0, true, true);
+        arr2[0] = SldDiscountSettings(0, type(uint80).max, 100, true, true);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -1196,9 +1192,7 @@ contract TestSldRegistrationManager is Test {
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
 
-   function testSetup100PercentReductionWithStartTimestampInFuture_pass()
-        public
-    {
+    function testSetup100PercentReductionWithStartTimestampInFuture_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1267,9 +1261,7 @@ contract TestSldRegistrationManager is Test {
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
 
-   function testSetup100PercentReductionWithStartTimestampInPast_pass()
-        public
-    {
+    function testSetup100PercentReductionWithStartTimestampInPast_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1305,7 +1297,7 @@ contract TestSldRegistrationManager is Test {
 
         vm.warp(start);
 
-        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 0, true, true);
+        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 100, true, true);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -1325,7 +1317,6 @@ contract TestSldRegistrationManager is Test {
             parentNamehash,
             addr
         );
-        
 
         assertEq(price, 1 ether, "registration should be at full cost");
 
@@ -1339,9 +1330,7 @@ contract TestSldRegistrationManager is Test {
         assertEq(renewalPrice, 1 ether, "renewal price should be full cost");
     }
 
-  function testSetup100PercentReductionWithStartTimestampInPastOnlyRegistration_pass()
-        public
-    {
+    function testSetup100PercentReductionWithStartTimestampInPastOnlyRegistration_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1377,7 +1366,7 @@ contract TestSldRegistrationManager is Test {
 
         vm.warp(start);
 
-        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 0, true, false);
+        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 100, true, false);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -1397,7 +1386,6 @@ contract TestSldRegistrationManager is Test {
             parentNamehash,
             addr
         );
-        
 
         assertEq(price, 1 ether, "registration should be at full cost");
 
@@ -1411,10 +1399,7 @@ contract TestSldRegistrationManager is Test {
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
 
-
-function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass()
-        public
-    {
+    function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1450,7 +1435,7 @@ function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass()
 
         vm.warp(start);
 
-        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 0, false, true);
+        arr2[0] = SldDiscountSettings(start - 50, type(uint80).max, 100, false, true);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -1470,8 +1455,7 @@ function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass()
             parentNamehash,
             addr
         );
-        
-        
+
         assertEq(price, annualCost, "registration should be at full cost");
 
         uint256 renewalPrice = manager.getRenewalPrice(
@@ -1485,10 +1469,7 @@ function testSetup100PercentReductionWithStartTimestampInPastOnlyRenewal_pass()
         assertEq(renewalPrice, expected, "renewal price should be full cost");
     }
 
-
-function testSetupWildcardReduction_pass()
-        public
-    {
+    function testSetupWildcardReduction_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1548,8 +1529,7 @@ function testSetupWildcardReduction_pass()
             registrationLength
         );
 
-        assertEq(price, 50 ether, "registration should be 50% cost"); //started now
-
+        assertEq(price, annualCost / 2, "registration should be 50% cost"); //started now
 
         vm.warp(start + 40);
 
@@ -1571,7 +1551,6 @@ function testSetupWildcardReduction_pass()
             parentNamehash,
             addr
         );
-        
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
@@ -1584,37 +1563,23 @@ function testSetupWildcardReduction_pass()
 
         arr2[0] = SldDiscountSettings(start + 50, start + 70, 75, false, true);
 
+        //set a new discount for renewals
+        manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         vm.warp(start + 60);
 
-        renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
-        assertEq(renewalPrice, 25 ether, "renewal price should be 25% cost"); //renewal is discounted
+        assertEq(renewalPrice, annualCost / 4, "renewal price should be 25% cost"); //renewal is discounted
 
         vm.warp(start + 80);
 
-        renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost"); //renewal discount has ended
-
-
     }
 
-
-
-function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass()
-        public
-    {
+    function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1632,8 +1597,6 @@ function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass
         setUpGlobalStrategy(true);
         addMockOracle();
 
-
-
         uint256 discount = 100;
 
         address[] memory arr1 = new address[](5);
@@ -1644,7 +1607,6 @@ function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass
         arr1[2] = address(0x3);
         arr1[3] = address(0x4);
         arr1[4] = address(0x5);
-
 
         // uint80 startTimestamp;
         // uint80 endTimestamp;
@@ -1671,7 +1633,7 @@ function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass
             label,
             registrationLength
         );
-            
+
         assertEq(price, 100 ether, "registration should be full price");
 
         hoax(arr1[0], price);
@@ -1683,165 +1645,72 @@ function testSetupPercentReductionWithMultipleDiscountsFromDifferentWallets_pass
             arr1[0]
         );
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
 
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 50 ether, "renewal should 50% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
 
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 75 ether, "renewal should 25% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
 
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 100 ether, "renewal should be at full cost");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
 
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
 
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
-
 
         vm.warp(start + 15);
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
 
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 50 ether, "renewal should be 50% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
 
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 75 ether, "renewal should 25% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
 
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 25 ether, "renewal should be 75% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
 
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
 
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
-
 
         vm.warp(start + 25);
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
 
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 50 ether, "renewal should be 50% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
 
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 100 ether, "renewal should full price");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
 
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 100 ether, "renewal should be at full cost");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
 
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
 
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
-
     }
 
-function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWallets_pass()
+    function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWallets_pass()
         public
     {
         string memory label = "foo";
@@ -1861,8 +1730,6 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
         setUpGlobalStrategy(true);
         addMockOracle();
 
-
-
         uint256 discount = 100;
 
         address[] memory arr1 = new address[](5);
@@ -1873,7 +1740,6 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
         arr1[2] = address(0x3);
         arr1[3] = address(0x4);
         arr1[4] = address(0x5);
-
 
         // uint80 startTimestamp;
         // uint80 endTimestamp;
@@ -1900,157 +1766,80 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
             label,
             registrationLength
         );
-            
+
+        hoax(arr1[0], price);
+        manager.registerSld{value: price}(
+            label,
+            bytes32(uint256(555)),
+            registrationLength,
+            parentNamehash,
+            arr1[0]
+        );
+
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+
         assertEq(price, 75 ether, "registration should 25% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+
         assertEq(price, 100 ether, "registration should be at full cost");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
-        assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
 
+        assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
 
         vm.warp(start + 15);
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+
         assertEq(price, 75 ether, "registration should 25% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+
         assertEq(price, 25 ether, "registration should be 75% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
-        assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
 
+        assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
 
         vm.warp(start + 25);
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[1],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+
         assertEq(price, 100 ether, "registration should full price");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[2],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+
         assertEq(price, 100 ether, "registration should be at full cost");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[3],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRegistrationPrice(
-            strategy,
-            arr1[4],
-            parentNamehash,
-            label,
-            registrationLength
-        );
-            
+        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+
         assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
-
     }
-
 
     function testSetup100PercentReductionForAddressFromApprovedAddress_pass() public {
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -2163,6 +1952,8 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
 
         arr2[0] = SldDiscountSettings(0, type(uint80).max, 100, true, true);
 
+        manager.setAddressDiscounts(parentNamehash, arr1, arr2);
+
         uint256 price = manager.getRegistrationPrice(
             strategy,
             addr,
@@ -2228,7 +2019,7 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
         // bool isRegistration;
         // bool isRenewal;
 
-        arr2[0] = SldDiscountSettings(0, type(uint80).max, 0, true, true);
+        arr2[0] = SldDiscountSettings(0, type(uint80).max, 100, true, true);
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
@@ -2281,7 +2072,7 @@ function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWall
         uint256 discount = 0;
 
         address[] memory arr1 = new address[](1);
-         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
+        SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
 
         arr1[0] = addr;
 
