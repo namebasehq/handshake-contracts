@@ -19,9 +19,15 @@ contract TestDefaultRegistrationStrategy is Test {
     function setUp() public {
         tld = new MockHandshakeTld();
 
-        MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
-        
-        MockSldRegistrationManager sldRegistrationManager = new MockSldRegistrationManager(tld, globalStrategy);
+        MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(
+            true,
+            1 ether
+        );
+
+        MockSldRegistrationManager sldRegistrationManager = new MockSldRegistrationManager(
+            tld,
+            globalStrategy
+        );
         strategy = new DefaultRegistrationStrategy(sldRegistrationManager);
     }
 
@@ -398,6 +404,7 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.addMapping(uint256(namehash), address(this), true);
 
         strategy.setLengthCost(namehash, prices);
+
         console.log("length cost", strategy.getPriceInDollars(addr, namehash, label, 365, false));
         uint256 actualPrice = strategy.getPriceInDollars(addr, namehash, label, 365, false);
         assertEq(actualPrice, 10 ether);

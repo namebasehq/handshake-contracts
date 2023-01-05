@@ -12,9 +12,6 @@ import "interfaces/IHandshakeTld.sol";
 import "src/utils/Multicallable.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multicallable {
-    // IHandshakeTld private tldContract;
-    // IGlobalRegistrationRules private globalRules;
-
     ISldRegistrationManager public registrationManager;
 
     mapping(bytes32 => address) public reservedNames;
@@ -29,9 +26,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
 
     constructor(ISldRegistrationManager _manager) {
-        // tldContract = _tld;
-        // globalRules = _globalRules;
-
+        registrationManager = _manager;
     }
 
     function setPremiumName(
@@ -171,7 +166,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             calculatedPrice = (totalPrice * (100 - discount)) / 100;
         }
 
-        uint256 minPrice = (_registrationLength * 1 ether);
+        uint256 minPrice = (_registrationLength * minDollarPrice());
         return (calculatedPrice < minPrice ? minPrice : calculatedPrice) / 365;
     }
 
@@ -197,6 +192,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             interfaceId == this.isDisabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||
             super.supportsInterface(interfaceId);
+    }
+
+    function minDollarPrice() private view returns (uint256) {
+        return registrationManager.globalStrategy().minimumDollarPrice();
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {

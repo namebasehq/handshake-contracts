@@ -151,7 +151,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
 
-        require(msg.value > priceInWei, "insufficient funds");
+        require(msg.value >= priceInWei, "insufficient funds");
 
         distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
@@ -359,8 +359,11 @@ contract SldRegistrationManager is
             renewalCostPerAnnum -
             ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
 
-        uint256 renewalPrice = (((renewalCostPerAnnum < 1 ether ? 1 ether : renewalCostPerAnnum) *
-            _registrationLength) / 365);
+        uint256 renewalPrice = (((
+            renewalCostPerAnnum < globalStrategy.minimumDollarPrice()
+                ? globalStrategy.minimumDollarPrice()
+                : renewalCostPerAnnum
+        ) * _registrationLength) / 365);
 
         _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
     }
@@ -397,7 +400,7 @@ contract SldRegistrationManager is
         }
 
         if (!success) {
-            _price = (1 ether * _registrationDays) / 365;
+            _price = (globalStrategy.minimumDollarPrice() * _registrationDays) / 365;
         }
     }
 
@@ -421,7 +424,7 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        uint256 minPrice = (1 ether * _registrationLength) / 365;
+        uint256 minPrice = (globalStrategy.minimumDollarPrice() * _registrationLength) / 365;
 
         return minPrice > currentPrice ? minPrice : currentPrice;
     }
@@ -449,7 +452,7 @@ contract SldRegistrationManager is
         uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
 
         currentPrice = currentPrice - discount;
-        uint256 minPrice = (1 ether * _registrationLength) / 365;
+        uint256 minPrice = (globalStrategy.minimumDollarPrice() * _registrationLength) / 365;
 
         return minPrice > currentPrice ? minPrice : currentPrice;
     }
@@ -470,8 +473,8 @@ contract SldRegistrationManager is
 
         if (
             activeDiscount.discountPercentage > 0 &&
-            activeDiscount.endTimestamp > block.timestamp &&
-            activeDiscount.startTimestamp < block.timestamp &&
+            activeDiscount.endTimestamp >= block.timestamp &&
+            activeDiscount.startTimestamp <= block.timestamp &&
             ((activeDiscount.isRegistration && _isRegistration) ||
                 (activeDiscount.isRenewal && !_isRegistration))
         ) {

@@ -59,6 +59,4 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     ) public pure returns (uint256) {
         revert("not implemented");
     }
-
-
 }

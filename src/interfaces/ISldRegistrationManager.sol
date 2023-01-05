@@ -29,8 +29,9 @@ interface ISldRegistrationManager {
         external
         view
         returns (uint80, uint80, uint96);
-    
+
     function tld() external view returns (IHandshakeTld);
+
     function globalStrategy() external view returns (IGlobalRegistrationRules);
 
     event RegisterSld(

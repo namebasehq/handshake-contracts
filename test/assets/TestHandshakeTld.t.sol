@@ -45,13 +45,16 @@ contract TestHandshakeTld is Test {
 
     function setUp() public {
         claimManager = new MockClaimManager();
-        
+
         MockMetadataService metadata = new MockMetadataService("base_url/");
         tld = new HandshakeTld(claimManager);
         sld = new HandshakeSld(tld);
-        
-        registrationManager = new MockSldRegistrationManager(tld, new MockGlobalRegistrationStrategy(true, 1 ether));
-        
+
+        registrationManager = new MockSldRegistrationManager(
+            tld,
+            new MockGlobalRegistrationStrategy(true, 1 ether)
+        );
+
         sld.setRegistrationManager(registrationManager);
         sld.setMetadataContract(metadata);
         tld.setMetadataContract(metadata);
