@@ -17,6 +17,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
+import "forge-std/console.sol";
 import "structs/SldDiscountSettings.sol";
 
 /**
@@ -38,7 +39,7 @@ contract SldRegistrationManager is
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
 
-    mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
+    mapping(bytes32 => mapping(address => uint256)) public addressDiscounts;
 
     IGlobalRegistrationRules public globalStrategy;
     IHandshakeSld public sld;
@@ -171,7 +172,7 @@ contract SldRegistrationManager is
     function setAddressDiscounts(
         bytes32 _parentNamehash,
         address[] calldata _addresses,
-        SldDiscountSettings[] calldata _discounts
+        uint256[] calldata _discounts
     ) public {
         require(
             tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
@@ -180,7 +181,10 @@ contract SldRegistrationManager is
         require(_addresses.length == _discounts.length, "array lengths do not match");
 
         for (uint256 i; i < _discounts.length; ) {
+            require(_discounts[i] < 101, "maximum 100% discount");
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
+
+            emit DiscountedAddressSet(_parentNamehash, _addresses[i], _discounts[i]);
 
             unchecked {
                 ++i;
@@ -348,17 +352,13 @@ contract SldRegistrationManager is
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        uint256 registrationPrice = safeCallRegistrationStrategyPublic(
-            address(strategy),
+        uint256 registrationPrice = getRegistrationPrice(
+            strategy,
             _addr,
             _parentNamehash,
             _label,
             _registrationLength
         );
-
-        renewalCostPerAnnum =
-            renewalCostPerAnnum -
-            ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
 
         uint256 renewalPrice = (((renewalCostPerAnnum < 1 ether ? 1 ether : renewalCostPerAnnum) *
             _registrationLength) / 365);
@@ -422,9 +422,7 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        uint256 minPrice = (1 ether * _registrationLength) / 365;
-
-        return minPrice > currentPrice ? minPrice : currentPrice;
+        return currentPrice;
     }
 
     function getRegistrationPrice(
@@ -447,39 +445,22 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
+        uint256 addressDiscount = addressDiscounts[_parentNamehash][_addr];
 
-        currentPrice = currentPrice - discount;
-        uint256 minPrice = (1 ether * _registrationLength) / 365;
-
-        return minPrice > currentPrice ? minPrice : currentPrice;
-    }
-
-    function getCurrentDiscount(bytes32 _parentNamehash, address _addr, bool _isRegistration)
-        private
-        view
-        returns (uint256)
-    {
-        uint256 discount = 0;
-
-        SldDiscountSettings memory discountSetting = addressDiscounts[_parentNamehash][_addr];
-        SldDiscountSettings memory wildcardDiscount = addressDiscounts[_parentNamehash][address(0)];
-
-        SldDiscountSettings memory activeDiscount = discountSetting.discountPercentage > 0
-            ? discountSetting
-            : wildcardDiscount;
-
-        if (
-            activeDiscount.discountPercentage > 0 &&
-            activeDiscount.endTimestamp > block.timestamp &&
-            activeDiscount.startTimestamp < block.timestamp &&
-            ((activeDiscount.isRegistration && _isRegistration) ||
-                (activeDiscount.isRenewal && !_isRegistration))
-        ) {
-            discount = activeDiscount.discountPercentage;
+        // We apply the address discount after the strategy has been called so that
+        // we can store the base price in the renewal snapshot
+        if (addressDiscount > 0) {
+            currentPrice = currentPrice - ((currentPrice * addressDiscount) / 100);
         }
 
-        return discount;
+        uint256 minPrice;
+
+        assembly {
+            minPrice := div(mul(_registrationLength, 0xDE0B6B3A7640000), 365)
+        }
+
+        // return current price or 1 ether whichever is higher
+        return currentPrice > minPrice ? currentPrice : minPrice;
     }
 
     /**
