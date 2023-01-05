@@ -9,6 +9,8 @@ import "interfaces/ILabelValidator.sol";
 import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "interfaces/IResolver.sol";
+import "src/contracts/HasUsdOracle.sol";
+import "forge-std/console.sol";
 
 /**
  * @title Tld claim manager contract
@@ -16,7 +18,7 @@ import "interfaces/IResolver.sol";
  * @notice This contract is for managing the TLDs that can be claimed
  *         TLD managers can add allowed TLDs that can be minted by address
  */
-contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator {
+contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator, HasUsdOracle {
     //TODO: remove bools to improve gas usage
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
@@ -24,19 +26,26 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     mapping(bytes32 => address) public tldProviderMap;
 
     IHandshakeTld public handshakeTldContract;
+    address public handshakeWalletPayoutAddress;
 
     ISldRegistrationStrategy public defaultRegistrationStrategy;
+
+    uint256 public mintPriceInDollars;
 
     function init(
         ILabelValidator _validator,
         address _owner,
         IHandshakeTld _tld,
-        ISldRegistrationStrategy _strategy
+        ISldRegistrationStrategy _strategy,
+        IPriceOracle _oracle,
+        uint256 _mintPriceInDollars
     ) public initializer {
         labelValidator = _validator;
         handshakeTldContract = _tld;
 
         defaultRegistrationStrategy = _strategy;
+        usdOracle = _oracle;
+        mintPriceInDollars = _mintPriceInDollars;
         _transferOwnership(_owner);
     }
 
@@ -58,16 +67,45 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     }
 
     /**
+     * @notice Update the chainlink price oracle.
+     * @dev Probably should never need updating.
+     *
+     * @param _oracle Address of the internal price oracle (this proxies to chainlink in current instance)
+     */
+    function updatePriceOracle(IPriceOracle _oracle) public onlyOwner {
+        usdOracle = _oracle;
+    }
+
+    /**
+     * @notice Update the mint price in dollars
+     * @dev Can be updated by contract owner
+     * @param _priceInDollarDecimals Price in dollars
+     */
+    function updateMintPrice(uint256 _priceInDollarDecimals) public onlyOwner {
+        mintPriceInDollars = _priceInDollarDecimals;
+    }
+
+    /**
      * @notice This function calls through to the TLD NFT contract and registers TLD NFT.
      * @dev Only whitelisted TLDs can be claimed/minted
      *
      * @param _domain string domain TLD
      */
-    function claimTld(string calldata _domain, address _addr) external {
+    function claimTld(string calldata _domain, address _addr) external payable {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
+        uint256 expectedEther = usdOracle.getWeiValueOfDollar() * (mintPriceInDollars / 1 ether);
+
         require(canClaim(msg.sender, namehash), "not eligible to claim");
+        require(msg.value >= expectedEther, "not enough ether");
+
+        console.log("msg.value", msg.value);
+        console.log("expectedEther", expectedEther);
         isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
+
+        if (expectedEther < msg.value) {
+            payable(msg.sender).transfer(msg.value - expectedEther);
+        }
 
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }

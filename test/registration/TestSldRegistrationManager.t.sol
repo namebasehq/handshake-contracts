@@ -771,13 +771,32 @@ contract TestSldRegistrationManager is Test {
         );
     }
 
-    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {}
+    function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {
+        revert("testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet not implemented");
+    }
 
-    function testSetHandshakeWalletAddressFromContractOwner_pass() public {}
+    function testSetHandshakeWalletAddressFromContractOwner_pass() public {
+        address addr = address(0x225599);
 
-    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {}
+        manager.updateHandshakePaymentAddress(addr);
 
-    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {}
+        assertEq(manager.handshakeWalletPayoutAddress(), addr, "address not set");
+    }
+
+    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {
+        address addr = address(0x0);
+
+        vm.expectRevert("cannot set to zero address");
+        manager.updateHandshakePaymentAddress(addr);
+    }
+
+    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {
+        address addr = address(0x225599);
+
+        vm.prank(address(0x12234));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.updateHandshakePaymentAddress(addr);
+    }
 
     function testSetup50PercentReductionForAddressFromOwner_pass() public {
         string memory label = "foo";
