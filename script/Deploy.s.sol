@@ -109,7 +109,7 @@ contract DeployScript is Script {
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
-        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(tld);
+        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(SldRegistrationManager(address(uups2)));
 
         DefaultResolver resolver = new DefaultResolver(tld, sld);
 

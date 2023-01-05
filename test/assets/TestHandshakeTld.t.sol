@@ -9,6 +9,7 @@ import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
 import "test/mocks/MockSldRegistrationManager.sol";
 import "test/mocks/MockMetadataService.sol";
+import "test/mocks/MockGlobalRegistrationStrategy.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/ITldClaimManager.sol";
 import "interfaces/IMetadataService.sol";
@@ -44,10 +45,13 @@ contract TestHandshakeTld is Test {
 
     function setUp() public {
         claimManager = new MockClaimManager();
-        registrationManager = new MockSldRegistrationManager();
+        
         MockMetadataService metadata = new MockMetadataService("base_url/");
         tld = new HandshakeTld(claimManager);
         sld = new HandshakeSld(tld);
+        
+        registrationManager = new MockSldRegistrationManager(tld, new MockGlobalRegistrationStrategy(true, 1 ether));
+        
         sld.setRegistrationManager(registrationManager);
         sld.setMetadataContract(metadata);
         tld.setMetadataContract(metadata);

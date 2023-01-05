@@ -47,7 +47,7 @@ contract TestHandshakeSld is Test {
         metadata = new MockMetadataService("base_uri");
         labelValidator = new MockLabelValidator(true);
         tld = new MockHandshakeTld();
-        manager = new MockSldRegistrationManager();
+        manager = new MockSldRegistrationManager(tld, new MockGlobalRegistrationStrategy(true, 1 ether));
         sld = new HandshakeSld(tld);
         sld.setRegistrationManager(manager);
         sld.setMetadataContract(metadata);

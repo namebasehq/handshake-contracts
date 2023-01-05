@@ -2,6 +2,8 @@
 pragma solidity ^0.8.17;
 
 import "structs/SldRegistrationDetail.sol";
+import "interfaces/IHandshakeTld.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 
 interface ISldRegistrationManager {
     function registerSld(
@@ -27,6 +29,9 @@ interface ISldRegistrationManager {
         external
         view
         returns (uint80, uint80, uint96);
+    
+    function tld() external view returns (IHandshakeTld);
+    function globalStrategy() external view returns (IGlobalRegistrationRules);
 
     event RegisterSld(
         bytes32 indexed _tldNamehash,

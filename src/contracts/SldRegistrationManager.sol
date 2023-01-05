@@ -267,7 +267,6 @@ contract SldRegistrationManager is
      * @param _strategy Address of the global strategy. This should implement the IGlobalRegistrationRules interface.
      */
     function updateGlobalRegistrationStrategy(IGlobalRegistrationRules _strategy) public onlyOwner {
-        require(globalStrategy.minimumDollarPrice() >= 1 ether, "minimum price must be > $1");
         globalStrategy = _strategy;
     }
 

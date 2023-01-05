@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 import {Namehash} from "utils/Namehash.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
+import "interfaces/ISldRegistrationManager.sol";
+import "interfaces/IGlobalRegistrationRules.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +12,10 @@ import "interfaces/IHandshakeTld.sol";
 import "src/utils/Multicallable.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multicallable {
-    IHandshakeTld private tldContract;
+    // IHandshakeTld private tldContract;
+    // IGlobalRegistrationRules private globalRules;
+
+    ISldRegistrationManager public registrationManager;
 
     mapping(bytes32 => address) public reservedNames;
     mapping(bytes32 => uint256) public premiumNames;
@@ -23,8 +28,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
     event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
 
-    constructor(IHandshakeTld _tld) {
-        tldContract = _tld;
+    constructor(ISldRegistrationManager _manager) {
+        // tldContract = _tld;
+        // globalRules = _globalRules;
+
     }
 
     function setPremiumName(
@@ -194,7 +201,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
         require(
-            tldContract.isApprovedOrOwner(msg.sender, uint256(_namehash)),
+            registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash)),
             "not approved or owner"
         );
 

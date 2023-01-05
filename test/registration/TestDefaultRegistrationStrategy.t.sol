@@ -7,6 +7,8 @@ import {Namehash} from "utils/Namehash.sol";
 
 import "contracts/DefaultRegistrationStrategy.sol";
 import "test/mocks/MockHandshakeTld.sol";
+import "test/mocks/MockGlobalRegistrationStrategy.sol";
+import "test/mocks/MockSldRegistrationManager.sol";
 
 contract TestDefaultRegistrationStrategy is Test {
     using stdStorage for StdStorage;
@@ -16,7 +18,11 @@ contract TestDefaultRegistrationStrategy is Test {
 
     function setUp() public {
         tld = new MockHandshakeTld();
-        strategy = new DefaultRegistrationStrategy(tld);
+
+        MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
+        
+        MockSldRegistrationManager sldRegistrationManager = new MockSldRegistrationManager(tld, globalStrategy);
+        strategy = new DefaultRegistrationStrategy(sldRegistrationManager);
     }
 
     function testSetLengthPrices_pass() public {

@@ -11,6 +11,14 @@ import "structs/SldRegistrationDetail.sol";
 contract MockSldRegistrationManager is ISldRegistrationManager {
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
 
+    IHandshakeTld public tld;
+    IGlobalRegistrationRules public globalStrategy;
+
+    constructor(IHandshakeTld _tld, IGlobalRegistrationRules _globalStrategy) {
+        tld = _tld;
+        globalStrategy = _globalStrategy;
+    }
+
     function addSldDetail(bytes32 _sldNamehash, SldRegistrationDetail memory _detail) private {
         sldRegistrationHistory[_sldNamehash] = _detail;
     }
@@ -51,4 +59,6 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     ) public pure returns (uint256) {
         revert("not implemented");
     }
+
+
 }

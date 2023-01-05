@@ -39,7 +39,7 @@ contract TestSldRegistrationManager is Test {
         tld = new MockHandshakeTld();
         commitIntent = new MockCommitIntent(true);
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
-        globalStrategy = new MockGlobalRegistrationStrategy(true);
+        globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
         manager = new SldRegistrationManager();
 
         manager.init(
@@ -65,7 +65,7 @@ contract TestSldRegistrationManager is Test {
     }
 
     function setUpGlobalStrategy(bool _result) public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(_result);
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(_result, 1 ether);
         manager.updateGlobalRegistrationStrategy(globalRules);
     }
 
@@ -130,7 +130,7 @@ contract TestSldRegistrationManager is Test {
         bytes32 parentNamehash = bytes32(uint256(0x4));
         setUpRegistrationStrategy(parentNamehash);
 
-        IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false);
+        IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false, 1 ether);
         manager.updateGlobalRegistrationStrategy(rules);
 
         string memory label = "yo";
@@ -218,7 +218,7 @@ contract TestSldRegistrationManager is Test {
     }
 
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false);
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, 1 ether);
         manager.updateGlobalRegistrationStrategy(globalRules);
 
         assertEq(
@@ -229,7 +229,7 @@ contract TestSldRegistrationManager is Test {
     }
 
     function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false);
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, 1 ether);
 
         vm.startPrank(address(0x1234));
         vm.expectRevert("Ownable: caller is not the owner");
@@ -1934,6 +1934,7 @@ contract TestSldRegistrationManager is Test {
 
         setUpLabelValidator();
         setUpGlobalStrategy(true);
+        globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);

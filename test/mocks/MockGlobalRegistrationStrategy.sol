@@ -5,9 +5,11 @@ import "interfaces/IGlobalRegistrationRules.sol";
 
 contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     bool private shouldRegister;
+    uint256 private minPrice;
 
-    constructor(bool _canRegister) {
+    constructor(bool _canRegister, uint256 _minPrice) {
         shouldRegister = _canRegister;
+        minPrice = _minPrice;
     }
 
     function canRegister(
@@ -20,8 +22,8 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
         return shouldRegister;
     }
 
-    function minimumDollarPrice() external pure returns (uint256) {
-        return 1 ether;
+    function minimumDollarPrice() external view returns (uint256) {
+        return minPrice;
     }
 
     function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
