@@ -8,6 +8,7 @@ pragma solidity ^0.8.17;
  */
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
+    uint256 public handshakePercentCommission;
 
     /**
      * Sends the primary funds to the specified owners and the handshake wallet
@@ -19,7 +20,7 @@ abstract contract PaymentManager {
     function distributePrimaryFunds(address _sldOwner, address _tldOwner, uint256 _funds) internal {
         require(address(this).balance >= _funds, "not enough ether");
 
-        uint256 handshakeShare = (_funds * 5) / 100;
+        uint256 handshakeShare = (_funds * handshakePercentCommission) / 100;
 
         // send any surplus funds back to the SLD owner
         if (address(this).balance > _funds) {

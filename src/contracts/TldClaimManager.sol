@@ -10,7 +10,6 @@ import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "interfaces/IResolver.sol";
 import "src/contracts/HasUsdOracle.sol";
-import "forge-std/console.sol";
 
 /**
  * @title Tld claim manager contract
@@ -98,8 +97,6 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         require(msg.value >= expectedEther, "not enough ether");
 
-        console.log("msg.value", msg.value);
-        console.log("expectedEther", expectedEther);
         isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 

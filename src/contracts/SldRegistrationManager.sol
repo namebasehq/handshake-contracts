@@ -18,6 +18,7 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
+import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -214,15 +215,19 @@ contract SldRegistrationManager is
 
         sldRegistrationHistory[sldNamehash] = detail;
 
-        uint256 priceInDollars = getRenewalPricePerDay(
+        uint256 priceInDollars = getRenewalPrice(
             msg.sender,
             _parentNamehash,
             _label,
             _registrationLength
         );
 
-        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars * _registrationLength) /
-            1 ether;
+        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
+
+        console.log("getWeiValueOfDollar()", getWeiValueOfDollar());
+        console.log("priceInDollars", priceInDollars);
+        console.log("registrationlength", _registrationLength);
+        console.log("renew price in wei", priceInWei);
 
         distributePrimaryFunds(
             sld.ownerOf(uint256(sldNamehash)),
@@ -252,11 +257,21 @@ contract SldRegistrationManager is
     /**
      * @notice Update the handshake payment address that primary funds are sent to
      * @dev This function can only be run by the contract owner
-     * @param _addr Wallet address to set the 5% payment for primary sales to
+     * @param _addr Wallet address to set the commission payment for primary sales to
      */
     function updateHandshakePaymentAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
         handshakeWalletPayoutAddress = _addr;
+    }
+
+    /**
+     * @notice Update the handshake payment percent that primary funds are sent to
+     * @dev This function can only be run by the contract owner
+     * @param _percent % of primary sales to send to the handshake wallet
+     */
+    function updateHandshakePaymentPercent(uint256 _percent) public onlyOwner {
+        require(_percent <= 10, "cannot set to more than 10 percent");
+        handshakePercentCommission = _percent;
     }
 
     /**

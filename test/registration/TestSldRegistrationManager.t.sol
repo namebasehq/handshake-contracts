@@ -772,7 +772,77 @@ contract TestSldRegistrationManager is Test {
     }
 
     function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {
-        revert("testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet not implemented");
+        string memory label = "";
+        uint256 registrationLength = 365;
+        bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
+
+        uint256 annualCost = 2000 ether; //should be $4000 total
+
+        ISldRegistrationStrategy strategy2 = new MockRegistrationStrategy(annualCost);
+
+        sld.setMockRegistrationStrategy(parentNamehash, strategy2);
+        tld.addRegistrationStrategy(parentNamehash, strategy2);
+
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, 1 ether);
+        addMockOracle();
+
+        address claimant = address(0x6666);
+        address tldOwner = address(0x464646);
+
+        address handshakeWalletPayoutAddress = address(0x57595351);
+
+        manager.updateHandshakePaymentAddress(handshakeWalletPayoutAddress);
+        manager.updateHandshakePaymentPercent(10);
+
+        //we can just spoof the claim manager address using cheatcode to pass authorisation
+        tld.setTldClaimManager(ITldClaimManager(tldOwner));
+
+        vm.prank(tldOwner);
+        tld.register(tldOwner, "yoyo");
+
+        vm.warp(6688);
+        uint256 registrationTimestamp = block.timestamp;
+
+        hoax(claimant, 1 ether);
+        manager.registerSld{value: 1 ether}( //should cost 2 ether
+            label,
+            0x0, //secret
+            registrationLength,
+            parentNamehash,
+            claimant
+        );
+        vm.stopPrank();
+
+        assertEq(
+            handshakeWalletPayoutAddress.balance,
+            0.1 ether,
+            "handshake wallet balance not correct"
+        );
+
+        bytes32 namehash = Namehash.getNamehash(parentNamehash, label);
+
+        (, uint80 RegistrationLength, ) = manager.sldRegistrationHistory(namehash);
+
+        uint80 newRegLength = 365 * 2;
+
+        vm.warp(block.timestamp + 420);
+
+        hoax(claimant, 2 ether + 1);
+
+        manager.renewSld{value: 2 ether}(label, parentNamehash, newRegLength);
+
+        // (
+        //     uint80 NewRegistrationTime,
+        //     uint80 NewRegistrationLength, //uint96NewRegistrationPrice
+
+        // ) = manager.sldRegistrationHistory(namehash);
+
+        assertEq(
+            handshakeWalletPayoutAddress.balance,
+            0.3 ether,
+            "handshake wallet balance not correct"
+        );
     }
 
     function testSetHandshakeWalletAddressFromContractOwner_pass() public {
@@ -796,6 +866,33 @@ contract TestSldRegistrationManager is Test {
         vm.prank(address(0x12234));
         vm.expectRevert("Ownable: caller is not the owner");
         manager.updateHandshakePaymentAddress(addr);
+    }
+
+    function testSetHandshakePercentCommisionFromContractOwner_pass() public {
+        uint256 percent = 5;
+
+        manager.updateHandshakePaymentPercent(percent);
+
+        assertEq(manager.handshakePercentCommission(), percent, "percent not set");
+    }
+
+    function testSetHandshakePercentCommisionFromNotContractOwner_fail() public {
+        uint256 percent = 5;
+
+        vm.prank(address(0x12234));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.updateHandshakePaymentPercent(percent);
+
+        assertEq(manager.handshakePercentCommission(), 0, "percent set");
+    }
+
+    function testSetHandshakePercentCommisionFromContractOwnerSetOver10Percent_fail() public {
+        uint256 percent = 11;
+
+        vm.expectRevert("cannot set to more than 10 percent");
+        manager.updateHandshakePaymentPercent(percent);
+
+        assertEq(manager.handshakePercentCommission(), 0, "percent set");
     }
 
     function testSetup50PercentReductionForAddressFromOwner_pass() public {

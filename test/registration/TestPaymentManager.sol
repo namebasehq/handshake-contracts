@@ -20,12 +20,18 @@ contract PaymentManagerForTesting is PaymentManager {
 }
 
 contract TestPaymentManager is Test {
+    using stdStorage for StdStorage;
+
     PaymentManagerForTesting private paymentManager;
     address private payoutAddress;
 
     function setUp() public {
         payoutAddress = address(0x1337);
         paymentManager = new PaymentManagerForTesting(payoutAddress);
+
+        stdstore.target(address(paymentManager)).sig("handshakePercentCommission()").checked_write(
+            5
+        );
     }
 
     function testPayoutSplitCorrectlyExcessFundsReturned() public {
