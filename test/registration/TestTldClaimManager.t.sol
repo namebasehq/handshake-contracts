@@ -31,7 +31,7 @@ contract TestTldClaimManager is Test {
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata);
         MockUsdOracle oracle = new MockUsdOracle(200000000000); // $2000
-        manager.init(labelValidator, address(this), nft, strategy, oracle, 0);
+        manager.init(labelValidator, address(this), nft, strategy, oracle, 0, address(0));
     }
 
     function testAddTldManagerWallet() public {
@@ -207,7 +207,7 @@ contract TestTldClaimManager is Test {
     }
 
     function testMintTldWithNoneZeroPriceOverpay_expect_refund() public {
-        uint256 price = 2000 ether; // 100 USD
+        uint256 price = 2000 ether; // 2000 USD
         manager.updateMintPrice(price);
 
         address allowed_address = address(0x134567);
@@ -224,5 +224,8 @@ contract TestTldClaimManager is Test {
         assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), allowed_address);
 
         assertEq(allowed_address.balance, 2 ether);
+        assertEq(manager.handshakeWalletPayoutAddress().balance, 1 ether);
     }
+
+
 }

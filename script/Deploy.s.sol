@@ -123,7 +123,8 @@ contract DeployScript is Script {
             tld,
             strategy,
             priceOracle,
-            100 ether
+            100 ether,
+            ownerWallet
         );
 
         sld.setDefaultResolver(IResolver(address(resolver)));

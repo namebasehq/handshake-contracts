@@ -37,7 +37,8 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         IHandshakeTld _tld,
         ISldRegistrationStrategy _strategy,
         IPriceOracle _oracle,
-        uint256 _mintPriceInDollars
+        uint256 _mintPriceInDollars,
+        address _handshakeWalletPayoutAddress
     ) public initializer {
         labelValidator = _validator;
         handshakeTldContract = _tld;
@@ -45,6 +46,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         defaultRegistrationStrategy = _strategy;
         usdOracle = _oracle;
         mintPriceInDollars = _mintPriceInDollars;
+        handshakeWalletPayoutAddress = _handshakeWalletPayoutAddress;
         _transferOwnership(_owner);
     }
 
@@ -100,10 +102,15 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
+
+        payable(handshakeWalletPayoutAddress).transfer(expectedEther);
+
+        // refund any extra ether
         if (expectedEther < msg.value) {
             payable(msg.sender).transfer(msg.value - expectedEther);
         }
 
+    
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }
 
