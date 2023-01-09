@@ -169,6 +169,10 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         emit NewLabelValidator(address(_validator));
     }
 
+    function getMintPriceInWei() public view returns (uint256) {
+        return usdOracle.getWeiValueOfDollar() * (mintPriceInDollars / 1 ether);
+    }
+
     modifier onlyAuthorisedTldManager() {
         require(allowedTldManager[msg.sender], "not authorised to add TLD");
         _;

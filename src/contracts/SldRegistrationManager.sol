@@ -18,7 +18,6 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
-import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -223,11 +222,6 @@ contract SldRegistrationManager is
         );
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
-
-        console.log("getWeiValueOfDollar()", getWeiValueOfDollar());
-        console.log("priceInDollars", priceInDollars);
-        console.log("registrationlength", _registrationLength);
-        console.log("renew price in wei", priceInWei);
 
         distributePrimaryFunds(
             sld.ownerOf(uint256(sldNamehash)),
