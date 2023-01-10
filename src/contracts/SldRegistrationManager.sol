@@ -46,10 +46,10 @@ contract SldRegistrationManager is
 
     ICommitIntent public commitIntent;
 
-    event DiscountedAddressSet(
+    event DiscountSet(
         bytes32 indexed _tokenNamehash,
         address indexed _claimant,
-        uint256 _discount
+        SldDiscountSettings _discount
     );
 
     /**
@@ -181,6 +181,8 @@ contract SldRegistrationManager is
 
         for (uint256 i; i < _discounts.length; ) {
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
+
+            emit DiscountSet(_parentNamehash, _addresses[i], _discounts[i]);
 
             unchecked {
                 ++i;
