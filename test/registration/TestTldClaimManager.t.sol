@@ -226,6 +226,4 @@ contract TestTldClaimManager is Test {
         assertEq(allowed_address.balance, 2 ether);
         assertEq(manager.handshakeWalletPayoutAddress().balance, 1 ether);
     }
-
-
 }

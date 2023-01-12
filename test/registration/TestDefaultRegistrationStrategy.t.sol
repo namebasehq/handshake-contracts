@@ -732,40 +732,40 @@ contract TestDefaultRegistrationStrategy is Test {
         assertEq(actualPrice, (20 ether / 100) * 90);
     }
 
-    function testSetIsDisabledFromTokenOwner_pass() public {
+    function testSetisEnabledFromTokenOwner_pass() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
         tld.register(address(this), uint256(namehash));
 
-        assertFalse(strategy.isDisabled(namehash), "expect default false");
+        assertFalse(strategy.isEnabled(namehash), "expect default false");
 
-        strategy.setIsDisabled(namehash, true);
+        strategy.setIsEnabled(namehash, true);
 
-        assertTrue(strategy.isDisabled(namehash), "expect isDisabled() == true");
+        assertTrue(strategy.isEnabled(namehash), "expect isEnabled() == true");
     }
 
-    function testSetIsDisabledFromApprovedAddress_pass() public {
+    function testSetisEnabledFromApprovedAddress_pass() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
         address approved = address(0x1337);
         tld.register(address(this), uint256(namehash));
         tld.setApprovalForAll(approved, true);
 
         vm.startPrank(approved);
-        assertFalse(strategy.isDisabled(namehash), "expect default false");
+        assertFalse(strategy.isEnabled(namehash), "expect default false");
 
-        strategy.setIsDisabled(namehash, true);
-        assertTrue(strategy.isDisabled(namehash), "expect isDisabled() == true");
+        strategy.setIsEnabled(namehash, true);
+        assertTrue(strategy.isEnabled(namehash), "expect isEnabled() == true");
 
-        strategy.setIsDisabled(namehash, false);
-        assertFalse(strategy.isDisabled(namehash), "expect isDisabled() == false");
+        strategy.setIsEnabled(namehash, false);
+        assertFalse(strategy.isEnabled(namehash), "expect isEnabled() == false");
     }
 
-    function testSetIsDisabledFromNotApprovedAddress_fail() public {
+    function testSetisEnabledFromNotApprovedAddress_fail() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
         address not_approved = address(0x1337);
         tld.register(address(this), uint256(namehash));
 
         vm.startPrank(not_approved);
         vm.expectRevert("not approved or owner");
-        strategy.setIsDisabled(namehash, true);
+        strategy.setIsEnabled(namehash, true);
     }
 }

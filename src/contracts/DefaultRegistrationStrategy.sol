@@ -20,7 +20,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
     mapping(bytes32 => uint256[]) public lengthCost;
     mapping(bytes32 => uint256[]) public multiYearDiscount;
 
-    mapping(bytes32 => bool) public isDisabled;
+    mapping(bytes32 => bool) public isEnabled;
 
     event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
@@ -129,11 +129,11 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         }
     }
 
-    function setIsDisabled(bytes32 _parentNamehash, bool _isDisabled)
+    function setIsEnabled(bytes32 _parentNamehash, bool _isEnabled)
         external
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        isDisabled[_parentNamehash] = _isDisabled;
+        isEnabled[_parentNamehash] = _isEnabled;
     }
 
     function getPriceInDollars(
@@ -189,7 +189,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
         returns (bool)
     {
         return
-            interfaceId == this.isDisabled.selector ||
+            interfaceId == this.isEnabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||
             super.supportsInterface(interfaceId);
     }

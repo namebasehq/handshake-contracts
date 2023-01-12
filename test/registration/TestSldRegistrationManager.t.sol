@@ -308,11 +308,38 @@ contract TestSldRegistrationManager is Test {
 
         address recipient = address(0xbadbad);
 
-        stdstore.target(address(mockStrategy)).sig("isDisabledBool()").checked_write(true);
+        stdstore.target(address(mockStrategy)).sig("isEnabledBool()").checked_write(false);
 
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectRevert("registration strategy disabled");
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+    }
+
+    // owner of TLD should be able to register if the public registration is disabled
+    function testPurchaseSldRegistrationDisabledFromOwner_success() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, 1 ether);
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        address owner = address(0x99);
+        tld.register(owner, uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+
+        address recipient = address(0xbadbad);
+
+        stdstore.target(address(mockStrategy)).sig("isEnabledBool()").checked_write(false);
+
+        address sendingAddress = address(0x420);
+        hoax(owner, 2 ether);
         manager.registerSld{value: 2 ether}(
             label,
             secret,

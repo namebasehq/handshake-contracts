@@ -29,14 +29,14 @@ contract TestingRegistrationStrategy is ISldRegistrationStrategy {
         lowestLimit = _limit;
     }
 
-    function isDisabled(bytes32) external pure returns (bool) {
-        return false;
+    function isEnabled(bytes32) external pure returns (bool) {
+        return true;
     }
 
     function supportsInterface(bytes4 interfaceId) public pure override(IERC165) returns (bool) {
         return
             interfaceId == this.supportsInterface.selector ||
-            interfaceId == this.isDisabled.selector ||
+            interfaceId == this.isEnabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||
             interfaceId == this.addressDiscounts.selector;
     }

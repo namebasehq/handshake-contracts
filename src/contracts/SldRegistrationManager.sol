@@ -110,11 +110,15 @@ contract SldRegistrationManager is
         require(
             address(strategy).supportsInterface(type(IERC165).interfaceId) &&
                 strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.isDisabled.selector),
+                strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector),
             "registration strategy does not support interface"
         );
 
-        require(!strategy.isDisabled(_parentNamehash), "registration strategy disabled");
+        require(
+            strategy.isEnabled(_parentNamehash) ||
+                tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
+            "registration strategy disabled"
+        );
 
         uint256 dollarPrice = getRegistrationPrice(
             strategy,

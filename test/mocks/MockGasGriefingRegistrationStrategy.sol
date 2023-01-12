@@ -5,7 +5,7 @@ import "interfaces/ISldRegistrationStrategy.sol";
 import {console} from "forge-std/console.sol";
 
 contract MockRevertingRegistrationStrategy is ISldRegistrationStrategy {
-    function isDisabled(bytes32 _parentNamehash) external view returns (bool) {}
+    function isEnabled(bytes32 _parentNamehash) external view returns (bool) {}
 
     function getPriceInDollars(address, bytes32, string memory, uint256, bool)
         external
@@ -20,7 +20,7 @@ contract MockRevertingRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == type(ISldRegistrationStrategy).interfaceId ||
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == this.getPriceInDollars.selector ||
-            interfaceId == this.isDisabled.selector;
+            interfaceId == this.isEnabled.selector;
     }
 }
 
@@ -31,7 +31,7 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
         gasLimit = _gasLimit;
     }
 
-    function isDisabled(bytes32 _parentNamehash) external view returns (bool) {}
+    function isEnabled(bytes32 _parentNamehash) external view returns (bool) {}
 
     function getPriceInDollars(address, bytes32, string memory, uint256, bool)
         external
@@ -58,6 +58,6 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
             interfaceId == type(ISldRegistrationStrategy).interfaceId ||
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == this.getPriceInDollars.selector ||
-            interfaceId == this.isDisabled.selector;
+            interfaceId == this.isEnabled.selector;
     }
 }
