@@ -87,6 +87,8 @@ abstract contract HandshakeNft is ERC721, Ownable {
             return (spender == owner ||
                 isApprovedForAll(owner, spender) ||
                 getApproved(tokenId) == spender);
+        } else {
+            return false;
         }
     }
 

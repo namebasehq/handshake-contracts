@@ -29,6 +29,7 @@ contract TestPaymentManager is Test {
         payoutAddress = address(0x1337);
         paymentManager = new PaymentManagerForTesting(payoutAddress);
 
+        // set the commission to 5%
         stdstore.target(address(paymentManager)).sig("handshakePercentCommission()").checked_write(
             5
         );
