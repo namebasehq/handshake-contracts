@@ -9,5 +9,5 @@ lib/
 .env
 .github/
 .gas-snapshot
-.js
+*.js
 

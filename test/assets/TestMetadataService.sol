@@ -75,7 +75,6 @@ contract TestHandshakeTld is Test {
 
         string memory uri = metadata.tokenURI(namehash);
 
-        console.log("tld uri: ", uri);
         assertEq(
             keccak256(abi.encodePacked(uri)),
             0xd496b2654e3fb6c2627bbcfd565d5c932e6e528a4752f78eef4a108fd2810f26
