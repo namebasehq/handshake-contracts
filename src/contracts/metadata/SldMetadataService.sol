@@ -26,11 +26,13 @@ contract SldMetadataService is IMetadataService {
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
         //can use nft.name(_namehash) to get domain name for embedded SVG.
 
-        address owner;
+        address owner = nft.ownerOf(uint256(_namehash));
         bytes32 parentNamehash = nft.namehashToParentMap(_namehash);
         string memory label = nft.namehashToLabelMap(_namehash);
         uint256 cost = registrationManager.getRenewalPrice(owner, parentNamehash, label, 365);
-        return json(nft.name(_namehash), nft.parent(_namehash), nft.expiry(_namehash), cost);
+        uint256 maxCost = registrationManager.pricesAtRegistration(_namehash, 0);
+        return
+            json(nft.name(_namehash), nft.parent(_namehash), nft.expiry(_namehash), cost, maxCost);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -43,7 +45,8 @@ contract SldMetadataService is IMetadataService {
         string memory _name,
         string memory _parentName,
         uint256 _expiry,
-        uint256 _renewalCost
+        uint256 _renewalCost,
+        uint256 _maxRenewalCost
     ) private view returns (string memory) {
         bytes memory data;
 
@@ -70,12 +73,18 @@ contract SldMetadataService is IMetadataService {
         );
 
         bytes memory renewalCost = abi.encodePacked(
-            '{"trait_type" : "annual renewal cost", "display_type": "number", "value": ',
+            '{"trait_type" : "current annual cost", "display_type": "number", "value": ',
             _renewalCost.toString(),
+            "},"
+        );
+
+        bytes memory maxRenewalCost = abi.encodePacked(
+            '{"trait_type" : "max annual cost", "display_type": "number", "value": ',
+            _maxRenewalCost.toString(),
             "}"
         );
 
-        data = abi.encodePacked(data, parentName, expiryText, renewalCost, end);
+        data = abi.encodePacked(data, parentName, expiryText, renewalCost, maxRenewalCost, end);
 
         return string(data);
     }

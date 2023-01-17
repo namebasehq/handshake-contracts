@@ -32,7 +32,7 @@ contract TestHandshakeTld is Test {
 
         assertEq(
             keccak256(abi.encodePacked(uri)),
-            0x1c86ec8fc4b13bf5fb69d3d57e589f65563849bc7370a64c4e0ecc8889d84c38
+            0x11424fc98c41050f17186602e30d2df4b037c1297ecdb366363c9c30c6535e85
         );
 
         /*
@@ -63,10 +63,12 @@ contract TestHandshakeTld is Test {
                                 "trait_type" : "annual renewal cost", 
                                 "display_type": "number", 
                                 "value": 666
+                            },
+                                "trait_type":"max annual cost",
+                                "display_type":"number",
+                                "value":69420 
                             }]
             }
-
-
         */
     }
 

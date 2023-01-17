@@ -41,6 +41,11 @@ interface ISldRegistrationManager {
 
     function globalStrategy() external view returns (IGlobalRegistrationRules);
 
+    function pricesAtRegistration(bytes32 _sldNamehash, uint256 _index)
+        external
+        view
+        returns (uint80);
+
     event RegisterSld(
         bytes32 indexed _tldNamehash,
         bytes32 _secret,

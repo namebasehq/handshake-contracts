@@ -66,10 +66,18 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         string calldata _label,
         uint256 _registrationLength
     ) external view returns (uint256 _price) {}
+
+    function pricesAtRegistration(bytes32, uint256) external pure returns (uint80) {
+        return 69420;
+    }
 }
 
 contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     uint256 private renewalPrice;
+
+    function pricesAtRegistration(bytes32, uint256) external pure returns (uint80) {
+        return 69420;
+    }
 
     function registerSld(
         string calldata _label,
