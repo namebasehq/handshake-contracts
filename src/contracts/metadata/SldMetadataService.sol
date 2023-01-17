@@ -2,22 +2,35 @@
 pragma solidity ^0.8.17;
 
 import "interfaces/IMetadataService.sol";
-import "contracts/HandshakeNft.sol";
+import "interfaces/IHandshakeSld.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "src/interfaces/ISldRegistrationManager.sol";
 
-contract NftMetadataService is IMetadataService {
+contract SldMetadataService is IMetadataService {
     using Strings for uint256;
-    HandshakeNft public nft;
+    IHandshakeSld public nft;
     string internal backgroundColour;
 
-    constructor(HandshakeNft _nft, string memory _background) {
+    ISldRegistrationManager public registrationManager;
+
+    constructor(
+        IHandshakeSld _nft,
+        ISldRegistrationManager _registrationManager,
+        string memory _background
+    ) {
         nft = _nft;
         backgroundColour = _background;
+        registrationManager = _registrationManager;
     }
 
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
         //can use nft.name(_namehash) to get domain name for embedded SVG.
-        return json(nft.name(_namehash), nft.parent(_namehash), nft.expiry(_namehash));
+
+        address owner;
+        bytes32 parentNamehash = nft.namehashToParentMap(_namehash);
+        string memory label = nft.namehashToLabelMap(_namehash);
+        uint256 cost = registrationManager.getRenewalPrice(owner, parentNamehash, label, 365);
+        return json(nft.name(_namehash), nft.parent(_namehash), nft.expiry(_namehash), cost);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -26,11 +39,12 @@ contract NftMetadataService is IMetadataService {
             interfaceID == this.tokenURI.selector;
     }
 
-    function json2(string memory _name, string memory _parentName, uint256 _expiry)
-        private
-        view
-        returns (string memory)
-    {
+    function json(
+        string memory _name,
+        string memory _parentName,
+        uint256 _expiry,
+        uint256 _renewalCost
+    ) private view returns (string memory) {
         bytes memory data;
 
         string memory start = "data:application/json;utf8,{";
@@ -38,62 +52,30 @@ contract NftMetadataService is IMetadataService {
         string memory description = '"description": "Transferable Handshake Domain",';
         bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
         string memory attributeStart = '"attributes":[';
+
+        string memory end = "]}";
+
+        data = abi.encodePacked(start, nftName, description, image, attributeStart);
+
         bytes memory parentName = abi.encodePacked(
             '{"trait_type" : "parent name", "value" : "',
             _parentName,
             '"},'
         );
+
         bytes memory expiryText = abi.encodePacked(
             '{"trait_type" : "expiry", "display_type": "date", "value": ',
             _expiry.toString(),
+            "},"
+        );
+
+        bytes memory renewalCost = abi.encodePacked(
+            '{"trait_type" : "annual renewal cost", "display_type": "number", "value": ',
+            _renewalCost.toString(),
             "}"
         );
-        string memory end = "]}";
 
-        data = abi.encodePacked(start, nftName, description, image, attributeStart);
-
-        //parent domains do not expire
-        if (_expiry > 0) {
-            data = abi.encodePacked(data, parentName, expiryText);
-        }
-
-        data = abi.encodePacked(data, end);
-
-        return string(data);
-    }
-
-    function json(string memory _name, string memory _parentName, uint256 _expiry)
-        private
-        view
-        returns (string memory)
-    {
-        bytes memory data;
-
-        string memory start = "data:application/json;utf8,{";
-        bytes memory nftName = abi.encodePacked('"name": "', _name, '",');
-        string memory description = '"description": "Transferable Handshake Domain",';
-        bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
-        string memory attributeStart = '"attributes":[';
-        bytes memory parentName = abi.encodePacked(
-            '{"trait_type" : "parent name", "value" : "',
-            _parentName,
-            '"},'
-        );
-        bytes memory expiryText = abi.encodePacked(
-            '{"trait_type" : "expiry", "display_type": "date", "value": ',
-            _expiry.toString(),
-            "}"
-        );
-        string memory end = "]}";
-
-        data = abi.encodePacked(start, nftName, description, image, attributeStart);
-
-        //parent domains do not expire
-        if (_expiry > 0) {
-            data = abi.encodePacked(data, parentName, expiryText);
-        }
-
-        data = abi.encodePacked(data, end);
+        data = abi.encodePacked(data, parentName, expiryText, renewalCost, end);
 
         return string(data);
     }

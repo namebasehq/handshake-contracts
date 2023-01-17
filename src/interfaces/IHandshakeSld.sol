@@ -21,4 +21,12 @@ interface IHandshakeSld {
         external
         view
         returns (bytes32 _parentNamehash);
+
+    function name(bytes32 _sldNamehash) external view returns (string memory _fullDomain);
+
+    function expiry(bytes32 _namehash) external view returns (uint256 _expiry);
+
+    function parent(bytes32) external view returns (string memory _parentName);
+
+    function namehashToLabelMap(bytes32 _childNamehash) external view returns (string memory);
 }

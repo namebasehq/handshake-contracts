@@ -231,7 +231,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _sldNamehash bytes32 representation of the sub domain
      * @return _fullDomain
      */
-    function name(bytes32 _sldNamehash) external view override returns (string memory _fullDomain) {
+    function name(bytes32 _sldNamehash)
+        external
+        view
+        override(HandshakeNft, IHandshakeSld)
+        returns (string memory _fullDomain)
+    {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
         require(tldNamehash != 0x0, "domain does not exist");
         string memory tldLabel = handshakeTldContract.namehashToLabelMap(tldNamehash);
@@ -243,7 +248,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     function parent(bytes32 _sldNamehash)
         external
         view
-        override
+        override(HandshakeNft, IHandshakeSld)
         returns (string memory _parentName)
     {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
@@ -252,7 +257,12 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _parentName = handshakeTldContract.namehashToLabelMap(tldNamehash);
     }
 
-    function expiry(bytes32 _namehash) external view override returns (uint256 _expiry) {
+    function expiry(bytes32 _namehash)
+        external
+        view
+        override(HandshakeNft, IHandshakeSld)
+        returns (uint256 _expiry)
+    {
         (uint80 regTime, uint96 regLength, ) = registrationManager.sldRegistrationHistory(
             _namehash
         );

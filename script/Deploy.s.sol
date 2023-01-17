@@ -8,7 +8,8 @@ import "contracts/GlobalRegistrationRules.sol";
 import "contracts/HandshakeSld.sol";
 import "contracts/HandshakeTld.sol";
 import "contracts/LabelValidator.sol";
-import "contracts/NftMetadataService.sol";
+import "contracts/metadata/SldMetadataService.sol";
+import "contracts/metadata/TldMetadataService.sol";
 import "contracts/SldCommitIntent.sol";
 import "contracts/SldRegistrationManager.sol";
 import "contracts/DefaultRegistrationStrategy.sol";
@@ -79,17 +80,6 @@ contract DeployScript is Script {
         HandshakeTld tld = new HandshakeTld(TldClaimManager(address(uups)));
         HandshakeSld sld = new HandshakeSld(tld);
 
-        {
-            NftMetadataService tldMetadata = new NftMetadataService(tld, "#000000");
-            NftMetadataService sldMetadata = new NftMetadataService(sld, "#1f7bac");
-
-            console.log("tld metadata", address(tldMetadata));
-            console.log("sld metadata", address(sldMetadata));
-
-            tld.setMetadataContract(tldMetadata);
-            sld.setMetadataContract(sldMetadata);
-        }
-
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
             deployerWallet,
@@ -106,6 +96,21 @@ contract DeployScript is Script {
             ownerWallet,
             ownerWallet
         );
+
+        {
+            TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
+            SldMetadataService sldMetadata = new SldMetadataService(
+                sld,
+                SldRegistrationManager(address(uups2)),
+                "#1f7bac"
+            );
+
+            console.log("tld metadata", address(tldMetadata));
+            console.log("sld metadata", address(sldMetadata));
+
+            tld.setMetadataContract(tldMetadata);
+            sld.setMetadataContract(sldMetadata);
+        }
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
@@ -138,8 +143,12 @@ contract DeployScript is Script {
         delete ownerWallet;
 
         {
-            NftMetadataService otherTldMetadata = new NftMetadataService(tld, "#d90e2d"); //red TLD
-            NftMetadataService otherSldMetadata = new NftMetadataService(sld, "#950b96"); //purple SLD
+            TldMetadataService otherTldMetadata = new TldMetadataService(tld, "#d90e2d"); //red TLD
+            SldMetadataService otherSldMetadata = new SldMetadataService(
+                sld,
+                SldRegistrationManager(address(uups2)),
+                "#950b96"
+            ); //purple SLD
             TestingRegistrationStrategy otherStrategy = new TestingRegistrationStrategy();
 
             console.log("tld alternate metadata", address(otherTldMetadata));

@@ -32,6 +32,13 @@ interface ISldRegistrationManager {
 
     function tld() external view returns (IHandshakeTld);
 
+    function getRenewalPrice(
+        address _addr,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) external view returns (uint256 _price);
+
     function globalStrategy() external view returns (IGlobalRegistrationRules);
 
     event RegisterSld(

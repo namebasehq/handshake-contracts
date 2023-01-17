@@ -59,4 +59,58 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     ) public pure returns (uint256) {
         revert("not implemented");
     }
+
+    function getRenewalPrice(
+        address _addr,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) external view returns (uint256 _price) {}
+}
+
+contract MockEmptySldRegistrationManager is ISldRegistrationManager {
+    uint256 private renewalPrice;
+
+    function registerSld(
+        string calldata _label,
+        bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable {}
+
+    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
+        external
+        payable
+    {}
+
+    function getRenewalPricePerDay(
+        address _addr,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) external view returns (uint256) {}
+
+    function sldRegistrationHistory(bytes32 _sldNamehash)
+        external
+        view
+        returns (uint80, uint80, uint96)
+    {}
+
+    function setRenewalPrice(uint256 _renewalPrice) external {
+        renewalPrice = _renewalPrice;
+    }
+
+    function getRenewalPrice(
+        address _addr,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength
+    ) external view returns (uint256 _price) {
+        return renewalPrice;
+    }
+
+    function tld() external view returns (IHandshakeTld) {}
+
+    function globalStrategy() external view returns (IGlobalRegistrationRules) {}
 }

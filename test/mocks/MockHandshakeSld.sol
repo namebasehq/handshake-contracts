@@ -8,6 +8,11 @@ contract MockHandshakeSld is IHandshakeSld {
     mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
     mapping(bytes32 => ISldRegistrationStrategy) mockRegistrationStrategy;
     mapping(bytes32 => bytes32) public namehashToParentMap;
+    mapping(bytes32 => string) nodeToName;
+
+    uint256 public ExpiryTimestamp;
+
+    string public ParentName;
 
     function isApprovedOrOwnerOfChildOrParent(uint256 _id) external view returns (bool) {
         return idToAddressToApproved[_id][msg.sender];
@@ -29,6 +34,8 @@ contract MockHandshakeSld is IHandshakeSld {
     function addMapping(uint256 _id, address _addr, bool _approved) public {
         idToAddressToApproved[_id][_addr] = _approved;
     }
+
+    function namehashToLabelMap(bytes32 _childNamehash) external view returns (string memory) {}
 
     function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
         external
@@ -58,5 +65,29 @@ contract MockHandshakeSld is IHandshakeSld {
 
     function setNamehashToParentMap(bytes32 _childNamehash, bytes32 _parentNamehash) external {
         namehashToParentMap[_childNamehash] = _parentNamehash;
+    }
+
+    function setParent(string memory _name) public {
+        ParentName = _name;
+    }
+
+    function parent(bytes32) public view returns (string memory _parentName) {
+        _parentName = ParentName;
+    }
+
+    function setExpiry(uint256 _expiry) public {
+        ExpiryTimestamp = _expiry;
+    }
+
+    function expiry(bytes32) public view override returns (uint256 _expiry) {
+        _expiry = ExpiryTimestamp;
+    }
+
+    function name(bytes32 _namehash) external view override returns (string memory _name) {
+        return nodeToName[_namehash];
+    }
+
+    function setName(bytes32 _namehash, string calldata _name) public {
+        nodeToName[_namehash] = _name;
     }
 }
