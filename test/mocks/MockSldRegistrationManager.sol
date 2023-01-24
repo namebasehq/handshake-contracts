@@ -109,12 +109,11 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
         renewalPrice = _renewalPrice;
     }
 
-    function getRenewalPrice(
-        address _addr,
-        bytes32 _parentNamehash,
-        string calldata _label,
-        uint256 _registrationLength
-    ) external view returns (uint256 _price) {
+    function getRenewalPrice(address, bytes32, string calldata, uint256)
+        external
+        view
+        returns (uint256 _price)
+    {
         return renewalPrice;
     }
 

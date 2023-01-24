@@ -6,7 +6,8 @@ import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import "test/mocks/TestResolvers.sol";
 import "test/mocks/MockHandshakeNft.sol";
 
-import "utils/NameEncoder.sol";
+//import "utils/NameEncoder.sol";
+import {NameEncoder} from "@ensdomains/ens-contracts/contracts/utils/NameEncoder.sol";
 
 contract TestDNSResolver is Test {
     using NameEncoder for string;

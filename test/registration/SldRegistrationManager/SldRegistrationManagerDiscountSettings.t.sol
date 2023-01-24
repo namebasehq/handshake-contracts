@@ -38,7 +38,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 50;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -188,7 +187,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -254,7 +252,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -320,7 +317,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 0;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -388,7 +384,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -454,7 +449,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -523,7 +517,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -592,7 +585,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -661,7 +653,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -731,7 +722,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -829,7 +819,9 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 annualCost = 100 ether;
 
-        tld.register(address(this), "yoyo");
+        address owner = address(0x2);
+
+        tld.register(owner, "yoyo");
 
         ISldRegistrationStrategy strategy = new MockRegistrationStrategy(annualCost);
 
@@ -840,7 +832,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         setUpGlobalStrategy(true, 1 ether);
         addMockOracle();
 
-        uint256 discount = 100;
+        vm.startPrank(owner);
 
         address[] memory arr1 = new address[](5);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](5);
@@ -879,6 +871,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         assertEq(price, 100 ether, "registration should be full price");
 
+        vm.stopPrank();
         hoax(arr1[0], price);
         manager.registerSld{value: price}(
             label,
@@ -972,8 +965,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         setUpLabelValidator();
         setUpGlobalStrategy(true, 1 ether);
         addMockOracle();
-
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](5);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](5);
@@ -1104,7 +1095,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -1141,7 +1131,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
@@ -1181,7 +1170,6 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         addMockOracle();
 
         address addr = address(0x225599);
-        uint256 discount = 100;
 
         address[] memory arr1 = new address[](1);
         SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
