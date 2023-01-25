@@ -2,18 +2,15 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
-import "interfaces/ILabelValidator.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
-import "interfaces/IPriceOracle.sol";
 import "structs/SldRegistrationDetail.sol";
 import "structs/SldDiscountSettings.sol";
 import "src/utils/Namehash.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
@@ -33,7 +30,6 @@ contract SldRegistrationManager is
     HasLabelValidator
 {
     using ERC165Checker for address;
-    using Strings for uint256;
 
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
@@ -230,7 +226,7 @@ contract SldRegistrationManager is
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
         distributePrimaryFunds(
-            sld.ownerOf(uint256(sldNamehash)),
+            msg.sender,
             tld.ownerOf(uint256(_parentNamehash)),
             priceInWei
         );
@@ -374,6 +370,7 @@ contract SldRegistrationManager is
             renewalCostPerAnnum -
             ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
 
+        //
         uint256 renewalPrice = (((
             renewalCostPerAnnum < globalStrategy.minimumDollarPrice()
                 ? globalStrategy.minimumDollarPrice()

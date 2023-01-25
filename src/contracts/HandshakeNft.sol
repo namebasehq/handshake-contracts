@@ -1,17 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {console} from "forge-std/console.sol";
-import {Namehash} from "utils/Namehash.sol";
-
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IMetadataService.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "contracts/HasLabelValidator.sol";
 import "interfaces/ILabelValidator.sol";
 import "interfaces/IResolver.sol";

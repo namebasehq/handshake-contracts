@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import {Namehash} from "utils/Namehash.sol";
 import "contracts/HandshakeNft.sol";
-import "contracts/TldClaimManager.sol";
 import "interfaces/IHandshakeTld.sol";
-import "interfaces/ITldClaimManager.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract HandshakeTld is HandshakeNft, IHandshakeTld {
-    using SafeMath for uint256;
+
     ITldClaimManager public claimManager;
 
     // a map of string labels
@@ -99,8 +97,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         view
         returns (address receiver, uint256 royaltyAmount)
     {
-        uint256 divisor = royaltyPayoutAmount.div(10);
-        uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice.div(divisor);
+        uint256 divisor = royaltyPayoutAmount / 10;
+        uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice / divisor;
 
         address payoutAddress = royaltyPayoutAddress == address(0) ? owner() : royaltyPayoutAddress;
         return (payoutAddress, amount);

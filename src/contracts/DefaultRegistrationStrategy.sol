@@ -5,8 +5,6 @@ import {Namehash} from "utils/Namehash.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "interfaces/ISldRegistrationManager.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IHandshakeTld.sol";
 import "src/utils/Multicallable.sol";

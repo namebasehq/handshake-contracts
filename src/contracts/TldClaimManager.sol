@@ -2,13 +2,10 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
-import "interfaces/ILabelValidator.sol";
 import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
-import "interfaces/IResolver.sol";
 import "src/contracts/HasUsdOracle.sol";
 
 /**

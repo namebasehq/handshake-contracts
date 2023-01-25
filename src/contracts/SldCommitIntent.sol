@@ -2,10 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "interfaces/ICommitIntent.sol";
-import "interfaces/ILabelValidator.sol";
-import "contracts/LabelValidator.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "forge-std/console.sol";
 
 /**
  * @title SLD intent to register

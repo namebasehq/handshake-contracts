@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import "interfaces/IMetadataService.sol";
 import "interfaces/IHandshakeSld.sol";
 import "contracts/HandshakeNft.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "src/interfaces/ISldRegistrationManager.sol";
 
 contract TldMetadataService is IMetadataService {

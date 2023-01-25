@@ -2,18 +2,15 @@
 pragma solidity ^0.8.17;
 
 import "contracts/HandshakeNft.sol";
-import "contracts/HandshakeTld.sol";
-import "contracts/SldCommitIntent.sol";
+import {Namehash} from "utils/Namehash.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "structs/SldDetail.sol";
 import "structs/SldRegistrationDetail.sol";
-import "interfaces/IPriceOracle.sol";
+
 import "contracts/UsdPriceOracle.sol";
-import "contracts/HasUsdOracle.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
 import "interfaces/ISldRegistrationManager.sol";

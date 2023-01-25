@@ -48,10 +48,10 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
-        address ownerWallet; //second wallet in anvil
+        address ownerWallet;
         address deployerWallet;
 
-        if (block.chainid == 757099) {
+        if (block.chainid == vm.envUint("NAMELESS_CHAIN_ID")) {
             ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
             deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
             vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
