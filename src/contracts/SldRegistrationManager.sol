@@ -153,7 +153,7 @@ contract SldRegistrationManager is
 
         require(msg.value >= priceInWei, "insufficient funds");
 
-        distributePrimaryFunds(_recipient, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
         require(
             commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
@@ -225,11 +225,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
-        distributePrimaryFunds(
-            msg.sender,
-            tld.ownerOf(uint256(_parentNamehash)),
-            priceInWei
-        );
+        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }
@@ -358,7 +354,7 @@ contract SldRegistrationManager is
             (registrationYears > 10 ? 10 : registrationYears) - 1
         ];
 
-        uint256 registrationPrice = safeCallRegistrationStrategyPublic(
+        uint256 registrationPrice = getRegistrationBasePrice(
             address(strategy),
             _addr,
             _parentNamehash,
@@ -400,7 +396,7 @@ contract SldRegistrationManager is
             let ptr := mload(0x40)
 
             success := staticcall(
-                div(gas(), 30), // 3.3% of gas to stop any gas griefing
+                1000000, // 1m gas units is plenty
                 _strategy,
                 add(_data, 0x20),
                 mload(_data),
@@ -416,7 +412,7 @@ contract SldRegistrationManager is
         }
     }
 
-    function safeCallRegistrationStrategyPublic(
+    function getRegistrationBasePrice(
         address _strategy,
         address _addr,
         bytes32 _parentNamehash,
@@ -456,16 +452,14 @@ contract SldRegistrationManager is
                 _parentNamehash,
                 _label,
                 _registrationLength,
-                false
+                true
             ),
             _registrationLength
         );
 
         uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
-
         currentPrice = currentPrice - discount;
         uint256 minPrice = (globalStrategy.minimumDollarPrice() * _registrationLength) / 365;
-
         return minPrice > currentPrice ? minPrice : currentPrice;
     }
 

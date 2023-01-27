@@ -6,7 +6,6 @@ import "contracts/HandshakeNft.sol";
 import "interfaces/IHandshakeTld.sol";
 
 contract HandshakeTld is HandshakeNft, IHandshakeTld {
-
     ITldClaimManager public claimManager;
 
     // a map of string labels

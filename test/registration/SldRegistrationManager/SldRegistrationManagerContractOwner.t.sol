@@ -131,21 +131,24 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetHandshakePercentCommisionFromNotContractOwner_fail() public {
-        uint256 percent = 5;
+        uint256 percent = 8;
+        uint256 currentValue = manager.handshakePercentCommission();
 
         vm.prank(address(0x12234));
         vm.expectRevert("Ownable: caller is not the owner");
         manager.updateHandshakePaymentPercent(percent);
 
-        assertEq(manager.handshakePercentCommission(), 0, "percent set");
+        assertEq(manager.handshakePercentCommission(), currentValue, "percent set");
     }
 
     function testSetHandshakePercentCommisionFromContractOwnerSetOver10Percent_fail() public {
         uint256 percent = 11;
 
+        uint256 currentValue = manager.handshakePercentCommission();
+
         vm.expectRevert("cannot set to more than 10 percent");
         manager.updateHandshakePaymentPercent(percent);
 
-        assertEq(manager.handshakePercentCommission(), 0, "percent set");
+        assertEq(manager.handshakePercentCommission(), currentValue, "percent set");
     }
 }

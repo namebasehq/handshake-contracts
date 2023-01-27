@@ -11,3 +11,4 @@ lib/
 .gas-snapshot
 .VSCodeCounter/*
 *.js
+*.info

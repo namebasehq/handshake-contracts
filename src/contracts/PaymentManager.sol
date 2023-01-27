@@ -8,7 +8,7 @@ pragma solidity ^0.8.17;
  */
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
-    uint256 public handshakePercentCommission;
+    uint256 public handshakePercentCommission = 5;
 
     event PaymentSent(address indexed _to, uint256 _amount);
 
@@ -23,15 +23,18 @@ abstract contract PaymentManager {
         require(msg.value >= _funds, "not enough ether");
 
         uint256 handshakeShare = (_funds * handshakePercentCommission) / 100;
+        uint256 primary = _funds - handshakeShare;
+        uint256 excess = msg.value - _funds;
+
+        emit PaymentSent(address(0), _funds);
 
         bool isSent;
 
         // send any surplus funds back to the SLD owner
-        if (msg.value > _funds) {
-            uint256 excess = msg.value - _funds;
-            isSent = payable(_sldOwner).send(excess);
+        if (excess > 0) {
+            (isSent, ) = payable(_sldOwner).call{value: excess, gas: 30_000}("");
 
-            if (isSent){
+            if (isSent) {
                 emit PaymentSent(_sldOwner, excess);
             }
         }
@@ -39,21 +42,22 @@ abstract contract PaymentManager {
         // if there is a failure to send ether then the funds will just get sent to the handshake wallet
         // this is done to prevent a malicious TLD owner from blocking renewals
 
-        uint256 primary = _funds - handshakeShare;
-        isSent = payable(_tldOwner).send(primary);
+        (isSent, ) = payable(_tldOwner).call{value: primary, gas: 30_000}("");
 
-        if (isSent){
-            emit PaymentSent(_tldOwner, _funds - handshakeShare);
+        if (isSent) {
+            emit PaymentSent(_tldOwner, primary);
         }
 
         uint256 remaining = address(this).balance;
-        bool result = payable(handshakeWalletPayoutAddress).send(remaining);
+        if (remaining > 0) {
+            (bool result, ) = payable(handshakeWalletPayoutAddress).call{
+                value: remaining,
+                gas: 30_000
+            }("");
+            emit PaymentSent(handshakeWalletPayoutAddress, remaining);
 
-
-        emit PaymentSent(handshakeWalletPayoutAddress, remaining);
-
-
-        // revert if the transfer failed and funds sat in the contract
-        require(result, "transfer failed");
+            // revert if the transfer failed and funds sat in the contract
+            require(result, "transfer failed");
+        }
     }
 }

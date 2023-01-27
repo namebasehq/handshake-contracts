@@ -303,7 +303,8 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
             recipient
         );
 
-        assertEq(recipient.balance, 0.11 ether, "balance not correct");
+        // funds should be returned to msg.sender
+        assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
 
         //assert
         for (uint256 i; i < 10; i++) {
