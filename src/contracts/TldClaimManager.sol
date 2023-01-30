@@ -99,12 +99,12 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
-        (bool result,) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+        (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
         require(result, "transfer failed");
         // refund any extra ether
         if (expectedEther < msg.value) {
-            (result,) = msg.sender.call{value: msg.value - expectedEther}("");
+            (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
             require(result, "transfer failed");
         }
 

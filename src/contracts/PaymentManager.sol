@@ -8,7 +8,7 @@ pragma solidity ^0.8.17;
  */
 abstract contract PaymentManager {
     address public handshakeWalletPayoutAddress;
-    uint256 public handshakePercentCommission = 5;
+    uint256 public handshakePercentCommission;
 
     event PaymentSent(address indexed _to, uint256 _amount);
 

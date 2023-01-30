@@ -55,16 +55,23 @@ contract DeployScript is Script {
             ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
             deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
             vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
+            priceOracle = new MockUsdOracle(200000000000);
+        } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID")) {
+            ownerWallet = 0xD3d701a25177767d9515D24bAe33F2Dc7A5D5EeF;
+            deployerWallet = 0xBB21e0D5D40542db1410EE11B909B14A1e816d17;
+            vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
+            priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
         } else {
             ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
             deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
             vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+            priceOracle = new MockUsdOracle(200000000000);
         }
 
         labelValidator = new LabelValidator();
 
         //priceOracle = new UsdPriceOracle();
-        priceOracle = new MockUsdOracle(200000000000);
+
         globalRules = new GlobalRegistrationRules();
 
         commitIntent = new SldCommitIntent();
@@ -139,6 +146,8 @@ contract DeployScript is Script {
         sld.transferOwnership(ownerWallet);
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
+
+        SldRegistrationManager(address(uups2)).updateHandshakePaymentPercent(5);
 
         delete ownerWallet;
 

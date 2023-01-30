@@ -7,8 +7,9 @@ import "interfaces/IPriceOracle.sol";
 contract UsdPriceOracle is IPriceOracle {
     AggregatorV3Interface internal priceFeed;
 
-    constructor() {
-        priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+    constructor(address _oracle) {
+        // goerli optimism - 0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8
+        priceFeed = AggregatorV3Interface(_oracle);
     }
 
     function getPrice() public view returns (uint256) {

@@ -170,6 +170,14 @@ contract TestHandshakeTld is Test {
         assertEq(amount, 0);
     }
 
+    function testUpdateTldClaimManagerFromNotOwner_fail() public {
+        address claimManager = address(0x123456);
+        vm.startPrank(address(0x998877));
+        vm.expectRevert("Ownable: caller is not the owner");
+        tld.setTldClaimManager(ITldClaimManager(claimManager));
+        vm.stopPrank();
+    }
+
     function testAddRegistrationStrategyToTldDomain_pass() public {
         string memory tldName = "test";
         address tldOwner = address(0x44668822);
@@ -271,5 +279,24 @@ contract TestHandshakeTld is Test {
         tld.registerWithResolver(tldOwner, tldName, defaultRegistrationStrategy);
 
         assertEq(address(tld.tokenResolverMap(parentNamehash)), address(defaultResolver));
+    }
+
+    function testSetRoyaltyPayoutAndAddressFromOwner() public {
+        address royaltyAddress = address(0x123456);
+        uint256 royaltyAmount = 100;
+
+        tld.setRoyaltyPayoutAmountAndAddress(royaltyAddress, royaltyAmount);
+
+        assertEq(tld.royaltyPayoutAddress(), royaltyAddress);
+        assertEq(tld.royaltyPayoutAmount(), royaltyAmount);
+    }
+
+    function testSetRoyaltyPayoutAndAddressFromNotOwner_fail() public {
+        address royaltyAddress = address(0x123456);
+        uint256 royaltyAmount = 100;
+
+        vm.startPrank(address(0x998877));
+        vm.expectRevert("Ownable: caller is not the owner");
+        tld.setRoyaltyPayoutAmountAndAddress(royaltyAddress, royaltyAmount);
     }
 }

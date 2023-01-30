@@ -68,6 +68,13 @@ contract TestHandshakeSld is Test {
         );
     }
 
+    function testSetRegistrationManagerFromNotOwner_fail() public {
+        vm.startPrank(address(0x66666));
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        sld.setRegistrationManager(manager);
+    }
+
     function testMintSldFromRegistryAddress_success() public {
         vm.startPrank(address(manager));
 
