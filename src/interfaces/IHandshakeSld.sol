@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "interfaces/ISldRegistrationStrategy.sol";
+import "interfaces/IResolver.sol";
 
 interface IHandshakeSld {
     function isApprovedOrOwner(address spender, uint256 tokenId) external view returns (bool);

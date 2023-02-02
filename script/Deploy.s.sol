@@ -108,6 +108,7 @@ contract DeployScript is Script {
             TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
             SldMetadataService sldMetadata = new SldMetadataService(
                 sld,
+                tld,
                 SldRegistrationManager(address(uups2)),
                 "#1f7bac"
             );
@@ -155,6 +156,7 @@ contract DeployScript is Script {
             TldMetadataService otherTldMetadata = new TldMetadataService(tld, "#d90e2d"); //red TLD
             SldMetadataService otherSldMetadata = new SldMetadataService(
                 sld,
+                tld,
                 SldRegistrationManager(address(uups2)),
                 "#950b96"
             ); //purple SLD

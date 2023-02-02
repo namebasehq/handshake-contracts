@@ -17,6 +17,8 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
     mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
     mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
 
+    mapping(bytes32 => IResolver) public tokenResolverMap;
+
     string public label;
 
     constructor() ERC721("test", "test") {}
@@ -65,7 +67,9 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         return _operator == owner || isApprovedForAll(owner, _operator);
     }
 
-    function setResolver(bytes32 _namehash, IResolver _resolver) public {}
+    function setResolver(bytes32 _namehash, IResolver _resolver) public {
+        tokenResolverMap[_namehash] = _resolver;
+    }
 
     function addMapping(uint256 _id, address _addr, bool _approved) public {
         idToAddressToApproved[_id][_addr] = _approved;

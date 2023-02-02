@@ -9,6 +9,7 @@ contract MockHandshakeSld is IHandshakeSld {
     mapping(bytes32 => ISldRegistrationStrategy) mockRegistrationStrategy;
     mapping(bytes32 => bytes32) public namehashToParentMap;
     mapping(bytes32 => string) nodeToName;
+    mapping(bytes32 => IResolver) public tokenResolverMap;
 
     uint256 public ExpiryTimestamp;
 
@@ -54,6 +55,10 @@ contract MockHandshakeSld is IHandshakeSld {
         returns (ISldRegistrationStrategy)
     {
         return mockRegistrationStrategy[_parentNamehash];
+    }
+
+    function setResolver(bytes32 _namehash, IResolver _resolver) public {
+        tokenResolverMap[_namehash] = _resolver;
     }
 
     function setMockRegistrationStrategy(

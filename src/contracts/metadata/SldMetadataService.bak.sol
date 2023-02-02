@@ -3,27 +3,22 @@ pragma solidity ^0.8.17;
 
 import "interfaces/IMetadataService.sol";
 import "interfaces/IHandshakeSld.sol";
-import "interfaces/IHandshakeNft.sol";
-import "interfaces/IResolver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "src/interfaces/ISldRegistrationManager.sol";
 
 contract SldMetadataService is IMetadataService {
     using Strings for uint256;
-    IHandshakeSld public sld;
-    IHandshakeTld public tld;
+    IHandshakeSld public nft;
     string internal backgroundColour;
 
     ISldRegistrationManager public registrationManager;
 
     constructor(
-        IHandshakeSld _sld,
-        IHandshakeTld _tld,
+        IHandshakeSld _nft,
         ISldRegistrationManager _registrationManager,
         string memory _background
     ) {
-        sld = _sld;
-        tld = _tld;
+        nft = _nft;
         backgroundColour = _background;
         registrationManager = _registrationManager;
     }
@@ -31,19 +26,13 @@ contract SldMetadataService is IMetadataService {
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
         //can use nft.name(_namehash) to get domain name for embedded SVG.
 
-        address owner = sld.ownerOf(uint256(_namehash));
-        bytes32 parentNamehash = sld.namehashToParentMap(_namehash);
-        string memory label = sld.namehashToLabelMap(_namehash);
+        address owner = nft.ownerOf(uint256(_namehash));
+        bytes32 parentNamehash = nft.namehashToParentMap(_namehash);
+        string memory label = nft.namehashToLabelMap(_namehash);
         uint256 cost = registrationManager.getRenewalPrice(owner, parentNamehash, label, 365);
-
+        uint256 maxCost = registrationManager.pricesAtRegistration(_namehash, 0);
         return
-            json(
-                _namehash,
-                sld.name(_namehash),
-                sld.parent(_namehash),
-                sld.expiry(_namehash),
-                cost
-            );
+            json(nft.name(_namehash), nft.parent(_namehash), nft.expiry(_namehash), cost, maxCost);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -52,52 +41,19 @@ contract SldMetadataService is IMetadataService {
             interfaceID == this.tokenURI.selector;
     }
 
-    function getImage(bytes32 _namehash, string memory _name)
-        private
-        view
-        returns (string memory _image)
-    {
-        IHandshakeNft nft = IHandshakeNft(address(sld));
-
-        IResolver resolver = IResolver(nft.tokenResolverMap(_namehash));
-
-        bytes memory data = abi.encodeWithSelector(resolver.text.selector, _namehash, "avatar");
-
-        _image = canGetImageFromResolver(address(resolver), data)
-            ? resolver.text(_namehash, "avatar")
-            : "";
-
-        if (bytes(_image).length == 0) {
-            bytes32 parentHash = sld.namehashToParentMap(_namehash);
-
-            nft = IHandshakeNft(address(tld));
-            resolver = IResolver(nft.tokenResolverMap(parentHash));
-
-            data = abi.encodeWithSelector(resolver.text.selector, parentHash, "avatar");
-
-            _image = canGetImageFromResolver(address(resolver), data)
-                ? resolver.text(parentHash, "avatar")
-                : "";
-
-            if (bytes(_image).length == 0) {
-                _image = svg(_name);
-            }
-        }
-    }
-
     function json(
-        bytes32 _namehash,
         string memory _name,
         string memory _parentName,
         uint256 _expiry,
-        uint256 _renewalCost
+        uint256 _renewalCost,
+        uint256 _maxRenewalCost
     ) private view returns (string memory) {
         bytes memory data;
 
         string memory start = "data:application/json;utf8,{";
         bytes memory nftName = abi.encodePacked('"name": "', _name, '",');
         string memory description = '"description": "Transferable Handshake Domain",';
-        bytes memory image = abi.encodePacked('"image":"', getImage(_namehash, _name), '",');
+        bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
         string memory attributeStart = '"attributes":[';
 
         string memory end = "]}";
@@ -105,7 +61,7 @@ contract SldMetadataService is IMetadataService {
         data = abi.encodePacked(start, nftName, description, image, attributeStart);
 
         bytes memory parentName = abi.encodePacked(
-            '{"trait_type" : "TLD", "value" : "',
+            '{"trait_type" : "parent name", "value" : "',
             _parentName,
             '"},'
         );
@@ -117,18 +73,18 @@ contract SldMetadataService is IMetadataService {
         );
 
         bytes memory renewalCost = abi.encodePacked(
-            '{"trait_type" : "Annual Cost", "value": "$',
-            (_renewalCost / 1 ether).toString(),
-            '"}'
+            '{"trait_type" : "current annual cost", "display_type": "number", "value": ',
+            _renewalCost.toString(),
+            "},"
         );
 
-        // bytes memory maxRenewalCost = abi.encodePacked(
-        //     '{"trait_type" : "max annual cost", "value": "$',
-        //     (_maxRenewalCost / 1 ether).toString(),
-        //     '"}'
-        // );
+        bytes memory maxRenewalCost = abi.encodePacked(
+            '{"trait_type" : "max annual cost", "display_type": "number", "value": ',
+            _maxRenewalCost.toString(),
+            "}"
+        );
 
-        data = abi.encodePacked(data, parentName, expiryText, renewalCost, end);
+        data = abi.encodePacked(data, parentName, expiryText, renewalCost, maxRenewalCost, end);
 
         return string(data);
     }
@@ -145,32 +101,5 @@ contract SldMetadataService is IMetadataService {
                 "</text></svg>"
             )
         );
-    }
-
-    function canGetImageFromResolver(address _address, bytes memory _data)
-        public
-        view
-        returns (bool)
-    {
-        string memory image;
-        bool success;
-
-        assembly {
-            let ptr := mload(0x40)
-            success := staticcall(
-                gas(), // gas remaining
-                _address, // destination address
-                add(_data, 32), // input buffer (starts after the first 32 bytes in the `data` array)
-                mload(_data), // input length (loaded from the first 32 bytes in the `data` array)
-                0, // output buffer
-                32 // output length
-            )
-            image := mload(ptr)
-        }
-
-        // we would just get image string from this ideally... but it becomes
-        // awkward when the string is longer than 32 bytes
-        // so.. yeah..
-        return success && bytes(image).length > 0;
     }
 }
