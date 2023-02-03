@@ -7,8 +7,8 @@ pragma solidity ^0.8.17;
  * @author hodl.esf.eth
  */
 abstract contract PaymentManager {
-    address public handshakeWalletPayoutAddress;
-    uint256 public handshakePercentCommission;
+    address public feeWalletPayoutAddress;
+    uint256 public percentCommission;
 
     event PaymentSent(address indexed _to, uint256 _amount);
 
@@ -22,7 +22,7 @@ abstract contract PaymentManager {
     function distributePrimaryFunds(address _sldOwner, address _tldOwner, uint256 _funds) internal {
         require(msg.value >= _funds, "not enough ether");
 
-        uint256 handshakeShare = (_funds * handshakePercentCommission) / 100;
+        uint256 handshakeShare = (_funds * percentCommission) / 100;
         uint256 primary = _funds - handshakeShare;
         uint256 excess = msg.value - _funds;
 
@@ -50,11 +50,10 @@ abstract contract PaymentManager {
 
         uint256 remaining = address(this).balance;
         if (remaining > 0) {
-            (bool result, ) = payable(handshakeWalletPayoutAddress).call{
-                value: remaining,
-                gas: 30_000
-            }("");
-            emit PaymentSent(handshakeWalletPayoutAddress, remaining);
+            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining, gas: 30_000}(
+                ""
+            );
+            emit PaymentSent(feeWalletPayoutAddress, remaining);
 
             // revert if the transfer failed and funds sat in the contract
             require(result, "transfer failed");

@@ -8,7 +8,7 @@ import "contracts/PaymentManager.sol";
 
 contract PaymentManagerForTesting is PaymentManager {
     constructor(address _paymentWallet) PaymentManager() {
-        handshakeWalletPayoutAddress = _paymentWallet;
+        feeWalletPayoutAddress = _paymentWallet;
     }
 
     function payableFunction(address _sldOwner, address _tldOwner, uint256 _funds)
@@ -30,9 +30,7 @@ contract TestPaymentManager is Test {
         paymentManager = new PaymentManagerForTesting(payoutAddress);
 
         // set the commission to 5%
-        stdstore.target(address(paymentManager)).sig("handshakePercentCommission()").checked_write(
-            5
-        );
+        stdstore.target(address(paymentManager)).sig("percentCommission()").checked_write(5);
     }
 
     function testPayoutSplitCorrectlyExcessFundsReturned() public {

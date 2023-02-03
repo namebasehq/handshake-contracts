@@ -16,7 +16,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount = 50; //default 5%
 
-    constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Top Level Domain") {
+    constructor(ITldClaimManager _claimManager) HandshakeNft("TLD", "Handshake TLD") {
         claimManager = _claimManager;
     }
 

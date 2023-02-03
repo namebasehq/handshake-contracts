@@ -99,56 +99,56 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
     }
 
-    function testSetHandshakeWalletAddressFromContractOwner_pass() public {
+    function testSetWalletAddressFromContractOwner_pass() public {
         address addr = address(0x225599);
 
-        manager.updateHandshakePaymentAddress(addr);
+        manager.updatePaymentAddress(addr);
 
-        assertEq(manager.handshakeWalletPayoutAddress(), addr, "address not set");
+        assertEq(manager.feeWalletPayoutAddress(), addr, "address not set");
     }
 
-    function testSetHandshakeWalletAddressToZeroAddressFromContractOwner_fail() public {
+    function testSetWalletAddressToZeroAddressFromContractOwner_fail() public {
         address addr = address(0x0);
 
         vm.expectRevert("cannot set to zero address");
-        manager.updateHandshakePaymentAddress(addr);
+        manager.updatePaymentAddress(addr);
     }
 
-    function testSetHandshakeWalletAddressFromNotContractOwner_fail() public {
+    function testSetWalletAddressFromNotContractOwner_fail() public {
         address addr = address(0x225599);
 
         vm.prank(address(0x12234));
         vm.expectRevert("Ownable: caller is not the owner");
-        manager.updateHandshakePaymentAddress(addr);
+        manager.updatePaymentAddress(addr);
     }
 
-    function testSetHandshakePercentCommisionFromContractOwner_pass() public {
+    function testSetPercentCommisionFromContractOwner_pass() public {
         uint256 percent = 5;
 
-        manager.updateHandshakePaymentPercent(percent);
+        manager.updatePaymentPercent(percent);
 
-        assertEq(manager.handshakePercentCommission(), percent, "percent not set");
+        assertEq(manager.percentCommission(), percent, "percent not set");
     }
 
-    function testSetHandshakePercentCommisionFromNotContractOwner_fail() public {
+    function testSetPercentCommisionFromNotContractOwner_fail() public {
         uint256 percent = 8;
-        uint256 currentValue = manager.handshakePercentCommission();
+        uint256 currentValue = manager.percentCommission();
 
         vm.prank(address(0x12234));
         vm.expectRevert("Ownable: caller is not the owner");
-        manager.updateHandshakePaymentPercent(percent);
+        manager.updatePaymentPercent(percent);
 
-        assertEq(manager.handshakePercentCommission(), currentValue, "percent set");
+        assertEq(manager.percentCommission(), currentValue, "percent set");
     }
 
-    function testSetHandshakePercentCommisionFromContractOwnerSetOver10Percent_fail() public {
+    function testSetPercentCommisionFromContractOwnerSetOver10Percent_fail() public {
         uint256 percent = 11;
 
-        uint256 currentValue = manager.handshakePercentCommission();
+        uint256 currentValue = manager.percentCommission();
 
         vm.expectRevert("cannot set to more than 10 percent");
-        manager.updateHandshakePaymentPercent(percent);
+        manager.updatePaymentPercent(percent);
 
-        assertEq(manager.handshakePercentCommission(), currentValue, "percent set");
+        assertEq(manager.percentCommission(), currentValue, "percent set");
     }
 }

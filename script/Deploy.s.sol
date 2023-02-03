@@ -148,7 +148,7 @@ contract DeployScript is Script {
         tld.transferOwnership(ownerWallet);
         commitIntent.transferOwnership(ownerWallet);
 
-        SldRegistrationManager(address(uups2)).updateHandshakePaymentPercent(5);
+        SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
         delete ownerWallet;
 

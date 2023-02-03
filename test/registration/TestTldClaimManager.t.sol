@@ -16,7 +16,6 @@ import "utils/Namehash.sol";
 
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-
 contract TestTldClaimManager is Test {
     TldClaimManager internal manager;
     HandshakeTld internal nft;

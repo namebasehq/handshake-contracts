@@ -305,7 +305,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address claimant = address(0x6666);
         address tldOwner = address(0x464646);
 
-        manager.updateHandshakePaymentAddress(address(0x57595351));
+        manager.updatePaymentAddress(address(0x57595351));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -379,10 +379,10 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address claimant = address(0x6666);
         address tldOwner = address(0x464646);
 
-        address handshakeWalletPayoutAddress = address(0x57595351);
+        address walletPayoutAddress = address(0x57595351);
 
-        manager.updateHandshakePaymentAddress(handshakeWalletPayoutAddress);
-        manager.updateHandshakePaymentPercent(10);
+        manager.updatePaymentAddress(walletPayoutAddress);
+        manager.updatePaymentPercent(10);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
         tld.setTldClaimManager(ITldClaimManager(tldOwner));
@@ -402,11 +402,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         );
         vm.stopPrank();
 
-        assertEq(
-            handshakeWalletPayoutAddress.balance,
-            0.1 ether,
-            "handshake wallet balance not correct"
-        );
+        assertEq(walletPayoutAddress.balance, 0.1 ether, "wallet balance not correct");
 
         uint80 newRegLength = 365 * 2;
 
@@ -422,10 +418,6 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         // ) = manager.sldRegistrationHistory(namehash);
 
-        assertEq(
-            handshakeWalletPayoutAddress.balance,
-            0.3 ether,
-            "handshake wallet balance not correct"
-        );
+        assertEq(walletPayoutAddress.balance, 0.3 ether, "wallet balance not correct");
     }
 }

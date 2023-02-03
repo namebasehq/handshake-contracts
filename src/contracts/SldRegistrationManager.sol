@@ -62,7 +62,7 @@ contract SldRegistrationManager is
     @param _oracle Address of the price oracle contract
     @param _validator Address of the label validator contract
     @param _globalRules Address of the global registration rules contract
-    @param _handshakeWallet Address of the Handshake wallet for royalties
+    @param _payoutWallet Address of the wallet for royalties
     @param _owner Address of the contract owner
     */
     function init(
@@ -72,14 +72,14 @@ contract SldRegistrationManager is
         IPriceOracle _oracle,
         ILabelValidator _validator,
         IGlobalRegistrationRules _globalRules,
-        address _handshakeWallet,
+        address _payoutWallet,
         address _owner
     ) public initializer {
         sld = _sld;
         tld = _tld;
         commitIntent = _commitIntent;
         globalStrategy = _globalRules;
-        handshakeWalletPayoutAddress = _handshakeWallet;
+        feeWalletPayoutAddress = _payoutWallet;
         usdOracle = _oracle;
         labelValidator = _validator;
         _transferOwnership(_owner);
@@ -255,9 +255,9 @@ contract SldRegistrationManager is
      * @dev This function can only be run by the contract owner
      * @param _addr Wallet address to set the commission payment for primary sales to
      */
-    function updateHandshakePaymentAddress(address _addr) public onlyOwner {
+    function updatePaymentAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
-        handshakeWalletPayoutAddress = _addr;
+        feeWalletPayoutAddress = _addr;
     }
 
     /**
@@ -265,9 +265,9 @@ contract SldRegistrationManager is
      * @dev This function can only be run by the contract owner
      * @param _percent % of primary sales to send to the handshake wallet
      */
-    function updateHandshakePaymentPercent(uint256 _percent) public onlyOwner {
+    function updatePaymentPercent(uint256 _percent) public onlyOwner {
         require(_percent <= 10, "cannot set to more than 10 percent");
-        handshakePercentCommission = _percent;
+        percentCommission = _percent;
     }
 
     /**
