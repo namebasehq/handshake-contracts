@@ -116,4 +116,97 @@ contract TestBaseResolver is Test {
         vm.expectRevert("not authorised or owner");
         resolver.incrementVersion(bytes32(id));
     }
+
+    function testAddDelegateFromOwner() public {
+        address owner = address(0x1337);
+        address delegate = address(0x69420);
+        uint256 id = 420;
+
+        tld.mint(owner, id);
+
+        vm.prank(owner);
+        resolver.setDelegate(id, delegate);
+
+        assertEq(resolver.delegates(owner, id), delegate);
+
+        vm.prank(delegate);
+        resolver.incrementVersion(bytes32(id));
+    }
+
+    function testAddDelegateFromNotOwner_fail() public {
+        address owner = address(0x1337);
+        address not_owner = address(0x696969);
+        address delegate = address(0x69420);
+        uint256 id = 420;
+
+        tld.mint(owner, id);
+
+        vm.prank(not_owner);
+        vm.expectRevert("not authorised or owner");
+        resolver.setDelegate(id, delegate);
+    }
+
+    function testRemoveDelegateFromOwner() public {
+        address owner = address(0x1337);
+        address delegate = address(0x69420);
+        address new_delegate = address(0x696969);
+        uint256 id = 420;
+
+        tld.mint(owner, id);
+
+        vm.prank(owner);
+        resolver.setDelegate(id, delegate);
+
+        assertEq(resolver.delegates(owner, id), delegate);
+
+        vm.prank(owner);
+        resolver.setDelegate(id, new_delegate);
+
+        assertEq(resolver.delegates(owner, id), new_delegate);
+
+        vm.prank(delegate);
+        vm.expectRevert("not authorised or owner");
+        resolver.incrementVersion(bytes32(id));
+    }
+
+    function testRemoveDelegateFromNotOwner_fail() public {
+        address owner = address(0x1337);
+        address not_owner = address(0x123456);
+        address delegate = address(0x69420);
+        address new_delegate = address(0x696969);
+        uint256 id = 420;
+
+        tld.mint(owner, id);
+
+        vm.prank(owner);
+        resolver.setDelegate(id, delegate);
+
+        assertEq(resolver.delegates(owner, id), delegate);
+
+        vm.prank(not_owner);
+        vm.expectRevert("not authorised or owner");
+        resolver.setDelegate(id, new_delegate);
+    }
+
+    function testTransferTokenDelegateReset() public {
+        address owner = address(0x1337);
+        address new_owner = address(0x696969);
+        address delegate = address(0x69420);
+
+        uint256 id = 420;
+
+        tld.mint(owner, id);
+
+        vm.prank(owner);
+        resolver.setDelegate(id, delegate);
+
+        assertEq(resolver.delegates(owner, id), delegate);
+
+        vm.prank(owner);
+        tld.safeTransferFrom(owner, new_owner, id);
+
+        vm.prank(delegate);
+        vm.expectRevert("not authorised or owner");
+        resolver.incrementVersion(bytes32(id));
+    }
 }

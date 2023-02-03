@@ -17,6 +17,8 @@ import "src/utils/Namehash.sol";
 import "structs/SldRegistrationDetail.sol";
 import "mocks/MockUsdOracle.sol";
 
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
 contract TestSldRegistrationManagerBase is Test {
     SldRegistrationManager manager;
     using stdStorage for StdStorage;
@@ -40,7 +42,15 @@ contract TestSldRegistrationManagerBase is Test {
         commitIntent = new MockCommitIntent(true);
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
         globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
-        manager = new SldRegistrationManager();
+        SldRegistrationManager implementation = new SldRegistrationManager();
+
+        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
+            address(implementation),
+            address(0x224455),
+            bytes("")
+        );
+
+        manager = SldRegistrationManager(address(uups));
 
         manager.init(
             tld,
@@ -56,7 +66,8 @@ contract TestSldRegistrationManagerBase is Test {
 
     function addMockOracle() internal {
         MockUsdOracle oracle = new MockUsdOracle(200000000000);
-        stdstore.target(address(manager)).sig("usdOracle()").checked_write(address(oracle));
+        manager.updatePriceOracle(oracle);
+        //stdstore.target(address(manager)).sig("usdOracle()").checked_write(address(oracle));
     }
 
     function setUpLabelValidator() internal {

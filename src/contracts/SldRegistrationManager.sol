@@ -48,6 +48,10 @@ contract SldRegistrationManager is
         SldDiscountSettings _discount
     );
 
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
 
     @notice Initialize the contract

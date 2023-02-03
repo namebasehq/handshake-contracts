@@ -5,6 +5,8 @@ import "interfaces/IMetadataService.sol";
 import "interfaces/IHandshakeSld.sol";
 import "contracts/HandshakeNft.sol";
 import "src/interfaces/ISldRegistrationManager.sol";
+import "interfaces/IResolver.sol";
+import "interfaces/IHandshakeSld.sol";
 
 contract TldMetadataService is IMetadataService {
     HandshakeNft public nft;
@@ -17,7 +19,7 @@ contract TldMetadataService is IMetadataService {
 
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
         //can use nft.name(_namehash) to get domain name for embedded SVG.
-        return json(nft.name(_namehash));
+        return json(_namehash, nft.name(_namehash));
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -26,13 +28,13 @@ contract TldMetadataService is IMetadataService {
             interfaceID == this.tokenURI.selector;
     }
 
-    function json(string memory _name) private view returns (string memory) {
+    function json(bytes32 _namehash, string memory _name) private view returns (string memory) {
         bytes memory data;
 
         string memory start = "data:application/json;utf8,{";
         bytes memory nftName = abi.encodePacked('"name": "', _name, '",');
         string memory description = '"description": "Transferable Handshake Domain",';
-        bytes memory image = abi.encodePacked('"image":"', svg(_name), '",');
+        bytes memory image = abi.encodePacked('"image":"', getImage(_namehash, _name), '",');
         string memory attributeStart = '"attributes":[]}';
 
         data = abi.encodePacked(start, nftName, description, image, attributeStart);
@@ -52,5 +54,60 @@ contract TldMetadataService is IMetadataService {
                 "</text></svg>"
             )
         );
+    }
+
+    function getImage(bytes32 _namehash, string memory _name)
+        private
+        view
+        returns (string memory _image)
+    {
+        IResolver resolver = IResolver(nft.tokenResolverMap(_namehash));
+
+        bytes memory data = abi.encodeWithSelector(resolver.text.selector, _namehash, "avatar");
+
+        _image = canGetImageFromResolver(address(resolver), data)
+            ? resolver.text(_namehash, "avatar")
+            : "";
+
+        if (bytes(_image).length == 0) {
+            resolver = IResolver(nft.tokenResolverMap(_namehash));
+
+            data = abi.encodeWithSelector(resolver.text.selector, _namehash, "avatar");
+
+            _image = canGetImageFromResolver(address(resolver), data)
+                ? resolver.text(_namehash, "avatar")
+                : "";
+
+            if (bytes(_image).length == 0) {
+                _image = svg(_name);
+            }
+        }
+    }
+
+    function canGetImageFromResolver(address _address, bytes memory _data)
+        public
+        view
+        returns (bool)
+    {
+        string memory image;
+        bool success;
+
+        assembly {
+            let ptr := mload(0x40)
+            success := staticcall(
+                gas(), // gas remaining
+                _address, // destination address
+                add(_data, 32), // input buffer (starts after the first 32 bytes in the `data` array)
+                mload(_data), // input length (loaded from the first 32 bytes in the `data` array)
+                0, // output buffer
+                32 // output length
+            )
+            image := mload(ptr)
+        }
+
+        // we would just get image string from this ideally... but it becomes
+        // awkward when the string is longer than 32 bytes
+        // so.. yeah..
+        return success && bytes(image).length > 0;
     }
 }

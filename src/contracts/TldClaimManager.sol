@@ -28,6 +28,10 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
     uint256 public mintPriceInDollars;
 
+    constructor() {
+        _disableInitializers();
+    }
+
     function init(
         ILabelValidator _validator,
         address _owner,

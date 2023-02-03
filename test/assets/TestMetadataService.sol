@@ -232,4 +232,54 @@ contract TestHandshakeTld is Test {
 
         */
     }
+
+    function testGetMetadataFromTldWithAvatarRecord() public {
+        MockHandshakeNft nft = new MockHandshakeNft();
+        MockHandshakeNft nft2 = new MockHandshakeNft();
+
+        nft.setParent("");
+        nft.setExpiry(0); //zero expiry we should get no expiry or parent name attributes
+
+        TldMetadataService metadata = new TldMetadataService(nft, "#cc0000");
+
+        bytes32 namehash = Namehash.getTldNamehash("domain");
+
+        nft.setName(namehash, "domain");
+
+        MockTextResolver resolver = new MockTextResolver(
+            HandshakeNft(address(nft2)),
+            HandshakeNft(address(nft))
+        );
+
+        nft.mint(address(this), uint256(namehash));
+
+        nft.setResolver(namehash, IResolver(address(resolver)));
+
+        string memory key = "avatar";
+        string memory value = "this_is_url";
+
+        resolver.setText(namehash, key, value);
+
+        string memory uri = metadata.tokenURI(namehash);
+
+        console.log("tld uri: ", uri);
+
+        assertEq(
+            keccak256(abi.encodePacked(uri)),
+            0xc5edd9c0411bc5389feffaae53516cb1eb22bf711eb8f8f330218f6d2a4aa93b
+        );
+
+        /*
+        data:application/json;utf8,
+            {
+                "name":"domain",
+                "description":"Transferable Handshake Domain",
+                "image":"this_is_url",
+                "attributes":[
+                    
+                ]
+            }
+
+        */
+    }
 }

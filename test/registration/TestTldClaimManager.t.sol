@@ -14,6 +14,9 @@ import "test/mocks/MockMetadataService.sol";
 import "mocks/MockHandshakeSld.sol";
 import "utils/Namehash.sol";
 
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
+
 contract TestTldClaimManager is Test {
     TldClaimManager internal manager;
     HandshakeTld internal nft;
@@ -26,11 +29,20 @@ contract TestTldClaimManager is Test {
     function setUp() public {
         metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
-        manager = new TldClaimManager();
+        TldClaimManager implementation = new TldClaimManager();
+        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
+            address(implementation),
+            address(0x224455),
+            bytes("")
+        );
+
+        manager = TldClaimManager(address(uups));
+
         sld = new MockHandshakeSld();
         nft = new HandshakeTld(manager);
         nft.setMetadataContract(metadata);
         MockUsdOracle oracle = new MockUsdOracle(200000000000); // $2000
+
         manager.init(labelValidator, address(this), nft, strategy, oracle, 0, address(0));
     }
 
