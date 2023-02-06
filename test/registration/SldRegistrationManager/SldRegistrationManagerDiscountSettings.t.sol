@@ -55,7 +55,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy2,
+            address(strategy2),
             addr,
             parentNamehash,
             label,
@@ -121,7 +121,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy2,
+            address(strategy2),
             arr1[0],
             parentNamehash,
             "foo",
@@ -146,7 +146,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy2);
         tld.addRegistrationStrategy(parentNamehash, strategy2);
         uint256 price2 = manager.getRegistrationPrice(
-            strategy2,
+            address(strategy2),
             arr1[1],
             parentNamehash,
             "bar",
@@ -204,7 +204,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy2,
+            address(strategy2),
             addr,
             parentNamehash,
             label,
@@ -269,7 +269,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -334,7 +334,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -401,7 +401,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -470,7 +470,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -538,7 +538,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -606,7 +606,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -622,7 +622,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
             addr
         );
 
-        assertEq(price, 1 ether, "registration should be at full cost");
+        assertEq(price, 1 ether, "registration should be at minimum cost");
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
@@ -674,7 +674,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -743,7 +743,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -755,7 +755,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         vm.warp(start + 20);
 
         price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -767,7 +767,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         vm.warp(start + 40);
 
         price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -862,7 +862,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             arr1[0],
             parentNamehash,
             label,
@@ -994,7 +994,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             arr1[0],
             parentNamehash,
             label,
@@ -1187,7 +1187,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,

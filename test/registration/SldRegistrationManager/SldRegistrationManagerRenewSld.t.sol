@@ -357,7 +357,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -419,7 +419,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice{gas: 2000000}(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -462,7 +462,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -506,7 +506,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy2,
+            address(strategy2),
             addr,
             parentNamehash,
             label,
@@ -579,7 +579,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -648,7 +648,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,
@@ -682,7 +682,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         label = "bar";
 
         price = manager.getRegistrationPrice(
-            strategy,
+            address(strategy),
             addr,
             parentNamehash,
             label,

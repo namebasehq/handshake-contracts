@@ -121,7 +121,7 @@ contract SldRegistrationManager is
         );
 
         uint256 dollarPrice = getRegistrationPrice(
-            strategy,
+            address(strategy),
             msg.sender,
             _parentNamehash,
             _label,
@@ -306,12 +306,14 @@ contract SldRegistrationManager is
         _history = pricesAtRegistration[_sldNamehash];
     }
 
+    // this will snapshot the base registration price for the next 10 years
     function addRegistrationDetails(
         bytes32 _namehash,
         ISldRegistrationStrategy _strategy,
         bytes32 _parentNamehash,
         string calldata _label
     ) private {
+        // checked this.. Most gas efficient way to do this
         uint80[10] storage arr = pricesAtRegistration[_namehash];
 
         for (uint256 i; i < arr.length; ) {
@@ -363,7 +365,8 @@ contract SldRegistrationManager is
             _addr,
             _parentNamehash,
             _label,
-            _registrationLength
+            _registrationLength,
+            true // isRenewal
         );
 
         renewalCostPerAnnum =
@@ -378,6 +381,7 @@ contract SldRegistrationManager is
         ) * _registrationLength) / 365);
 
         _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
+
     }
 
     /**
@@ -421,7 +425,8 @@ contract SldRegistrationManager is
         address _addr,
         bytes32 _parentNamehash,
         string calldata _label,
-        uint256 _registrationLength
+        uint256 _registrationLength,
+        bool _isRenewal
     ) public view returns (uint256) {
         uint256 currentPrice = safeCallRegistrationStrategyInAssembly(
             address(_strategy),
@@ -431,7 +436,7 @@ contract SldRegistrationManager is
                 _parentNamehash,
                 _label,
                 _registrationLength,
-                false
+                _isRenewal
             ),
             _registrationLength
         );
@@ -442,14 +447,14 @@ contract SldRegistrationManager is
     }
 
     function getRegistrationPrice(
-        ISldRegistrationStrategy _strategy,
+        address _strategy,
         address _addr,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
         uint256 currentPrice = safeCallRegistrationStrategyInAssembly(
-            address(_strategy),
+            _strategy,
             abi.encodeWithSelector(
                 ISldRegistrationStrategy.getPriceInDollars.selector,
                 _addr,

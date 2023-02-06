@@ -15,8 +15,6 @@ import "interfaces/IGlobalRegistrationRules.sol";
 import "contracts/PaymentManager.sol";
 import "interfaces/ISldRegistrationManager.sol";
 
-import {console} from "forge-std/console.sol";
-
 /**
  * @title Decentralised SLD NFTs
  * @author Sam Ward
