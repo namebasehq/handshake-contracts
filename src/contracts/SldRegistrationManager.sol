@@ -381,7 +381,6 @@ contract SldRegistrationManager is
         ) * _registrationLength) / 365);
 
         _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
-
     }
 
     /**

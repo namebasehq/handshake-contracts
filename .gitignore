@@ -3,6 +3,7 @@ out/
 node_modules/
 broadcast/
 lib/
+docs/
 .idea/
 .vscode/
 .DS_Store

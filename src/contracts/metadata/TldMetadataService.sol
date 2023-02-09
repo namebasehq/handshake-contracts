@@ -56,6 +56,20 @@ contract TldMetadataService is IMetadataService {
         );
     }
 
+    function emptySvg(string memory _name) private view returns (string memory _svg) {
+        string memory start = "data:image/svg+xml;utf8,";
+        _svg = string(
+            abi.encodePacked(
+                start,
+                "<svg width='600pt' height='600pt' version='1.0' viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'><metadata>Namebase - Sam Ward</metadata><g transform='translate(0 725) scale(.1 -.1)' fill='",
+                backgroundColour,
+                "'></g><text x='60' y='500' fill='blue' font-size='50' font='sans-serif'>",
+                _name,
+                "</text></svg>"
+            )
+        );
+    }
+
     function getImage(bytes32 _namehash, string memory _name)
         private
         view

@@ -18,8 +18,19 @@ contract TestingDNSResolver is DNSResolver {
     constructor(HandshakeNft _tld, HandshakeNft _sld) BaseResolver(_tld, _sld) {}
 }
 
-contract TestingNameResolver is NameResolver {
+contract TestingNameResolver is NameResolver, AddressResolver {
     constructor(HandshakeNft _tld, HandshakeNft _sld) BaseResolver(_tld, _sld) {}
+
+    function incrementVersion(bytes32 _nodehash) public override(BaseResolver, AddressResolver) {}
+
+    function supportsInterface(bytes4 _interfaceId)
+        public
+        view
+        override(AddressResolver, NameResolver)
+        returns (bool)
+    {
+        return super.supportsInterface(_interfaceId);
+    }
 }
 
 contract TestingTextResolver is TextResolver {
