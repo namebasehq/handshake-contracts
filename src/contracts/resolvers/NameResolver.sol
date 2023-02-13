@@ -9,6 +9,11 @@ import {Namehash} from "utils/Namehash.sol";
 import "interfaces/IResolver.sol";
 import "interfaces/resolvers/IAddressResolver.sol";
 
+/**
+    * @title NameResolver aka Reverse Resolver
+    * @notice NameResolver is a contract that allows users to set the domain name for their address
+    * @author Sam Ward (hodl.esf.eth)
+    */
 abstract contract NameResolver is INameResolver, BaseResolver {
     mapping(address => string) public nameMap;
 
@@ -26,10 +31,23 @@ abstract contract NameResolver is INameResolver, BaseResolver {
         revert("id does not exist");
     }
 
+    /**
+     * @notice setName sets the domain linked to an address.
+     * @dev setName sets the domain value associated with a specific address. It uses
+     * msg.sender to get the address and then sets the value for that address.
+     * @param _name The domain name you wish to set. Can be TLD or SLD.
+     */
     function setName(string calldata _name) external {
         nameMap[msg.sender] = _name;
     }
 
+    /**
+     * @notice getName records the value associated with a specific domain for an address.
+     * @dev getName gets the value associated with a specific domain for an address. This is validated that the 
+     * address is correct and not invalid or changed
+     * @param _addr The address to query.
+     * @param _coinType The coin type to query.
+     */
     function getName(address _addr, uint256 _coinType) external view returns (string memory) {
         string memory reverseName = nameMap[_addr];
         IResolver resolver;
@@ -55,6 +73,9 @@ abstract contract NameResolver is INameResolver, BaseResolver {
                 if (addr == _addr) {
                     return reverseName;
                 }
+                else{
+                    return "";
+                }
             } catch {
                 return "";
             }
@@ -63,6 +84,14 @@ abstract contract NameResolver is INameResolver, BaseResolver {
         return "";
     }
 
+    /**
+     * @notice getText records the value associated with a specific key for an address.
+     * @dev getText records the value associated with a specific key for an address. This is validated that the 
+     * address is correct and not invalid or changed
+     * @param _addr The address to query.
+     * @param _key The key to query.
+     * @param _coinType The coin type to query.
+     */
     function getText(address _addr, string calldata _key, uint256 _coinType)
         external
         view
@@ -101,6 +130,16 @@ abstract contract NameResolver is INameResolver, BaseResolver {
             } catch {
                 return "";
             }
+        }
+
+        if (!resolver.supportsInterface(type(IAddressResolver).interfaceId))
+        {
+            return "no address resolver";
+        }
+
+        if (!resolver.supportsInterface(type(ITextResolver).interfaceId))
+        {
+            return "no text resolver";
         }
 
         return "";

@@ -36,7 +36,9 @@ contract DefaultResolver is
             TextResolver
         )
         returns (bool)
-    {}
+    {
+        return super.supportsInterface(_interfaceId);
+    }
 
     function incrementVersion(bytes32 node)
         public
