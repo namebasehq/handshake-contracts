@@ -10,10 +10,10 @@ import "interfaces/IResolver.sol";
 import "interfaces/resolvers/IAddressResolver.sol";
 
 /**
-    * @title NameResolver aka Reverse Resolver
-    * @notice NameResolver is a contract that allows users to set the domain name for their address
-    * @author Sam Ward (hodl.esf.eth)
-    */
+ * @title NameResolver aka Reverse Resolver
+ * @notice NameResolver is a contract that allows users to set the domain name for their address
+ * @author Sam Ward (hodl.esf.eth)
+ */
 abstract contract NameResolver is INameResolver, BaseResolver {
     mapping(address => string) public nameMap;
 
@@ -43,7 +43,7 @@ abstract contract NameResolver is INameResolver, BaseResolver {
 
     /**
      * @notice getName records the value associated with a specific domain for an address.
-     * @dev getName gets the value associated with a specific domain for an address. This is validated that the 
+     * @dev getName gets the value associated with a specific domain for an address. This is validated that the
      * address is correct and not invalid or changed
      * @param _addr The address to query.
      * @param _coinType The coin type to query.
@@ -72,8 +72,7 @@ abstract contract NameResolver is INameResolver, BaseResolver {
 
                 if (addr == _addr) {
                     return reverseName;
-                }
-                else{
+                } else {
                     return "";
                 }
             } catch {
@@ -86,7 +85,7 @@ abstract contract NameResolver is INameResolver, BaseResolver {
 
     /**
      * @notice getText records the value associated with a specific key for an address.
-     * @dev getText records the value associated with a specific key for an address. This is validated that the 
+     * @dev getText records the value associated with a specific key for an address. This is validated that the
      * address is correct and not invalid or changed
      * @param _addr The address to query.
      * @param _key The key to query.
@@ -132,13 +131,11 @@ abstract contract NameResolver is INameResolver, BaseResolver {
             }
         }
 
-        if (!resolver.supportsInterface(type(IAddressResolver).interfaceId))
-        {
+        if (!resolver.supportsInterface(type(IAddressResolver).interfaceId)) {
             return "no address resolver";
         }
 
-        if (!resolver.supportsInterface(type(ITextResolver).interfaceId))
-        {
+        if (!resolver.supportsInterface(type(ITextResolver).interfaceId)) {
             return "no text resolver";
         }
 

@@ -151,6 +151,12 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             "reserved name"
         );
 
+        uint256 minPrice = (_registrationLength * minDollarPrice());
+
+        if (registrationManager.tld().isApprovedOrOwner(_buyingAddress, uint256(_parentNamehash))) {
+            return minPrice / 365;
+        }
+
         uint256 calculatedPrice;
         uint256 annualPrice = premiumNames[namehash];
 
@@ -164,7 +170,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multi
             calculatedPrice = (totalPrice * (100 - discount)) / 100;
         }
 
-        uint256 minPrice = (_registrationLength * minDollarPrice());
         return (calculatedPrice < minPrice ? minPrice : calculatedPrice) / 365;
     }
 

@@ -377,9 +377,46 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setPremiumNames(namehash, labels, prices);
     }
 
+    function testGetPriceInDollarsFromOwnerMinPrice_pass() public {
+        bytes32 namehash = bytes32(uint256(0x5464654));
+        string memory label = "label";
+        tld.register(address(this), uint256(namehash));
+        bytes32 full_namehash = Namehash.getNamehash(namehash, label);
+        uint256 price = 50;
+        stdstore
+            .target(address(strategy))
+            .sig("premiumNames(bytes32)")
+            .with_key(full_namehash)
+            .checked_write(price);
+
+        uint256 actualPrice = strategy.getPriceInDollars(
+            address(this),
+            namehash,
+            label,
+            365,
+            false
+        );
+
+        // min price for a year should be 1 dollar as we minting from the owner
+        assertEq(actualPrice, 1 ether);
+
+        //it should round this one up to the next dollar
+        actualPrice = strategy.getPriceInDollars(address(this), namehash, label, 366, false);
+        assertEq(actualPrice, 1002739726027397260);
+
+        //it should round this one another dollar
+        actualPrice = strategy.getPriceInDollars(address(this), namehash, label, 373, false);
+        assertEq(actualPrice, 1021917808219178082);
+
+        //should be $500 for 10 years
+        actualPrice = strategy.getPriceInDollars(address(this), namehash, label, 3650, false);
+        assertEq(actualPrice, 10 ether);
+    }
+
     function testGetPriceInDollarsFromPremiumName_pass() public {
         bytes32 namehash = bytes32(uint256(0x5464654));
         string memory label = "label";
+        tld.register(address(0x1234), uint256(namehash));
         bytes32 full_namehash = Namehash.getNamehash(namehash, label);
         uint256 price = 50;
         stdstore
