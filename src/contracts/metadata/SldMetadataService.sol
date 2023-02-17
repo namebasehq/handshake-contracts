@@ -31,10 +31,9 @@ contract SldMetadataService is IMetadataService {
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
         //can use nft.name(_namehash) to get domain name for embedded SVG.
 
-        address owner = sld.ownerOf(uint256(_namehash));
-        bytes32 parentNamehash = sld.namehashToParentMap(_namehash);
-        string memory label = sld.namehashToLabelMap(_namehash);
-        uint256 cost = registrationManager.getRenewalPrice(owner, parentNamehash, label, 365);
+        // need to use the max price and not current price as it can be
+        // manipulated using discounts
+        uint256 cost = registrationManager.pricesAtRegistration(_namehash, 0);
 
         return
             json(
@@ -80,7 +79,7 @@ contract SldMetadataService is IMetadataService {
                 : "";
 
             if (bytes(_image).length == 0) {
-                _image = svg(_name);
+                _image = emptySvg(_name);
             }
         }
     }

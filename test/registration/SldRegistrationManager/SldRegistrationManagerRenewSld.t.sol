@@ -241,6 +241,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             msg.sender,
+            address(0x99),
             parentNamehash,
             "yo",
             _years * 365
@@ -310,6 +311,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         for (uint256 i; i < 10; i++) {
             uint256 actual = manager.getRenewalPricePerDay(
                 msg.sender,
+                address(0x99),
                 parentNamehash,
                 label,
                 (i + 1) * 365
@@ -359,6 +361,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -378,6 +381,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -421,6 +425,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice{gas: 2000000}(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -464,6 +469,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength * 2
@@ -508,6 +514,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy2),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -531,81 +538,13 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
         );
 
         assertEq(renewalPrice, 1 ether, "renewal price should be $1");
-    }
-
-    function testSetup100PercentReductionForAddressRegistrationAndRenewalShouldBeMinPrice_pass(
-        uint256 _minPrice
-    ) public {
-        _minPrice = bound(_minPrice, 0, 1000000);
-
-        string memory label = "foo";
-        uint256 registrationLength = 365;
-        bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
-
-        uint256 annualCost = 2000 ether; //should be $4000 total
-
-        tld.register(address(this), "yoyo");
-
-        ISldRegistrationStrategy strategy = new MockRegistrationStrategy(annualCost);
-
-        sld.setMockRegistrationStrategy(parentNamehash, strategy);
-        tld.addRegistrationStrategy(parentNamehash, strategy);
-
-        setUpLabelValidator();
-        setUpGlobalStrategy(true, _minPrice * 1 ether);
-        addMockOracle();
-
-        address addr = address(0x225599);
-
-        address[] memory arr1 = new address[](1);
-        SldDiscountSettings[] memory arr2 = new SldDiscountSettings[](1);
-
-        arr1[0] = addr;
-
-        // uint80 startTimestamp;
-        // uint80 endTimestamp;
-        // uint8 discountPercentage;
-        // bool isRegistration;
-        // bool isRenewal;
-
-        arr2[0] = SldDiscountSettings(0, type(uint80).max, 100, true, true);
-
-        manager.setAddressDiscounts(parentNamehash, arr1, arr2);
-
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
-
-        hoax(addr, price);
-        manager.registerSld{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
-
-        uint256 expected = _minPrice * 1 ether;
-        assertEq(price, expected, "price should be min price");
-
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
-
-        assertEq(renewalPrice, expected, "renewal price should min price");
     }
 
     function testSetup100PercentReductionForAddressRegistrationAndRenewalShouldBeMinPriceUpdateGlobalRules_pass()
@@ -650,6 +589,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -668,6 +608,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -684,6 +625,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -700,7 +642,13 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         assertEq(price, minPrice * 1 ether, "price should be min price");
 
-        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
+        renewalPrice = manager.getRenewalPrice(
+            addr,
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(renewalPrice, minPrice * 1 ether, "renewal price should min price");
     }

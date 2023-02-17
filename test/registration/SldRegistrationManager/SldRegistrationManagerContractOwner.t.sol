@@ -151,4 +151,23 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         assertEq(manager.percentCommission(), currentValue, "percent set");
     }
+
+    function testSetMinDevPayoutFromContractOwner_pass() public {
+        uint256 minPayout = 1 ether;
+
+        manager.updateMinDevFee(minPayout);
+
+        assertEq(manager.minDevContribution(), minPayout, "min payout not set");
+    }
+
+    function testSetMinDevPayoutFromNotContractOwner_fail() public {
+        uint256 minPayout = 1 ether;
+        uint256 currentValue = manager.minDevContribution();
+
+        vm.prank(address(0x12234));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.updateMinDevFee(minPayout);
+
+        assertEq(manager.minDevContribution(), currentValue, "min payout set");
+    }
 }

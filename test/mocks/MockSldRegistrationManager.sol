@@ -53,6 +53,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
 
     function getRenewalPricePerDay(
         address, //msg.sender
+        address, //tld owner
         bytes32, //_parentNamehash
         string calldata, //_label
         uint256 //_registrationLength
@@ -62,6 +63,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
 
     function getRenewalPrice(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -94,6 +96,7 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
 
     function getRenewalPricePerDay(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -109,7 +112,7 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
         renewalPrice = _renewalPrice;
     }
 
-    function getRenewalPrice(address, bytes32, string calldata, uint256)
+    function getRenewalPrice(address, address, bytes32, string calldata, uint256)
         external
         view
         returns (uint256 _price)

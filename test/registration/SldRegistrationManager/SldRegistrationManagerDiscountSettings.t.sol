@@ -57,6 +57,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy2),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -76,6 +77,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -123,6 +125,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy2),
             arr1[0],
+            address(this),
             parentNamehash,
             "foo",
             365
@@ -140,7 +143,13 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 expected = annualCost / 2;
         assertEq(price, expected, "price should be 50% reduced");
 
-        uint256 renewalPrice = manager.getRenewalPrice(arr1[0], parentNamehash, "foo", 365);
+        uint256 renewalPrice = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            "foo",
+            365
+        );
         assertEq(renewalPrice, price, "renewal price should be 50% reduced");
 
         sld.setMockRegistrationStrategy(parentNamehash, strategy2);
@@ -148,6 +157,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price2 = manager.getRegistrationPrice(
             address(strategy2),
             arr1[1],
+            address(this),
             parentNamehash,
             "bar",
             365
@@ -165,7 +175,13 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 expected2 = (annualCost / 4) * 3;
         assertEq(price2, expected2, "price should be 25% reduced");
 
-        uint256 renewalPrice2 = manager.getRenewalPrice(arr1[1], parentNamehash, "bar", 365);
+        uint256 renewalPrice2 = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            "bar",
+            365
+        );
         assertEq(renewalPrice2, price2, "renewal price should be 25% reduced");
     }
 
@@ -206,10 +222,13 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy2),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
         );
+
+        console.log("price: %s", price);
 
         hoax(addr, price);
         manager.registerSld{value: price}(
@@ -225,6 +244,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -271,6 +291,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -290,6 +311,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -336,6 +358,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -355,6 +378,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -403,6 +427,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -422,6 +447,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             address(0xbada55),
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -472,6 +498,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -490,6 +517,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -540,6 +568,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -558,6 +587,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -608,6 +638,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -626,6 +657,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -676,6 +708,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -694,6 +727,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -745,6 +779,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -757,6 +792,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -769,6 +805,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -787,6 +824,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -801,13 +839,25 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         vm.warp(start + 60);
 
-        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
+        renewalPrice = manager.getRenewalPrice(
+            addr,
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(renewalPrice, annualCost / 4, "renewal price should be 25% cost"); //renewal is discounted
 
         vm.warp(start + 80);
 
-        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
+        renewalPrice = manager.getRenewalPrice(
+            addr,
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost"); //renewal discount has ended
     }
@@ -864,6 +914,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             arr1[0],
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -881,67 +932,157 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
             arr1[0]
         );
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "renewal should 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 75 ether, "renewal should 25% reduced");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "renewal should be at full cost");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
 
         vm.warp(start + 15);
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "renewal should be 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 75 ether, "renewal should 25% reduced");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 25 ether, "renewal should be 75% reduced");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
 
         vm.warp(start + 25);
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "renewal should be 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "renewal should full price");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "renewal should be at full cost");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "renewal should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
     }
@@ -996,6 +1137,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             arr1[0],
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -1010,67 +1152,157 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
             arr1[0]
         );
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 75 ether, "registration should 25% reduced");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "registration should be at full cost");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
 
         vm.warp(start + 15);
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 75 ether, "registration should 25% reduced");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 25 ether, "registration should be 75% reduced");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
 
         vm.warp(start + 25);
 
-        price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[0],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 50 ether, "registration should be 50% reduced");
 
-        price = manager.getRenewalPrice(arr1[1], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[1],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "registration should full price");
 
-        price = manager.getRenewalPrice(arr1[2], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[2],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 100 ether, "registration should be at full cost");
 
-        price = manager.getRenewalPrice(arr1[3], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[3],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 2 ether, "registration should be 98% reduced");
 
-        price = manager.getRenewalPrice(arr1[4], parentNamehash, label, registrationLength);
+        price = manager.getRenewalPrice(
+            arr1[4],
+            address(this),
+            parentNamehash,
+            label,
+            registrationLength
+        );
 
         assertEq(price, 1 ether, "registration should be 100% reduced but min is $1");
     }
@@ -1189,6 +1421,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -1212,6 +1445,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 renewalPrice = manager.getRenewalPrice{gas: 30000000}(
             addr,
+            address(this),
             parentNamehash,
             label,
             registrationLength

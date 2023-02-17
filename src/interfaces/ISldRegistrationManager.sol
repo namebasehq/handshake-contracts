@@ -19,6 +19,7 @@ interface ISldRegistrationManager {
 
     function getRenewalPricePerDay(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -33,6 +34,7 @@ interface ISldRegistrationManager {
 
     function getRenewalPrice(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength

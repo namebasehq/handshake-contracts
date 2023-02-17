@@ -39,6 +39,8 @@ abstract contract NameResolver is INameResolver, BaseResolver {
      */
     function setName(string calldata _name) external {
         nameMap[msg.sender] = _name;
+
+        emit ReverseClaimed(msg.sender, _name);
     }
 
     /**

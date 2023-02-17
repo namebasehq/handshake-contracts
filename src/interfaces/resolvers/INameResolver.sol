@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 // https://github.com/ensdomains/ens-contracts
 interface INameResolver {
     event NameChanged(bytes32 indexed node, string name);
+    event ReverseClaimed(address indexed _addr, string _domain);
 
     /**
      * Returns the name associated with an ENS node, for reverse records.

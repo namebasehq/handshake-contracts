@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
+import "forge-std/console.sol";
 
 /**
  *
@@ -19,10 +20,20 @@ abstract contract PaymentManager {
      * @param _tldOwner The owner of the TLD
      * @param _funds The amount of funds to be distributed
      */
-    function distributePrimaryFunds(address _sldOwner, address _tldOwner, uint256 _funds) internal {
+    function distributePrimaryFunds(
+        address _sldOwner,
+        address _tldOwner,
+        uint256 _funds,
+        uint256 _minContribution
+    ) internal {
         require(msg.value >= _funds, "not enough ether");
 
         uint256 handshakeShare = (_funds * percentCommission) / 100;
+
+        if (handshakeShare < _minContribution) {
+            handshakeShare = _minContribution;
+        }
+
         uint256 primary = _funds - handshakeShare;
         uint256 excess = msg.value - _funds;
 

@@ -15,6 +15,7 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
+import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -33,14 +34,14 @@ contract SldRegistrationManager is
 
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
-
     mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
 
     IGlobalRegistrationRules public globalStrategy;
     IHandshakeSld public sld;
     IHandshakeTld public tld;
-
     ICommitIntent public commitIntent;
+
+    uint256 public minDevContribution;
 
     event DiscountSet(
         bytes32 indexed _tokenNamehash,
@@ -82,6 +83,7 @@ contract SldRegistrationManager is
         feeWalletPayoutAddress = _payoutWallet;
         usdOracle = _oracle;
         labelValidator = _validator;
+        minDevContribution = 0.2 ether; // $0.20
         _transferOwnership(_owner);
     }
 
@@ -114,19 +116,26 @@ contract SldRegistrationManager is
             "registration strategy does not support interface"
         );
 
+        bool isApproved = tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash));
+
         require(
-            strategy.isEnabled(_parentNamehash) ||
-                tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
+            strategy.isEnabled(_parentNamehash) || isApproved,
             "registration strategy disabled"
         );
 
-        uint256 dollarPrice = getRegistrationPrice(
+        address tldOwner = tld.ownerOf(uint256(_parentNamehash));
+        uint256 dollarPrice;
+
+        dollarPrice = getRegistrationPrice(
             address(strategy),
             msg.sender,
+            tldOwner,
             _parentNamehash,
             _label,
             _registrationLength
         );
+
+        console.log("dollarPrice: %s", dollarPrice);
 
         require(
             globalStrategy.canRegister(
@@ -153,11 +162,16 @@ contract SldRegistrationManager is
             uint96(dollarPrice)
         );
 
-        uint256 priceInWei = (getWeiValueOfDollar() * dollarPrice) / 1 ether;
+        uint256 weiValue = getWeiValueOfDollar();
 
-        require(msg.value >= priceInWei, "insufficient funds");
+        uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
 
-        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+        distributePrimaryFunds(
+            msg.sender,
+            tldOwner,
+            priceInWei,
+            (weiValue * minDevContribution) / 1 ether
+        );
 
         require(
             commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
@@ -220,8 +234,11 @@ contract SldRegistrationManager is
 
         sldRegistrationHistory[sldNamehash] = detail;
 
+        address tldOwner = tld.ownerOf(uint256(_parentNamehash));
+
         uint256 priceInDollars = getRenewalPrice(
             msg.sender,
+            tldOwner,
             _parentNamehash,
             _label,
             _registrationLength
@@ -229,7 +246,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
-        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+        distributePrimaryFunds(msg.sender, tldOwner, priceInWei, 0);
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }
@@ -258,6 +275,15 @@ contract SldRegistrationManager is
     function updatePaymentAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
         feeWalletPayoutAddress = _addr;
+    }
+
+    /**
+     * @notice Update the minimum dev fee per tx
+     * @dev This function can only be run by the contract owner
+     * @param _minFeeInWei Minimum fee in wei to set
+     */
+    function updateMinDevFee(uint256 _minFeeInWei) public onlyOwner {
+        minDevContribution = _minFeeInWei;
     }
 
     /**
@@ -344,6 +370,7 @@ contract SldRegistrationManager is
      */
     function getRenewalPrice(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -375,7 +402,7 @@ contract SldRegistrationManager is
 
         //
         uint256 renewalPrice = (((
-            renewalCostPerAnnum < globalStrategy.minimumDollarPrice()
+            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || _tldOwner == _addr
                 ? globalStrategy.minimumDollarPrice()
                 : renewalCostPerAnnum
         ) * _registrationLength) / 365);
@@ -448,27 +475,35 @@ contract SldRegistrationManager is
     function getRegistrationPrice(
         address _strategy,
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
-        uint256 currentPrice = safeCallRegistrationStrategyInAssembly(
-            _strategy,
-            abi.encodeWithSelector(
-                ISldRegistrationStrategy.getPriceInDollars.selector,
-                _addr,
-                _parentNamehash,
-                _label,
-                _registrationLength,
-                true
-            ),
-            _registrationLength
-        );
-
-        uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
-        currentPrice = currentPrice - discount;
         uint256 minPrice = (globalStrategy.minimumDollarPrice() * _registrationLength) / 365;
-        return minPrice > currentPrice ? minPrice : currentPrice;
+
+        if (_tldOwner == _addr) {
+            return minPrice;
+        } else {
+            uint256 currentPrice = safeCallRegistrationStrategyInAssembly(
+                _strategy,
+                abi.encodeWithSelector(
+                    ISldRegistrationStrategy.getPriceInDollars.selector,
+                    _addr,
+                    _parentNamehash,
+                    _label,
+                    _registrationLength,
+                    true
+                ),
+                _registrationLength
+            );
+
+            uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) /
+                100;
+            currentPrice = currentPrice - discount;
+
+            return minPrice > currentPrice ? minPrice : currentPrice;
+        }
     }
 
     function getCurrentDiscount(bytes32 _parentNamehash, address _addr, bool _isRegistration)
@@ -508,11 +543,18 @@ contract SldRegistrationManager is
      */
     function getRenewalPricePerDay(
         address _addr,
+        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
-        uint256 price = getRenewalPrice(_addr, _parentNamehash, _label, _registrationLength);
+        uint256 price = getRenewalPrice(
+            _addr,
+            _tldOwner,
+            _parentNamehash,
+            _label,
+            _registrationLength
+        );
 
         _price = price / _registrationLength;
     }

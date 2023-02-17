@@ -45,6 +45,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         setUpLabelValidator();
         bytes32 parentNamehash = bytes32(uint256(0x4));
         setUpRegistrationStrategy(parentNamehash);
+        tld.register(address(this), uint256(parentNamehash));
 
         IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false, 1 ether);
         manager.updateGlobalRegistrationStrategy(rules);

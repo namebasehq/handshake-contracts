@@ -93,7 +93,7 @@ contract TldMetadataService is IMetadataService {
                 : "";
 
             if (bytes(_image).length == 0) {
-                _image = svg(_name);
+                _image = emptySvg(_name);
             }
         }
     }
