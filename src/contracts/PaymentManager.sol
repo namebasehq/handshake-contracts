@@ -8,8 +8,13 @@ import "forge-std/console.sol";
  * @author hodl.esf.eth
  */
 abstract contract PaymentManager {
+    //slither-disable-start immutable-states
+    //slither-disable-start constable-states
     address public feeWalletPayoutAddress;
     uint256 public percentCommission;
+
+    //slither-disable-end constable-states
+    //slither-disable-end immutable-states
 
     event PaymentSent(address indexed _to, uint256 _amount);
 

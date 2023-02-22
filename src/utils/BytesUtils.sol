@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+// slither-disable-start too-many-digits
+
 library BytesUtils {
     /*
      * @dev Returns the keccak-256 hash of a byte range.
@@ -379,3 +381,5 @@ library BytesUtils {
         return bytes32(ret << (256 - bitlen));
     }
 }
+
+// slither-disable-end too-many-digits

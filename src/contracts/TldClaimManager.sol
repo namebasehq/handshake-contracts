@@ -95,7 +95,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      */
     function claimTld(string calldata _domain, address _addr) external payable {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
-        uint256 expectedEther = usdOracle.getWeiValueOfDollar() * (mintPriceInDollars / 1 ether);
+        uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
 
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         require(msg.value >= expectedEther, "not enough ether");
@@ -168,10 +168,6 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
         labelValidator = _validator;
         emit NewLabelValidator(address(_validator));
-    }
-
-    function getMintPriceInWei() public view returns (uint256) {
-        return usdOracle.getWeiValueOfDollar() * (mintPriceInDollars / 1 ether);
     }
 
     modifier onlyAuthorisedTldManager() {

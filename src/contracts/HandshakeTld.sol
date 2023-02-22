@@ -12,7 +12,6 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     mapping(bytes32 => string) public namehashToLabelMap;
     mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
 
-    address public claimManagerAddress;
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount = 50; //default 5%
 

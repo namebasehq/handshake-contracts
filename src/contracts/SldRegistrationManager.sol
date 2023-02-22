@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ICommitIntent.sol";
@@ -15,7 +16,6 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
-import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -28,7 +28,8 @@ contract SldRegistrationManager is
     ISldRegistrationManager,
     PaymentManager,
     HasUsdOracle,
-    HasLabelValidator
+    HasLabelValidator,
+    ReentrancyGuard
 {
     using ERC165Checker for address;
 
@@ -37,8 +38,10 @@ contract SldRegistrationManager is
     mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
 
     IGlobalRegistrationRules public globalStrategy;
+    //slither-disable-start immutable-states
     IHandshakeSld public sld;
     IHandshakeTld public tld;
+    //slither-disable-end immutable-states
     ICommitIntent public commitIntent;
 
     uint256 public minDevContribution;
@@ -106,6 +109,11 @@ contract SldRegistrationManager is
     ) external payable {
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
+        require(canRegister(sldNamehash), "domain already registered");
+
+        _recipient = _recipient == address(0) ? msg.sender : _recipient;
+        sld.registerSld(_recipient, _parentNamehash, _label);
+
         require(labelValidator.isValidLabel(_label), "invalid label");
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
@@ -135,8 +143,6 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        console.log("dollarPrice: %s", dollarPrice);
-
         require(
             globalStrategy.canRegister(
                 msg.sender,
@@ -147,12 +153,6 @@ contract SldRegistrationManager is
             ),
             "failed global strategy"
         );
-
-        require(canRegister(sldNamehash), "domain already registered");
-
-        _recipient = _recipient == address(0) ? msg.sender : _recipient;
-
-        sld.registerSld(_recipient, _parentNamehash, _label);
 
         addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
@@ -228,11 +228,9 @@ contract SldRegistrationManager is
 
         require(!canRegister(sldNamehash), "invalid domain");
 
-        SldRegistrationDetail memory detail = sldRegistrationHistory[sldNamehash];
+        SldRegistrationDetail storage detail = sldRegistrationHistory[sldNamehash];
 
         detail.RegistrationLength = detail.RegistrationLength + (_registrationLength * 1 days);
-
-        sldRegistrationHistory[sldNamehash] = detail;
 
         address tldOwner = tld.ownerOf(uint256(_parentNamehash));
 
@@ -246,7 +244,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
-        distributePrimaryFunds(msg.sender, tldOwner, priceInWei, 0);
+        distributePrimaryFunds(msg.sender, tldOwner, priceInWei, minDevContribution);
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }
@@ -563,6 +561,6 @@ contract SldRegistrationManager is
         require(address(0) != address(usdOracle), "usdOracle not set");
         uint256 price = usdOracle.getPrice();
         require(price > 0, "error getting price");
-        return (1 ether * 100000000) / price;
+        return (1e26) / price;
     }
 }

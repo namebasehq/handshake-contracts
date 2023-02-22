@@ -171,7 +171,6 @@ contract TestHandshakeTld is Test {
     }
 
     function testUpdateTldClaimManagerFromNotOwner_fail() public {
-        address claimManager = address(0x123456);
         vm.startPrank(address(0x998877));
         vm.expectRevert("Ownable: caller is not the owner");
         tld.setTldClaimManager(ITldClaimManager(claimManager));

@@ -48,10 +48,10 @@ contract DeployMetadataScript is Script {
             vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
         }
 
-        HandshakeSld sld = HandshakeSld(0xCe713c8321F83F4c6897894E3F571C5C23fee9f5);
-        SldRegistrationManager registrationManager = SldRegistrationManager(
-            0x538Cb06981b76E369786d6c1848550b01c808F89
-        );
+        // HandshakeSld sld = HandshakeSld(0xCe713c8321F83F4c6897894E3F571C5C23fee9f5);
+        // SldRegistrationManager registrationManager = SldRegistrationManager(
+        //     0x538Cb06981b76E369786d6c1848550b01c808F89
+        // );
 
         // SldMetadataService metadataService = new SldMetadataService(sld,
         // registrationManager,

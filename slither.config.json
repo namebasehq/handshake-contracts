@@ -1,0 +1,12 @@
+{
+    "detectors_to_run1": "",
+    "detectors_to_exclude": "reentrancy-no-eth,uninitialized-local,assembly,unused-return,too-many-digits,similar-names,naming-convention,solc-version,dead-code,missing-inheritance,low-level-calls",
+    "exclude_informational": true,
+    "exclude_low": true,
+    "exclude_medium": false,
+    "exclude_high": false,
+    "json": "",
+    "disable_color": false,
+    "filter_paths": "(script|test|lib|node_modules)",
+    "legacy_ast": false
+}

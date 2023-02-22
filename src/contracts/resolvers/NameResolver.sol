@@ -127,18 +127,12 @@ abstract contract NameResolver is INameResolver, BaseResolver {
                     } catch {
                         return "";
                     }
+                } else {
+                    return "";
                 }
             } catch {
                 return "";
             }
-        }
-
-        if (!resolver.supportsInterface(type(IAddressResolver).interfaceId)) {
-            return "no address resolver";
-        }
-
-        if (!resolver.supportsInterface(type(ITextResolver).interfaceId)) {
-            return "no text resolver";
         }
 
         return "";

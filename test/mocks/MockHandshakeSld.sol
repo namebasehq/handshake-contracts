@@ -38,10 +38,7 @@ contract MockHandshakeSld is IHandshakeSld {
 
     function namehashToLabelMap(bytes32 _childNamehash) external view returns (string memory) {}
 
-    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
-        external
-        payable
-    {}
+    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label) external {}
 
     function registrationStrategy(bytes32 _sldNamehash)
         external

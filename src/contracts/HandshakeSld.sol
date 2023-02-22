@@ -27,9 +27,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     mapping(bytes32 => mapping(address => address)) public royaltyPayoutAddressMap;
     mapping(bytes32 => bytes32) public namehashToParentMap;
 
-    IHandshakeTld public handshakeTldContract;
+    IHandshakeTld public immutable handshakeTldContract;
 
-    IGlobalRegistrationRules public contractRegistrationStrategy;
     ISldRegistrationManager public registrationManager;
 
     constructor(IHandshakeTld _tld) HandshakeNft("SLD", "Handshake SLD") {
@@ -47,7 +46,6 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      */
     function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
         external
-        payable
         isRegistrationManager
     {
         bytes32 sldNamehash = Namehash.getNamehash(_tldNamehash, _label);
@@ -196,12 +194,14 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         uint256[] calldata _parentIds,
         string[] calldata _labels,
         uint256[] calldata _registrationLengths
-    ) external view returns (SldDetail[] memory _details) {
+    ) external view returns (SldDetail[] memory) {
         uint256 len = _parentIds.length;
         require(
             (len ^ _recipients.length ^ _labels.length ^ _registrationLengths.length) == 0,
             "array lengths are different"
         );
+
+        SldDetail[] memory _details = new SldDetail[](len);
 
         _details = new SldDetail[](len);
 
@@ -217,6 +217,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
                 ++i;
             }
         }
+
+        return _details;
     }
 
     /**
@@ -266,7 +268,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     }
 
     function exists(uint256 tokenId) public view override returns (bool) {
-        return super.exists(tokenId) && hasExpired(bytes32(tokenId)) == false;
+        return super.exists(tokenId) && !hasExpired(bytes32(tokenId));
     }
 
     /**
@@ -291,7 +293,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
 
         royaltyAmount = royaltyPayoutAmountMap[parentNamehash] == 0
             ? 0
-            : ((salePrice / 100) * royaltyPayoutAmountMap[parentNamehash]);
+            : ((salePrice * royaltyPayoutAmountMap[parentNamehash]) / 100);
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {

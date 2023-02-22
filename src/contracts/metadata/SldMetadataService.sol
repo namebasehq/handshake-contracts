@@ -10,11 +10,12 @@ import "src/interfaces/ISldRegistrationManager.sol";
 
 contract SldMetadataService is IMetadataService {
     using Strings for uint256;
-    IHandshakeSld public sld;
-    IHandshakeTld public tld;
+    IHandshakeSld public immutable sld;
+    IHandshakeTld public immutable tld;
+    //slither-disable-next-line immutable-states
     string internal backgroundColour;
 
-    ISldRegistrationManager public registrationManager;
+    ISldRegistrationManager public immutable registrationManager;
 
     constructor(
         IHandshakeSld _sld,
@@ -79,7 +80,7 @@ contract SldMetadataService is IMetadataService {
                 : "";
 
             if (bytes(_image).length == 0) {
-                _image = emptySvg(_name);
+                _image = svg(_name);
             }
         }
     }

@@ -7,9 +7,7 @@ import "interfaces/IResolver.sol";
 interface IHandshakeSld {
     function isApprovedOrOwner(address spender, uint256 tokenId) external view returns (bool);
 
-    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
-        external
-        payable;
+    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label) external;
 
     function ownerOf(uint256 _id) external view returns (address);
 

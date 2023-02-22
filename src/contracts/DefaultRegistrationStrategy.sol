@@ -10,7 +10,7 @@ import "interfaces/IHandshakeTld.sol";
 import "src/utils/Multicallable.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multicallable {
-    ISldRegistrationManager public registrationManager;
+    ISldRegistrationManager public immutable registrationManager;
 
     mapping(bytes32 => address) public reservedNames;
     mapping(bytes32 => uint256) public premiumNames;

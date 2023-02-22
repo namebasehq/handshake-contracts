@@ -9,7 +9,6 @@ import "contracts/resolvers/ContentHashResolver.sol";
 import "contracts/resolvers/DNSResolver.sol";
 import "contracts/resolvers/NameResolver.sol";
 import "contracts/resolvers/TextResolver.sol";
-import "interfaces/IResolver.sol";
 import "src/utils/Multicallable.sol";
 
 contract DefaultResolver is

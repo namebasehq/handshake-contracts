@@ -48,13 +48,12 @@ contract SldCommitIntent is ICommitIntent, Ownable {
 
         uint256 max = data.blockNumber;
 
-        if (max == 0) {
+        if (max > 0) {
+            uint256 min = max + minBlockWaitForCommit - maxBlockWaitForCommit;
+            return block.number >= min && block.number < max;
+        } else {
             return false;
         }
-
-        uint256 min = max + minBlockWaitForCommit - maxBlockWaitForCommit;
-
-        return block.number >= min && block.number < max;
     }
 
     /**

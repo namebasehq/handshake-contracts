@@ -9,7 +9,9 @@ import "interfaces/IResolver.sol";
 import "interfaces/IHandshakeSld.sol";
 
 contract TldMetadataService is IMetadataService {
-    HandshakeNft public nft;
+    HandshakeNft public immutable nft;
+
+    //slither-disable-next-line immutable-states
     string internal backgroundColour;
 
     constructor(HandshakeNft _nft, string memory _background) {
@@ -93,7 +95,7 @@ contract TldMetadataService is IMetadataService {
                 : "";
 
             if (bytes(_image).length == 0) {
-                _image = emptySvg(_name);
+                _image = svg(_name);
             }
         }
     }
