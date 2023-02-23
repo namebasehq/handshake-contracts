@@ -10,9 +10,9 @@ import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
 import "structs/SldRegistrationDetail.sol";
 import "src/utils/Namehash.sol";
-import "./PaymentManager.sol";
-import "./HasUsdOracle.sol";
-import "./HasLabelValidator.sol";
+import "src/contracts/PaymentManager.sol";
+import "src/contracts/HasUsdOracle.sol";
+import "src/contracts/HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
 
 /**
@@ -21,7 +21,7 @@ import "structs/SldDiscountSettings.sol";
  * @title Handshake Sld Registration Manager
  * @author hodl.esf.eth
  */
-contract SldRegistrationManager is
+contract MockSldRegistrationManager is
     OwnableUpgradeable,
     ISldRegistrationManager,
     PaymentManager,

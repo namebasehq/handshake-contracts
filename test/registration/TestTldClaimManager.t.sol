@@ -38,7 +38,8 @@ contract TestTldClaimManager is Test {
         manager = TldClaimManager(address(uups));
 
         sld = new MockHandshakeSld();
-        nft = new HandshakeTld(manager);
+        nft = new HandshakeTld();
+        nft.setTldClaimManager(manager);
         nft.setMetadataContract(metadata);
         MockUsdOracle oracle = new MockUsdOracle(200000000000); // $2000
 

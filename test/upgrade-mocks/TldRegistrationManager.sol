@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ITldClaimManager.sol";
-import "./HasLabelValidator.sol";
+import "src/contracts/HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "src/contracts/HasUsdOracle.sol";
 
@@ -14,7 +14,12 @@ import "src/contracts/HasUsdOracle.sol";
  * @notice This contract is for managing the TLDs that can be claimed
  *         TLD managers can add allowed TLDs that can be minted by address
  */
-contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator, HasUsdOracle {
+contract MockTldClaimManager is
+    OwnableUpgradeable,
+    ITldClaimManager,
+    HasLabelValidator,
+    HasUsdOracle
+{
     //TODO: remove bools to improve gas usage
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
@@ -168,10 +173,6 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     function updateLabelValidator(ILabelValidator _validator) public onlyOwner {
         labelValidator = _validator;
         emit NewLabelValidator(address(_validator));
-    }
-
-    function getMintPriceInWei() external view returns (uint256) {
-        return usdOracle.getWeiValueOfDollar() * (mintPriceInDollars / 1 ether);
     }
 
     modifier onlyAuthorisedTldManager() {

@@ -48,7 +48,8 @@ contract TestHandshakeTld is Test {
         claimManager = new MockClaimManager();
 
         MockMetadataService metadata = new MockMetadataService("base_url/");
-        tld = new HandshakeTld(claimManager);
+        tld = new HandshakeTld();
+        tld.setTldClaimManager(claimManager);
         sld = new HandshakeSld(tld);
 
         registrationManager = new MockSldRegistrationManager(

@@ -3,16 +3,9 @@ pragma solidity ^0.8.17;
 
 import "contracts/HandshakeNft.sol";
 import {Namehash} from "utils/Namehash.sol";
-import "interfaces/ICommitIntent.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
-import "interfaces/ISldRegistrationStrategy.sol";
 import "structs/SldDetail.sol";
-import "structs/SldRegistrationDetail.sol";
-
-import "contracts/UsdPriceOracle.sol";
-import "interfaces/IGlobalRegistrationRules.sol";
-import "contracts/PaymentManager.sol";
 import "interfaces/ISldRegistrationManager.sol";
 
 /**

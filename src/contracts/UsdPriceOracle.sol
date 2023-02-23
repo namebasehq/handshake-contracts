@@ -21,6 +21,6 @@ contract UsdPriceOracle is IPriceOracle {
     function getWeiValueOfDollar() public view returns (uint256) {
         uint256 price = getPrice();
 
-        return 1e26 / price;
+        return (1 ether * 100000000) / price;
     }
 }

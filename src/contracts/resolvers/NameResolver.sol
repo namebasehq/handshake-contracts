@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "contracts/HandshakeNft.sol";
 import "interfaces/resolvers/INameResolver.sol";
 import "contracts/resolvers/BaseResolver.sol";
 import {Namehash} from "utils/Namehash.sol";
-import "interfaces/IResolver.sol";
-import "interfaces/resolvers/IAddressResolver.sol";
 
 /**
  * @title NameResolver aka Reverse Resolver

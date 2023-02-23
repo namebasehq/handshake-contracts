@@ -78,31 +78,45 @@ contract DeployScript is Script {
 
         //TldClaimManager tldClaimManager = new TldClaimManager();
 
-        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
-            address(new TldClaimManager()),
-            deployerWallet,
-            bytes("")
-        );
-
-        HandshakeTld tld = new HandshakeTld(TldClaimManager(address(uups)));
+        HandshakeTld tld = new HandshakeTld();
         HandshakeSld sld = new HandshakeSld(tld);
 
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
             deployerWallet,
-            bytes("")
+            abi.encodeWithSelector(
+                SldRegistrationManager.init.selector,
+                tld,
+                sld,
+                commitIntent,
+                priceOracle,
+                labelValidator,
+                globalRules,
+                ownerWallet,
+                ownerWallet
+            )
         );
 
-        SldRegistrationManager(address(uups2)).init(
-            tld,
-            sld,
-            commitIntent,
-            priceOracle,
-            labelValidator,
-            globalRules,
-            ownerWallet,
-            ownerWallet
+        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(
+            SldRegistrationManager(address(uups2))
         );
+
+        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
+            address(new TldClaimManager()),
+            deployerWallet,
+            abi.encodeWithSelector(
+                TldClaimManager.init.selector,
+                labelValidator,
+                ownerWallet,
+                tld,
+                strategy,
+                priceOracle,
+                100 ether,
+                ownerWallet
+            )
+        );
+
+        tld.setTldClaimManager(TldClaimManager(address(uups)));
 
         {
             TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
@@ -122,24 +136,19 @@ contract DeployScript is Script {
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
-        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(
-            SldRegistrationManager(address(uups2))
-        );
-
         DefaultResolver resolver = new DefaultResolver(tld, sld);
 
+        // TldClaimManager(address(uups)).init(
+        //     labelValidator,
+        //     ownerWallet,
+        //     tld,
+        //     strategy,
+        //     priceOracle,
+        //     100 ether,
+        //     ownerWallet
+        // );
+
         //transfer ownership of ownable contracts
-
-        TldClaimManager(address(uups)).init(
-            labelValidator,
-            ownerWallet,
-            tld,
-            strategy,
-            priceOracle,
-            100 ether,
-            ownerWallet
-        );
-
         sld.setDefaultResolver(IResolver(address(resolver)));
         tld.setDefaultResolver(IResolver(address(resolver)));
 

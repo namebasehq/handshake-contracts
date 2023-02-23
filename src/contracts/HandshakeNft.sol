@@ -5,9 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "interfaces/IMetadataService.sol";
-import "interfaces/ISldRegistrationStrategy.sol";
-import "contracts/HasLabelValidator.sol";
-import "interfaces/ILabelValidator.sol";
 import "interfaces/IResolver.sol";
 
 // base class for both SLD and TLDs
