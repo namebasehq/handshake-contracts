@@ -21,6 +21,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(
             true,
+            true,
             1 ether
         );
 

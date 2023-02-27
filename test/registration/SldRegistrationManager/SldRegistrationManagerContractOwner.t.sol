@@ -52,7 +52,11 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, 1 ether);
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
+            false,
+            false,
+            1 ether
+        );
         manager.updateGlobalRegistrationStrategy(globalRules);
 
         assertEq(
@@ -63,7 +67,11 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, 1 ether);
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
+            false,
+            false,
+            1 ether
+        );
 
         vm.startPrank(address(0x1234));
         vm.expectRevert("Ownable: caller is not the owner");
@@ -72,7 +80,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
     function testPurchaseSldToZeroAddress_expectSendToMsgSender() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         bytes32 parentNamehash = bytes32(uint256(0x226677));
         tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);

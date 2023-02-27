@@ -12,5 +12,13 @@ interface IGlobalRegistrationRules is IERC165 {
         uint256 _dollarPrice
     ) external view returns (bool);
 
+    function canRenew(
+        address _buyingAddress,
+        bytes32 _parentNamehash,
+        string calldata _label,
+        uint256 _registrationLength,
+        uint256 _dollarPrice
+    ) external view returns (bool);
+
     function minimumDollarPrice() external view returns (uint256);
 }

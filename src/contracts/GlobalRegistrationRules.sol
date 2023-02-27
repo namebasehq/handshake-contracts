@@ -22,6 +22,21 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         return true;
     }
 
+    function canRenew(
+        address, // _buyingAddress,
+        bytes32, // _parentNamehash,
+        string calldata, // _label,
+        uint256 _registrationLength,
+        uint256 _dollarCost
+    ) external pure returns (bool) {
+        require(_registrationLength > 364, "less than 365 days renewal");
+        require(
+            ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
+            "min price $1/year"
+        );
+        return true;
+    }
+
     function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
         return
             _interfaceId == this.canRegister.selector ||

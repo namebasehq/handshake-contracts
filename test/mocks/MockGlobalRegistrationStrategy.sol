@@ -5,10 +5,12 @@ import "interfaces/IGlobalRegistrationRules.sol";
 
 contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     bool private shouldRegister;
+    bool private shouldRenew;
     uint256 private minPrice;
 
-    constructor(bool _canRegister, uint256 _minPrice) {
+    constructor(bool _canRegister, bool _canRenew, uint256 _minPrice) {
         shouldRegister = _canRegister;
+        shouldRenew = _canRenew;
         minPrice = _minPrice;
     }
 
@@ -20,6 +22,16 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
         uint256 // _dollarCost
     ) external view returns (bool) {
         return shouldRegister;
+    }
+
+    function canRenew(
+        address, //_buyingAddress
+        bytes32, //_parentNamehash
+        string calldata, //_label
+        uint256, //_registrationLength
+        uint256 // _dollarCost
+    ) external view returns (bool) {
+        return shouldRenew;
     }
 
     function minimumDollarPrice() external view returns (uint256) {

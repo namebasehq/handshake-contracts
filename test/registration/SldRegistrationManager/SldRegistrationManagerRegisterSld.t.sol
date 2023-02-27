@@ -28,7 +28,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         bytes32 parentNamehash = bytes32(uint256(0x4));
 
         setUpRegistrationStrategy(parentNamehash);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, false, 1 ether);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
@@ -47,7 +47,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         setUpRegistrationStrategy(parentNamehash);
         tld.register(address(this), uint256(parentNamehash));
 
-        IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false, 1 ether);
+        IGlobalRegistrationRules rules = new MockGlobalRegistrationStrategy(false, true, 1 ether);
         manager.updateGlobalRegistrationStrategy(rules);
 
         string memory label = "yo";
@@ -64,7 +64,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
     function testMintSldFromAuthorisedWalletRepurchaseWhenExpired_success() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
@@ -104,7 +104,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
@@ -136,7 +136,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
     function testPurchaseSldToOtherAddress() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
         tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
@@ -164,7 +164,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
     function testPurchaseSldRegistrationDisabled_fail() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
         tld.register(address(0x99), uint256(parentNamehash));
         setUpRegistrationStrategy(parentNamehash);
@@ -191,7 +191,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
     // owner of TLD should be able to register if the public registration is disabled
     function testPurchaseSldRegistrationDisabledFromOwner_success() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
         address owner = address(0x99);
         tld.register(owner, uint256(parentNamehash));
@@ -216,7 +216,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
     function testMintSingleDomainWithNoPriceStrategy_fail() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
@@ -234,7 +234,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
     function testMintSingleDomainCheckHistory() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         string memory label = "yo";
         bytes32 secret = 0x0;
@@ -300,7 +300,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         tld.addRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address claimant = address(0x6666);
@@ -374,7 +374,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         tld.addRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address claimant = address(0x6666);
@@ -394,7 +394,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         vm.warp(6688);
 
         hoax(claimant, 1 ether);
-        manager.registerSld{value: 1 ether}( //should cost 2 ether
+        manager.registerSld{value: 1 ether}(
             label,
             0x0, //secret
             registrationLength,

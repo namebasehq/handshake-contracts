@@ -22,7 +22,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
     function testRenewSldFromSldOwner_pass() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
@@ -60,11 +60,41 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         assertEq(actualValue, expectedValue, "invalid registration details");
     }
 
+    function testRenewSldFromSldOwnerGlobalRulesFail_fail() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalStrategy(true, false, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        uint80 renewalLength = 1200;
+
+        address recipient = address(0x5555);
+
+        startHoax(address(0x420), 50 ether);
+
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        vm.expectRevert("cannot renew");
+        manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
+    }
+
     //TODO: what's the expected behaviour (pass i think)
     function testRenewSldFromNotSldOwner_pass() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
@@ -115,7 +145,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
     function testRenewNoneExistingToken_fail() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
@@ -149,7 +179,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
     function testRenewExpiredSld_fail() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         bytes32 parentNamehash = bytes32(uint256(0x4));
         tld.register(address(0x99), uint256(parentNamehash));
@@ -183,7 +213,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         _years = uint8(bound(_years, 1, 25));
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         uint128[10] memory prices = [
             uint128(10 ether),
@@ -257,7 +287,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
     function testGetDailyPricingForMultiYearDiscountStrategy() public {
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
 
         uint128[10] memory prices = [
             uint128(10 ether),
@@ -338,7 +368,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -402,7 +432,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -446,7 +476,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -491,7 +521,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         sld.setMockRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -566,7 +596,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, minPrice * 1 ether);
+        setUpGlobalStrategy(true, true, minPrice * 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -618,7 +648,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         minPrice = 55 ether;
 
-        setUpGlobalStrategy(true, minPrice * 1 ether);
+        setUpGlobalStrategy(true, true, minPrice * 1 ether);
 
         label = "bar";
 

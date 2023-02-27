@@ -34,7 +34,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -101,7 +101,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address[] memory arr1 = new address[](2);
@@ -199,7 +199,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy2);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -268,7 +268,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -335,7 +335,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -404,7 +404,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -471,7 +471,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -541,7 +541,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -611,7 +611,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -681,7 +681,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -752,7 +752,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -879,7 +879,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         vm.startPrank(owner);
@@ -1104,7 +1104,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         tld.addRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address[] memory arr1 = new address[](5);
@@ -1323,7 +1323,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -1359,7 +1359,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);
@@ -1397,8 +1397,8 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         sld.setMockRegistrationStrategy(parentNamehash, strategy);
 
         setUpLabelValidator();
-        setUpGlobalStrategy(true, 1 ether);
-        globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
+        setUpGlobalStrategy(true, true, 1 ether);
+        globalStrategy = new MockGlobalRegistrationStrategy(true, false, 1 ether);
         addMockOracle();
 
         address addr = address(0x225599);

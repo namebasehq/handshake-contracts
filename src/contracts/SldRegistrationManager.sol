@@ -14,6 +14,7 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
+import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -218,8 +219,7 @@ contract SldRegistrationManager is
         external
         payable
     {
-        // no-one gonna need to extend domain more than 100 years, and we do unchecked matth
-        // inside the price function
+        // no-one gonna need to extend domain more than 100 years
         require(_registrationLength < 36500, "must be less than 100 years");
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
@@ -239,9 +239,27 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
+        require(
+            globalStrategy.canRenew(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                _registrationLength,
+                priceInDollars
+            ),
+            "cannot renew"
+        );
 
-        distributePrimaryFunds(msg.sender, tldOwner, priceInWei, minDevContribution);
+        uint256 weiValueOfDollar = getWeiValueOfDollar();
+
+        uint256 priceInWei = (weiValueOfDollar * priceInDollars) / 1 ether;
+
+        distributePrimaryFunds(
+            msg.sender,
+            tldOwner,
+            priceInWei,
+            (weiValueOfDollar * minDevContribution) / 1 ether
+        );
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }

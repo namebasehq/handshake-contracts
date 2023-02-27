@@ -54,7 +54,7 @@ contract TestHandshakeTld is Test {
 
         registrationManager = new MockSldRegistrationManager(
             tld,
-            new MockGlobalRegistrationStrategy(true, 1 ether)
+            new MockGlobalRegistrationStrategy(true, true, 1 ether)
         );
 
         sld.setRegistrationManager(registrationManager);

@@ -41,7 +41,7 @@ contract TestSldRegistrationManagerBase is Test {
         tld = new MockHandshakeTld();
         commitIntent = new MockCommitIntent(true);
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
-        globalStrategy = new MockGlobalRegistrationStrategy(true, 1 ether);
+        globalStrategy = new MockGlobalRegistrationStrategy(true, true, 1 ether);
         SldRegistrationManager implementation = new SldRegistrationManager();
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
@@ -75,9 +75,10 @@ contract TestSldRegistrationManagerBase is Test {
         manager.updateLabelValidator(validator);
     }
 
-    function setUpGlobalStrategy(bool _result, uint256 _minPrice) internal {
+    function setUpGlobalStrategy(bool _canReg, bool _canRenew, uint256 _minPrice) internal {
         IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
-            _result,
+            _canReg,
+            _canRenew,
             _minPrice
         );
         manager.updateGlobalRegistrationStrategy(globalRules);

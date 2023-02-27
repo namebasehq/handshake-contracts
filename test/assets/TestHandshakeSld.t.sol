@@ -49,7 +49,7 @@ contract TestHandshakeSld is Test {
         tld = new MockHandshakeTld();
         manager = new MockSldRegistrationManager(
             tld,
-            new MockGlobalRegistrationStrategy(true, 1 ether)
+            new MockGlobalRegistrationStrategy(true, true, 1 ether)
         );
         sld = new HandshakeSld(tld);
         sld.setRegistrationManager(manager);

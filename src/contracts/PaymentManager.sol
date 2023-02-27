@@ -38,6 +38,8 @@ abstract contract PaymentManager {
             handshakeShare = _minContribution;
         }
 
+        require(_funds > handshakeShare, "not enough funds to pay commission");
+
         uint256 primary = _funds - handshakeShare;
         uint256 excess = msg.value - _funds;
 
