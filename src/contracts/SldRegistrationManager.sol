@@ -245,7 +245,7 @@ contract SldRegistrationManager is
                 _parentNamehash,
                 _label,
                 _registrationLength,
-                priceInDollars
+                priceInDollars + 1 // plus 1 wei for rounding issue
             ),
             "cannot renew"
         );
