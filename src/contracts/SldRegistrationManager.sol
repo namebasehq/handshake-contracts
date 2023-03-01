@@ -396,9 +396,15 @@ contract SldRegistrationManager is
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
 
-        uint256 renewalCostPerAnnum = pricesAtRegistration[sldNamehash][
-            (registrationYears > 10 ? 10 : registrationYears) - 1
-        ];
+        uint256 index;
+
+        if (registrationYears > 10) {
+            index = 9;
+        } else if (registrationYears > 0) {
+            index = registrationYears - 1;
+        }
+
+        uint256 renewalCostPerAnnum = pricesAtRegistration[sldNamehash][index];
 
         uint256 registrationPrice = getRegistrationBasePrice(
             address(strategy),

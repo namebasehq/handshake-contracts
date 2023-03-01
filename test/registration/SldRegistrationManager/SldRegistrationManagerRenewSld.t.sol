@@ -207,6 +207,33 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.renewSld(label, parentNamehash, registrationLength);
     }
 
+    function testRenewDomainLessThan365Days() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 364;
+
+        address recipient = address(0x5555);
+
+        hoax(address(0x420), 20 ether);
+        manager.registerSld{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        manager.renewSld{value: 1 ether}(label, parentNamehash, registrationLength);
+    }
+
     function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(uint8 _years)
         public
     {
