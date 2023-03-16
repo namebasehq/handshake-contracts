@@ -5,7 +5,7 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Namehash} from "utils/Namehash.sol";
 
-import "contracts/DefaultRegistrationStrategy.sol";
+import { DefaultRegistrationStrategy } from "contracts/DefaultRegistrationStrategy.sol";
 import "test/mocks/MockHandshakeTld.sol";
 import "test/mocks/MockGlobalRegistrationStrategy.sol";
 import "test/mocks/MockSldRegistrationManager.sol";
@@ -61,7 +61,7 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[1] = 10;
         prices[2] = 11;
 
-        vm.expectRevert("must be less than or equal to previous length");
+        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.PriceTooHigh.selector, prices[1]));
         strategy.setLengthCost(namehash, prices);
     }
 
@@ -84,7 +84,7 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[9] = 2;
         prices[10] = 1;
 
-        vm.expectRevert("max 10 characters");
+        vm.expectRevert(DefaultRegistrationStrategy.LengthTooLong.selector);
         strategy.setLengthCost(namehash, prices);
     }
 
@@ -99,7 +99,7 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[2] = 5;
 
         vm.prank(address(0x5555));
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(DefaultRegistrationStrategy.NotApprovedOrOwner.selector);
         strategy.setLengthCost(namehash, prices);
     }
 
@@ -137,7 +137,7 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[0] = price;
 
         vm.prank(address(0x6666));
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(DefaultRegistrationStrategy.NotApprovedOrOwner.selector);
         strategy.setPremiumNames(namehash, labels, prices);
 
         bytes32 full_hash = keccak256(
@@ -161,7 +161,7 @@ contract TestDefaultRegistrationStrategy is Test {
         claimers[0] = claimer;
 
         vm.prank(address(0x6666));
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(DefaultRegistrationStrategy.NotApprovedOrOwner.selector);
         strategy.setReservedNames(namehash, labels, claimers);
 
         bytes32 full_hash = keccak256(
@@ -240,7 +240,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        vm.expectRevert("reserved name");
+        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.NameReserved.selector, claimer));
         strategy.getPriceInDollars(address(0x420), namehash, label, 365, false);
     }
 
@@ -348,7 +348,7 @@ contract TestDefaultRegistrationStrategy is Test {
         claimers[1] = claimer2;
         claimers[2] = claimer3;
 
-        vm.expectRevert("array lengths do not match");
+        vm.expectRevert(DefaultRegistrationStrategy.InvalidArrayLength.selector);
         strategy.setReservedNames(namehash, labels, claimers);
     }
 
@@ -374,7 +374,7 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[0] = price;
         prices[1] = price2;
 
-        vm.expectRevert("array lengths do not match");
+        vm.expectRevert(DefaultRegistrationStrategy.InvalidArrayLength.selector);
         strategy.setPremiumNames(namehash, labels, prices);
     }
 
@@ -589,7 +589,7 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.addMapping(uint256(namehash), address(this), true);
         tld.register(address(this), uint256(namehash));
 
-        vm.expectRevert("max 50% discount");
+        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooHigh.selector, 50));
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
     }
 
@@ -604,7 +604,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         tld.addMapping(uint256(namehash), address(this), true);
 
-        vm.expectRevert("must be more or equal to previous year");
+        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooLow.selector, 50));
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
     }
 
@@ -791,7 +791,7 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.register(address(this), uint256(namehash));
 
         vm.startPrank(not_approved);
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(DefaultRegistrationStrategy.NotApprovedOrOwner.selector);
         strategy.setIsEnabled(namehash, true);
     }
 }

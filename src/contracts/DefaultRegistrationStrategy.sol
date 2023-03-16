@@ -20,6 +20,16 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
     event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
 
+    error LengthTooLong();
+    error PriceTooHigh(uint256 _minPrice);
+    error DiscountTooHigh(uint256 _minDiscount);
+    error DiscountTooLow(uint256 _maxDiscount);
+    error NoPricesSet();
+    error InvalidArrayLength();
+    error RegistrationTooShort(uint256 _minLength);
+    error NameReserved(address _claimant);
+    error NotApprovedOrOwner();
+
     constructor(ISldRegistrationManager _manager) {
         registrationManager = _manager;
     }
@@ -44,11 +54,16 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         public
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        require(_prices.length < 11, "max 10 characters");
+        if (_prices.length > 10) {
+            revert LengthTooLong();
+        }
 
         uint256 currentPrice = type(uint256).max;
         for (uint256 i; i < _prices.length; ) {
-            require(_prices[i] <= currentPrice, "must be less than or equal to previous length");
+
+            if(_prices[i] > currentPrice){
+                revert PriceTooHigh(currentPrice);
+            }
             currentPrice = _prices[i];
 
             unchecked {
@@ -63,19 +78,26 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         public
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        require(_discounts.length < 11, "cannot set more than 10 year discount");
+        if(_discounts.length > 10){
+            revert LengthTooLong();
+        }
 
         uint256 currentDiscount;
 
         for (uint256 i; i < _discounts.length; ) {
-            require(_discounts[i] >= currentDiscount, "must be more or equal to previous year");
+            if(_discounts[i] < currentDiscount) {
+                revert DiscountTooLow(currentDiscount);
+            }
             currentDiscount = _discounts[i];
 
             unchecked {
                 ++i;
             }
         }
-        require(currentDiscount < 51, "max 50% discount");
+        
+        if(currentDiscount > 50){
+            revert DiscountTooHigh(50);
+        }
 
         multiYearDiscount[_parentNamehash] = _discounts;
     }
@@ -87,7 +109,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     {
         uint256[] storage prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
-        require(priceCount > 0, "no length prices are set");
+        if(priceCount == 0){
+            revert NoPricesSet();
+        }
 
         return (_length >= priceCount ? prices[priceCount - 1] : prices[_length - 1]) * 1 ether;
     }
@@ -97,7 +121,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         uint256[] calldata _priceInDollarsPerYear
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        require(_labels.length == _priceInDollarsPerYear.length, "array lengths do not match");
+        if(_labels.length != _priceInDollarsPerYear.length)
+        {
+            revert InvalidArrayLength();
+        }
 
         for (uint256 i; i < _labels.length; ) {
             setPremiumName(_parentNamehash, _labels[i], _priceInDollarsPerYear[i]);
@@ -113,7 +140,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         address[] calldata _claimants
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        require(_labels.length == _claimants.length, "array lengths do not match");
+        if(_labels.length != _claimants.length){
+            revert InvalidArrayLength();
+        }
 
         for (uint256 i; i < _labels.length; ) {
             setReservedName(_parentNamehash, _labels[i], _claimants[i]);
@@ -138,15 +167,16 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         uint256 _registrationLength,
         bool _isRenewal
     ) public view returns (uint256) {
-        require(_registrationLength > 364, "minimum reg is 1 year");
+
+        if(_registrationLength < 365){
+            revert RegistrationTooShort(365);
+        }
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
-        require(
-            reservedNames[namehash] == address(0) ||
-                reservedNames[namehash] == _buyingAddress ||
-                _isRenewal,
-            "reserved name"
-        );
+
+        if(!_isRenewal && (reservedNames[namehash] != _buyingAddress && reservedNames[namehash] != address(0))){
+            revert NameReserved(reservedNames[namehash]);
+        }
 
         uint256 minPrice = (_registrationLength * minDollarPrice());
 
@@ -199,11 +229,11 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
-        require(
-            registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash)),
-            "not approved or owner"
-        );
-
+        
+        if(!registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash)))
+            {
+                revert NotApprovedOrOwner();
+            }
         _;
     }
 }

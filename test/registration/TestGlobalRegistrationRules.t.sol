@@ -22,7 +22,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = 365;
         uint256 dollarPrice = 0;
 
-        vm.expectRevert(abi.encodePacked("min price $1/year"));
+        vm.expectRevert(abi.encodeWithSelector(GlobalRegistrationRules.PriceTooLow.selector, 1 ether));
         rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
     }
 
@@ -67,7 +67,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = 364;
         uint256 dollarPrice = type(uint256).max;
 
-        vm.expectRevert(abi.encodePacked("less than 365 days registration"));
+        vm.expectRevert(abi.encodeWithSelector(GlobalRegistrationRules.RegistrationTooShort.selector,365));
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -86,7 +86,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = (365 * 100);
         uint256 dollarPrice = 99 ether;
 
-        vm.expectRevert(abi.encodePacked("min price $1/year"));
+        vm.expectRevert(abi.encodeWithSelector(GlobalRegistrationRules.PriceTooLow.selector, 1 ether));
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -123,7 +123,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = 365 + 364;
         uint256 dollarPrice = 1.1 ether;
 
-        vm.expectRevert(abi.encodePacked("min price $1/year"));
+        vm.expectRevert(abi.encodeWithSelector(GlobalRegistrationRules.PriceTooLow.selector, 1 ether));
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
