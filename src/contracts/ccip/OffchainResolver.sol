@@ -2,26 +2,21 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
-import "forge-std/console.sol";
-
-interface IResolverService {
-    function resolve(bytes calldata name, bytes calldata data)
-        external
-        view
-        returns (bytes memory result, uint64 expires, bytes memory sig);
-}
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, IERC165 {
+contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     string public url;
     mapping(address => bool) public signers;
 
-    event NewSigners(address[] signers);
+    event NewSigners(address indexed signer, bool isSigner);
+    event UpdateUrl(string url);
+
     error OffchainLookup(
         address sender,
         string[] urls,
@@ -32,10 +27,16 @@ contract OffchainResolver is IExtendedResolver, IERC165 {
 
     constructor(string memory _url, address[] memory _signers) {
         url = _url;
-        for (uint i = 0; i < _signers.length; i++) {
+        emit UpdateUrl(_url);
+
+        for (uint256 i; i < _signers.length; ) {
             signers[_signers[i]] = true;
+            emit NewSigners(_signers[i], true);
+
+            unchecked{
+                ++i;
+            }
         }
-        emit NewSigners(_signers);
     }
 
     function makeSignatureHash(
@@ -48,7 +49,7 @@ contract OffchainResolver is IExtendedResolver, IERC165 {
     }
 
     /**
-     * Resolves a name, as specified by ENSIP 10.
+     * Resolves a name, as specified by ENSIP 10 (wildcard).
      * @param name The DNS-encoded name to resolve.
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
@@ -60,12 +61,14 @@ contract OffchainResolver is IExtendedResolver, IERC165 {
         returns (bytes memory)
     {
         bytes memory callData = abi.encodeWithSelector(
-            IResolverService.resolve.selector,
+            IExtendedResolver.resolve.selector,
             name,
             data
         );
         string[] memory urls = new string[](1);
         urls[0] = url;
+
+        // revert with the OffchainLookup error, which will be caught by the client
         revert OffchainLookup(
             address(this),
             urls,
@@ -73,6 +76,21 @@ contract OffchainResolver is IExtendedResolver, IERC165 {
             OffchainResolver.resolveWithProof.selector,
             callData
         );
+    }
+
+    function updateSigners(address[] calldata _signers, bool[] calldata _isSigner)
+        external
+        onlyOwner
+    {
+        for (uint256 i = 0; i < _signers.length; i++) {
+            signers[_signers[i]] = _isSigner[i];
+            emit NewSigners(_signers[i], true);
+        }
+    }
+
+    function updateUrl(string calldata _url) external onlyOwner {
+        url = _url;
+        emit UpdateUrl(_url);
     }
 
     /**
@@ -85,9 +103,7 @@ contract OffchainResolver is IExtendedResolver, IERC165 {
     {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
-        require(
-            signers[signer],
-            "SignatureVerifier: Invalid sigature");
+        require(signers[signer], "SignatureVerifier: Invalid sigature");
 
         return result;
     }

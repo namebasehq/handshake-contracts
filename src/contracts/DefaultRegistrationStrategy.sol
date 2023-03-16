@@ -4,10 +4,9 @@ pragma solidity ^0.8.17;
 import {Namehash} from "utils/Namehash.sol";
 import "interfaces/ISldRegistrationStrategy.sol";
 import "interfaces/ISldRegistrationManager.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/utils/Multicallable.sol";
 
-contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Ownable, Multicallable {
+contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable {
     ISldRegistrationManager public immutable registrationManager;
 
     mapping(bytes32 => address) public reservedNames;

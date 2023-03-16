@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "forge-std/console.sol";
 
 library SignatureVerifier {
     /**
@@ -48,5 +47,4 @@ library SignatureVerifier {
         require(expires >= block.timestamp, "SignatureVerifier: Signature expired");
         return (signer, result);
     }
-
 }
