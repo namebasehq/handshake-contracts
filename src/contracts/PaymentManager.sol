@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "./PaymentErrors.sol";
+
 /**
  *
  * @title Handshake Payment Manager
  * @author hodl.esf.eth
  */
-abstract contract PaymentManager {
+abstract contract PaymentManager is PaymentErrors {
     //slither-disable-start immutable-states
     //slither-disable-start constable-states
     address public feeWalletPayoutAddress;
@@ -14,8 +16,6 @@ abstract contract PaymentManager {
 
     //slither-disable-end constable-states
     //slither-disable-end immutable-states
-
-    event PaymentSent(address indexed _to, uint256 _amount);
 
     /**
      * Sends the primary funds to the specified owners and the handshake wallet
@@ -30,15 +30,15 @@ abstract contract PaymentManager {
         uint256 _funds,
         uint256 _minContribution
     ) internal {
-        require(msg.value >= _funds, "not enough ether");
-
         uint256 handshakeShare = (_funds * percentCommission) / 100;
 
         if (handshakeShare < _minContribution) {
             handshakeShare = _minContribution;
         }
 
-        require(_funds > handshakeShare, "not enough funds to pay commission");
+        if (msg.value < _funds || handshakeShare > _funds) {
+            revert InsufficientFunds();
+        }
 
         uint256 primary = _funds - handshakeShare;
         uint256 excess = msg.value - _funds;
@@ -59,7 +59,7 @@ abstract contract PaymentManager {
         // if there is a failure to send ether then the funds will just get sent to the handshake wallet
         // this is done to prevent a malicious TLD owner from blocking renewals
 
-        (isSent, ) = payable(_tldOwner).call{value: primary, gas: 30_000}("");
+        (isSent, ) = payable(_tldOwner).call{value: primary, gas: 50_000}("");
 
         if (isSent) {
             emit PaymentSent(_tldOwner, primary);
@@ -67,13 +67,15 @@ abstract contract PaymentManager {
 
         uint256 remaining = address(this).balance;
         if (remaining > 0) {
-            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining, gas: 30_000}(
+            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining, gas: 50_000}(
                 ""
             );
             emit PaymentSent(feeWalletPayoutAddress, remaining);
 
             // revert if the transfer failed and funds sat in the contract
-            require(result, "transfer failed");
+            if (!result) {
+                revert TransferFailed();
+            }
         }
     }
 }

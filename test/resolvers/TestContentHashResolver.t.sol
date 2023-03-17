@@ -70,7 +70,7 @@ contract TestContentHashResolver is Test {
 
         string memory contentHash = "this is content hash";
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         vm.prank(notApproved);
         resolver.setContentHash(bytes32(id), bytes(contentHash));
     }

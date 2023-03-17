@@ -5,6 +5,8 @@ import "interfaces/resolvers/IMulticallable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract Multicallable is IMulticallable, ERC165 {
+    error NamehashMismatch();
+
     function _multicall(bytes32 nodehash, bytes[] calldata data)
         internal
         returns (bytes[] memory results)
@@ -13,10 +15,10 @@ abstract contract Multicallable is IMulticallable, ERC165 {
         for (uint256 i = 0; i < data.length; i++) {
             if (nodehash != bytes32(0)) {
                 bytes32 txNamehash = bytes32(data[i][4:36]);
-                require(
-                    txNamehash == nodehash,
-                    "multicall: All records must have a matching namehash"
-                );
+
+                if (txNamehash != nodehash) {
+                    revert NamehashMismatch();
+                }
             }
             (bool success, bytes memory result) = address(this).delegatecall(data[i]);
             require(success);

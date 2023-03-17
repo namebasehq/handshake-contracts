@@ -62,7 +62,7 @@ contract TestHandshakeNft is Test {
         nft.setApprovalForAll(approved_address, false);
 
         vm.startPrank(approved_address);
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         nft.checkAuthorised(id);
 
         vm.stopPrank();
@@ -92,7 +92,7 @@ contract TestHandshakeNft is Test {
         nft.approve(address(0), id);
 
         vm.startPrank(approved_address);
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         nft.checkAuthorised(id);
 
         vm.stopPrank();
@@ -103,7 +103,7 @@ contract TestHandshakeNft is Test {
 
         nft.mint(address(this), id);
 
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         nft.checkAuthorised(id + 1);
     }
 
@@ -127,7 +127,7 @@ contract TestHandshakeNft is Test {
     function testUpdateMetadataWithWrongInterfaceFromOwnerWalletExpectFail() public {
         MockCommitIntent notMetadata = new MockCommitIntent(true);
 
-        vm.expectRevert("does not implement tokenUri method");
+        vm.expectRevert(HandshakeNft.TokenUriNotImplemented.selector);
         nft.setMetadataContract(IMetadataService(address(notMetadata)));
     }
 

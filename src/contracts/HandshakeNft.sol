@@ -20,18 +20,23 @@ abstract contract HandshakeNft is ERC721, Ownable {
 
     IMetadataService public metadata;
 
+    error TokenUriNotImplemented();
+    error NotApprovedOrOwner();
+    error InvalidAddress();
+    error RoyaltyAmountTooHigh();
+    error NotRegistrationManager();
+
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
-        require(address(metadata) != address(0), "Metadata service is not implemented");
         return metadata.tokenURI(bytes32(_id));
     }
 
     function setMetadataContract(IMetadataService _metadata) external onlyOwner {
-        require(
-            address(_metadata).supportsInterface(TOKEN_URI_SELECTOR),
-            "does not implement tokenUri method"
-        );
+        if (!address(_metadata).supportsInterface(TOKEN_URI_SELECTOR)) {
+            revert TokenUriNotImplemented();
+        }
+
         metadata = _metadata;
     }
 
@@ -118,7 +123,9 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to be transferred
      */
     modifier onlyApprovedOrOwner(uint256 tokenId) {
-        require(isApprovedOrOwner(msg.sender, tokenId), "not approved or owner");
+        if (!isApprovedOrOwner(msg.sender, tokenId)) {
+            revert NotApprovedOrOwner();
+        }
         _;
     }
 

@@ -86,7 +86,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
             recipient
         );
 
-        vm.expectRevert("cannot renew");
+        vm.expectRevert(RegistrationManagerErrors.GlobalValidationFailed.selector);
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
     }
 
@@ -169,10 +169,10 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         vm.warp(block.timestamp + (registrationLength * 86400));
 
-        vm.expectRevert("invalid domain");
+        vm.expectRevert(RegistrationManagerErrors.DomainNotExists.selector);
         manager.renewSld("doesnotexist", parentNamehash, renewalLength);
 
-        vm.expectRevert("invalid domain");
+        vm.expectRevert(RegistrationManagerErrors.DomainNotExists.selector);
         manager.renewSld(label, keccak256(abi.encodePacked("doesnotexist")), registrationLength);
     }
 
@@ -203,7 +203,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         vm.warp(block.timestamp + (registrationLength * 86400) + 1);
 
         vm.prank(address(0x420));
-        vm.expectRevert("invalid domain");
+        vm.expectRevert(RegistrationManagerErrors.DomainNotExists.selector);
         manager.renewSld(label, parentNamehash, registrationLength);
     }
 

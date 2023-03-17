@@ -14,6 +14,9 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     // owner => tokenId => delegate
     mapping(address => mapping(uint256 => address)) public delegates;
 
+    error NotApprovedOrOwner();
+    error DomainNotExists();
+
     constructor(HandshakeNft _tld, HandshakeNft _sld) {
         sldContract = _sld;
         tldContract = _tld;
@@ -35,11 +38,11 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
 
     function setDelegate(uint256 _id, address _delegate) public {
         // delegate can't be transferred by the delegate
-        require(
-            sldContract.isApprovedOrOwner(msg.sender, _id) ||
-                tldContract.isApprovedOrOwner(msg.sender, _id),
-            "not authorised or owner"
-        );
+        if(
+            (!sldContract.isApprovedOrOwner(msg.sender, _id) &&
+                !tldContract.isApprovedOrOwner(msg.sender, _id))){
+                    revert NotApprovedOrOwner();
+                }
 
         delegates[getTokenOwner(_id)][_id] = _delegate;
     }
@@ -53,7 +56,7 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
             return tldContract.ownerOf(_id);
         }
 
-        revert("query for none existing token");
+        revert DomainNotExists();
     }
 
     function ownerOf(bytes32 _node) internal view returns (address) {
@@ -67,18 +70,19 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
             return tldContract.ownerOf(id);
         }
 
-        revert("query for none existing token");
+        revert DomainNotExists();
     }
 
     modifier authorised(bytes32 _nodehash) {
         uint256 id = uint256(_nodehash);
 
-        require(
+        if(!(
             sldContract.isApprovedOrOwner(msg.sender, id) ||
                 tldContract.isApprovedOrOwner(msg.sender, id) ||
-                delegates[getTokenOwner(id)][id] == msg.sender,
-            "not authorised or owner"
-        );
+                delegates[getTokenOwner(id)][id] == msg.sender
+        )){
+            revert NotApprovedOrOwner();
+        }
         _;
     }
 }

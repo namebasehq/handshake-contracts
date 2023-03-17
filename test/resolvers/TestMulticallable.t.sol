@@ -176,7 +176,7 @@ contract TestMulticallable is Test {
         testArray.push(abi.encodeWithSelector(sig, node, key3, value3));
         testArray.push(abi.encodeWithSelector(sig, node2, key, value));
 
-        vm.expectRevert("multicall: All records must have a matching namehash");
+        vm.expectRevert(Multicallable.NamehashMismatch.selector);
         vm.startPrank(owner);
         resolver.multicallWithNodeCheck(node, testArray);
 

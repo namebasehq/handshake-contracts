@@ -14,6 +14,7 @@ import "mocks/MockCommitIntent.sol";
 import "mocks/MockRegistrationStrategy.sol";
 import "mocks/MockGasGriefingRegistrationStrategy.sol";
 import "src/utils/Namehash.sol";
+import "src/contracts/HandshakeNft.sol";
 import "structs/SldRegistrationDetail.sol";
 import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
@@ -1378,7 +1379,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         arr2[0] = SldDiscountSettings(0, 0, 0, true, true);
 
         vm.prank(not_approved);
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
     }
 

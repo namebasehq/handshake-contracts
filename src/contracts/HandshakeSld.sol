@@ -24,6 +24,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
 
     ISldRegistrationManager public registrationManager;
 
+    error DomainDoesNotExist();
+    error DomainExpired();
+    error InvalidArrayLength();
+
     constructor(IHandshakeTld _tld) HandshakeNft("SLD", "Handshake SLD") {
         handshakeTldContract = _tld;
     }
@@ -80,7 +84,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         override(HandshakeNft, IHandshakeSld)
         returns (address _addr)
     {
-        require(!hasExpired(bytes32(_tokenId)), "sld expired");
+        if (hasExpired(bytes32(_tokenId))) {
+            revert DomainExpired();
+        }
         _addr = HandshakeNft.ownerOf(_tokenId);
     }
 
@@ -123,7 +129,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         public
         onlyParentApprovedOrOwner(_id)
     {
-        require(_amount <= 10, "10% maximum royalty on SLD");
+        if (_amount > 10) {
+            revert RoyaltyAmountTooHigh();
+        }
         royaltyPayoutAmountMap[bytes32(_id)] = _amount;
     }
 
@@ -139,7 +147,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         public
         onlyParentApprovedOrOwner(_id)
     {
-        require(_addr != address(0), "cannot set to zero address");
+        if (_addr == address(0)) {
+            revert InvalidAddress();
+        }
         royaltyPayoutAddressMap[bytes32(_id)][handshakeTldContract.ownerOf(_id)] = _addr;
     }
 
@@ -189,10 +199,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         uint256[] calldata _registrationLengths
     ) external view returns (SldDetail[] memory) {
         uint256 len = _parentIds.length;
-        require(
-            (len ^ _recipients.length ^ _labels.length ^ _registrationLengths.length) == 0,
-            "array lengths are different"
-        );
+        if ((len ^ _recipients.length ^ _labels.length ^ _registrationLengths.length) > 0) {
+            revert InvalidArrayLength();
+        }
 
         SldDetail[] memory _details = new SldDetail[](len);
 
@@ -228,7 +237,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         returns (string memory _fullDomain)
     {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
-        require(tldNamehash != 0x0, "domain does not exist");
+
+        if (tldNamehash == 0x0) {
+            revert DomainDoesNotExist();
+        }
+
         string memory tldLabel = handshakeTldContract.namehashToLabelMap(tldNamehash);
         string memory sldLabel = namehashToLabelMap[_sldNamehash];
 
@@ -242,7 +255,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         returns (string memory _parentName)
     {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
-        require(tldNamehash != 0x0, "domain does not exist");
+
+        if (tldNamehash == 0x0) {
+            revert DomainDoesNotExist();
+        }
 
         _parentName = handshakeTldContract.namehashToLabelMap(tldNamehash);
     }
@@ -290,12 +306,16 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     }
 
     modifier onlyParentApprovedOrOwner(uint256 _id) {
-        require(handshakeTldContract.isApprovedOrOwner(msg.sender, _id), "not authorised");
+        if (!handshakeTldContract.isApprovedOrOwner(msg.sender, _id)) {
+            revert NotApprovedOrOwner();
+        }
         _;
     }
 
     modifier isRegistrationManager() {
-        require(address(registrationManager) == msg.sender, "not authorised");
+        if (address(registrationManager) != msg.sender) {
+            revert NotRegistrationManager();
+        }
         _;
     }
 }

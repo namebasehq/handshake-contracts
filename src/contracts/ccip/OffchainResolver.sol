@@ -25,6 +25,8 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         bytes extraData
     );
 
+    error InvalidSignature();
+
     constructor(string memory _url, address[] memory _signers) {
         url = _url;
         emit UpdateUrl(_url);
@@ -33,7 +35,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
             signers[_signers[i]] = true;
             emit NewSigners(_signers[i], true);
 
-            unchecked{
+            unchecked {
                 ++i;
             }
         }
@@ -103,7 +105,9 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
-        require(signers[signer], "SignatureVerifier: Invalid sigature");
+        if (!signers[signer]) {
+            revert InvalidSignature();
+        }
 
         return result;
     }

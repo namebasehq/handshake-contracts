@@ -97,7 +97,7 @@ contract TestHandshakeSld is Test {
         bytes32 tldNamehash = bytes32(uint256(0x224466));
         string memory label = "hiya";
 
-        vm.expectRevert("not authorised");
+        vm.expectRevert(HandshakeNft.NotRegistrationManager.selector);
         sld.registerSld(to, tldNamehash, label);
     }
 
@@ -316,7 +316,7 @@ contract TestHandshakeSld is Test {
 
         address notTldOwner = address(0x9988332211);
         vm.startPrank(notTldOwner);
-        vm.expectRevert("not authorised");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
 
         vm.stopPrank();
@@ -454,7 +454,7 @@ contract TestHandshakeSld is Test {
         address notTldOwner = address(0x558822);
 
         vm.startPrank(notTldOwner);
-        vm.expectRevert("not authorised");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
 
         vm.stopPrank();
@@ -489,7 +489,7 @@ contract TestHandshakeSld is Test {
         uint256 royaltyPercent = 11;
 
         vm.startPrank(tldOwner);
-        vm.expectRevert("10% maximum royalty on SLD");
+        vm.expectRevert(HandshakeNft.RoyaltyAmountTooHigh.selector);
         sld.setRoyaltyPayoutAmount({_id: tldId, _amount: royaltyPercent});
         (, uint256 amount) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(amount, 0);
@@ -524,7 +524,7 @@ contract TestHandshakeSld is Test {
 
         vm.warp(block.timestamp + 1);
 
-        vm.expectRevert("sld expired");
+        vm.expectRevert(HandshakeSld.DomainExpired.selector);
         sld.ownerOf(uint256(sldNamehash));
     }
 
@@ -596,10 +596,10 @@ contract TestHandshakeSld is Test {
         vm.warp(block.timestamp + 1);
 
         vm.startPrank(newAddress);
-        vm.expectRevert("sld expired");
+        vm.expectRevert(HandshakeSld.DomainExpired.selector);
         sld.safeTransferFrom(newAddress, address(0x888), uint256(sldNamehash));
 
-        vm.expectRevert("sld expired");
+        vm.expectRevert(HandshakeSld.DomainExpired.selector);
         sld.transferFrom(newAddress, address(0x888), uint256(sldNamehash));
 
         assertFalse(sld.exists(uint256(sldNamehash)));

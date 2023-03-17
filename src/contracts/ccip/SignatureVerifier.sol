@@ -5,6 +5,8 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 library SignatureVerifier {
+    error SignatureExpired();
+
     /**
      * @dev Generates a hash for signing/verifying.
      * @param target: The address the signature is for.
@@ -44,7 +46,10 @@ library SignatureVerifier {
             makeSignatureHash(address(this), expires, request, result),
             sig
         );
-        require(expires >= block.timestamp, "SignatureVerifier: Signature expired");
+
+        if (expires < block.timestamp) {
+            revert SignatureExpired();
+        }
         return (signer, result);
     }
 }

@@ -200,7 +200,7 @@ contract TestDNSResolver is Test {
         vm.prank(owner);
         sld.setApprovalForAll(approved, false);
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         vm.prank(approved);
         resolver.setDNSRecords(node, erec);
     }
@@ -212,7 +212,7 @@ contract TestDNSResolver is Test {
 
         bytes32 node = bytes32(id);
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.setDNSRecords(node, bytes("irrelevant string"));
     }
 
@@ -257,7 +257,7 @@ contract TestDNSResolver is Test {
         bytes32 node = bytes32(id);
         bytes memory zonehash = hex"ab";
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         vm.prank(notApproved);
         resolver.setZonehash(node, zonehash);
 

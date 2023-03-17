@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
+import "src/contracts/HandshakeNft.sol";
 import "interfaces/ICommitIntent.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 import "interfaces/ISldRegistrationManager.sol";
@@ -13,8 +14,9 @@ import "src/utils/Namehash.sol";
 import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
+import "./RegistrationManagerErrors.sol";
 import "structs/SldDiscountSettings.sol";
-import "forge-std/console.sol";
+import "./UsdPriceOracle.sol";
 
 /**
  * Registration manager for second level domains
@@ -27,7 +29,8 @@ contract SldRegistrationManager is
     ISldRegistrationManager,
     PaymentManager,
     HasUsdOracle,
-    HasLabelValidator
+    HasLabelValidator,
+    RegistrationManagerErrors
 {
     using ERC165Checker for address;
 
@@ -49,6 +52,8 @@ contract SldRegistrationManager is
         address indexed _claimant,
         SldDiscountSettings _discount
     );
+
+    error PercentTooHigh();
 
     constructor() {
         _disableInitializers();
@@ -107,27 +112,31 @@ contract SldRegistrationManager is
     ) external payable {
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
-        require(canRegister(sldNamehash), "domain already registered");
+        if (!canRegister(sldNamehash)) {
+            revert DomainExists();
+        }
 
         _recipient = _recipient == address(0) ? msg.sender : _recipient;
         sld.registerSld(_recipient, _parentNamehash, _label);
 
-        require(labelValidator.isValidLabel(_label), "invalid label");
+        if (!labelValidator.isValidLabel(_label)) {
+            revert InvalidLabel();
+        }
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-        require(
-            address(strategy).supportsInterface(type(IERC165).interfaceId) &&
+        if (
+            !(address(strategy).supportsInterface(type(IERC165).interfaceId) &&
                 strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector),
-            "registration strategy does not support interface"
-        );
+                strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector))
+        ) {
+            revert InvalidStrategy();
+        }
 
         bool isApproved = tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash));
 
-        require(
-            strategy.isEnabled(_parentNamehash) || isApproved,
-            "registration strategy disabled"
-        );
+        if (!strategy.isEnabled(_parentNamehash) && !isApproved) {
+            revert StrategyDisabled();
+        }
 
         address tldOwner = tld.ownerOf(uint256(_parentNamehash));
         uint256 dollarPrice;
@@ -141,16 +150,17 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        require(
-            globalStrategy.canRegister(
+        if (
+            !globalStrategy.canRegister(
                 msg.sender,
                 _parentNamehash,
                 _label,
                 _registrationLength,
                 dollarPrice + 1 // plus 1 wei for rounding issue
-            ),
-            "failed global strategy"
-        );
+            )
+        ) {
+            revert GlobalValidationFailed();
+        }
 
         addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
@@ -171,10 +181,9 @@ contract SldRegistrationManager is
             (weiValue * minDevContribution) / 1 ether
         );
 
-        require(
-            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
-            "No valid commit intent"
-        );
+        if (!commitIntent.allowedCommit(sldNamehash, _secret, msg.sender)) {
+            revert InvalidCommitment();
+        }
 
         emit RegisterSld(
             _parentNamehash,
@@ -189,11 +198,13 @@ contract SldRegistrationManager is
         address[] calldata _addresses,
         SldDiscountSettings[] calldata _discounts
     ) public {
-        require(
-            tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
-            "not approved or owner"
-        );
-        require(_addresses.length == _discounts.length, "array lengths do not match");
+        if (!tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash))) {
+            revert HandshakeNft.NotApprovedOrOwner();
+        }
+
+        if (_addresses.length != _discounts.length) {
+            revert InvalidArrayLength();
+        }
 
         for (uint256 i; i < _discounts.length; ) {
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
@@ -220,10 +231,14 @@ contract SldRegistrationManager is
         payable
     {
         // no-one gonna need to extend domain more than 100 years
-        require(_registrationLength < 36500, "must be less than 100 years");
+        if (_registrationLength > 36500) {
+            revert InvalidRegistrationLength();
+        }
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
-        require(!canRegister(sldNamehash), "invalid domain");
+        if (canRegister(sldNamehash)) {
+            revert DomainNotExists();
+        }
 
         SldRegistrationDetail storage detail = sldRegistrationHistory[sldNamehash];
 
@@ -239,16 +254,17 @@ contract SldRegistrationManager is
             _registrationLength
         );
 
-        require(
-            globalStrategy.canRenew(
+        if (
+            !globalStrategy.canRenew(
                 msg.sender,
                 _parentNamehash,
                 _label,
                 _registrationLength,
                 priceInDollars + 1 // plus 1 wei for rounding issue
-            ),
-            "cannot renew"
-        );
+            )
+        ) {
+            revert GlobalValidationFailed();
+        }
 
         uint256 weiValueOfDollar = getWeiValueOfDollar();
 
@@ -265,7 +281,7 @@ contract SldRegistrationManager is
     }
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
-        SldRegistrationDetail memory detail = sldRegistrationHistory[_namehash];
+        SldRegistrationDetail storage detail = sldRegistrationHistory[_namehash];
         return (detail.RegistrationTime + detail.RegistrationLength) < block.timestamp;
     }
 
@@ -286,7 +302,9 @@ contract SldRegistrationManager is
      * @param _addr Wallet address to set the commission payment for primary sales to
      */
     function updatePaymentAddress(address _addr) public onlyOwner {
-        require(_addr != address(0), "cannot set to zero address");
+        if (_addr == address(0)) {
+            revert InvalidAddress();
+        }
         feeWalletPayoutAddress = _addr;
     }
 
@@ -305,7 +323,9 @@ contract SldRegistrationManager is
      * @param _percent % of primary sales to send to the handshake wallet
      */
     function updatePaymentPercent(uint256 _percent) public onlyOwner {
-        require(_percent <= 10, "cannot set to more than 10 percent");
+        if (_percent > 10) {
+            revert PercentTooHigh();
+        }
         percentCommission = _percent;
     }
 
@@ -579,9 +599,10 @@ contract SldRegistrationManager is
     }
 
     function getWeiValueOfDollar() public view returns (uint256) {
-        require(address(0) != address(usdOracle), "usdOracle not set");
         uint256 price = usdOracle.getPrice();
-        require(price > 0, "error getting price");
+        if (price == 0) {
+            revert UsdPriceOracle.InvalidPrice();
+        }
         return (1 ether * 100000000) / price;
     }
 }

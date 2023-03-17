@@ -5,7 +5,7 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Namehash} from "utils/Namehash.sol";
 
-import { DefaultRegistrationStrategy } from "contracts/DefaultRegistrationStrategy.sol";
+import {DefaultRegistrationStrategy} from "contracts/DefaultRegistrationStrategy.sol";
 import "test/mocks/MockHandshakeTld.sol";
 import "test/mocks/MockGlobalRegistrationStrategy.sol";
 import "test/mocks/MockSldRegistrationManager.sol";
@@ -61,7 +61,9 @@ contract TestDefaultRegistrationStrategy is Test {
         prices[1] = 10;
         prices[2] = 11;
 
-        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.PriceTooHigh.selector, prices[1]));
+        vm.expectRevert(
+            abi.encodeWithSelector(DefaultRegistrationStrategy.PriceTooHigh.selector, prices[1])
+        );
         strategy.setLengthCost(namehash, prices);
     }
 
@@ -240,7 +242,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setReservedNames(namehash, labels, claimers);
 
-        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.NameReserved.selector, claimer));
+        vm.expectRevert(
+            abi.encodeWithSelector(DefaultRegistrationStrategy.NameReserved.selector, claimer)
+        );
         strategy.getPriceInDollars(address(0x420), namehash, label, 365, false);
     }
 
@@ -589,7 +593,9 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.addMapping(uint256(namehash), address(this), true);
         tld.register(address(this), uint256(namehash));
 
-        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooHigh.selector, 50));
+        vm.expectRevert(
+            abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooHigh.selector, 50)
+        );
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
     }
 
@@ -604,7 +610,9 @@ contract TestDefaultRegistrationStrategy is Test {
 
         tld.addMapping(uint256(namehash), address(this), true);
 
-        vm.expectRevert(abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooLow.selector, 50));
+        vm.expectRevert(
+            abi.encodeWithSelector(DefaultRegistrationStrategy.DiscountTooLow.selector, 50)
+        );
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
     }
 

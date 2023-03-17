@@ -66,7 +66,7 @@ contract TestAddressResolver is Test {
         vm.prank(owner);
         sld.mint(owner, id);
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         vm.prank(notApproved);
         resolver.setAddress(bytes32(id), address(0x4));
     }

@@ -10,7 +10,6 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
     error RegistrationTooShort(uint256 _minLength);
     error PriceTooLow(uint256 _minPrice);
 
-
     function canRegister(
         address, // _buyingAddress,
         bytes32, // _parentNamehash,
@@ -18,10 +17,10 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _registrationLength,
         uint256 _dollarCost
     ) external pure returns (bool) {
-        if(_registrationLength < DAYS_IN_A_YEAR){
+        if (_registrationLength < DAYS_IN_A_YEAR) {
             revert RegistrationTooShort(DAYS_IN_A_YEAR);
         }
-        if((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength < minimumDollarPrice){
+        if ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength < minimumDollarPrice) {
             revert PriceTooLow(minimumDollarPrice);
         }
         return true;
@@ -34,11 +33,12 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _registrationLength,
         uint256 _dollarCost
     ) external pure returns (bool) {
-        require(_registrationLength > 364, "less than 365 days renewal");
-        require(
-            ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
-            "min price $1/year"
-        );
+        if (_registrationLength < DAYS_IN_A_YEAR) {
+            revert RegistrationTooShort(DAYS_IN_A_YEAR);
+        }
+        if ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength < minimumDollarPrice) {
+            revert PriceTooLow(minimumDollarPrice);
+        }
         return true;
     }
 

@@ -5,6 +5,7 @@ import {console} from "forge-std/console.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {HandshakeSld} from "contracts/HandshakeSld.sol";
 import {HandshakeTld} from "contracts/HandshakeTld.sol";
+import {HandshakeNft} from "contracts/HandshakeNft.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "test/mocks/MockRegistrationStrategy.sol";
 import "test/mocks/MockClaimManager.sol";
@@ -76,7 +77,7 @@ contract TestHandshakeTld is Test {
     function testMintFromUnauthorisedAddress() public {
         string memory domain = "test";
 
-        vm.expectRevert("not authorised");
+        vm.expectRevert(HandshakeNft.NotRegistrationManager.selector);
         tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
     }
 
@@ -131,7 +132,7 @@ contract TestHandshakeTld is Test {
 
     function testUpdateRoyaltyToZeroAddressExpectFail() public {
         address zeroAddress = address(0);
-        vm.expectRevert("cannot set to zero address");
+        vm.expectRevert(HandshakeNft.InvalidAddress.selector);
         tld.setRoyaltyPayoutAddress(zeroAddress);
     }
 
@@ -146,7 +147,7 @@ contract TestHandshakeTld is Test {
     function testUpdateRoyaltyAbove100_which_is_10_percent_ExpectFail() public {
         uint256 tenPointOnePercentRoyalty = 101;
 
-        vm.expectRevert("10% maximum royalty on TLD");
+        vm.expectRevert(HandshakeNft.RoyaltyAmountTooHigh.selector);
         tld.setRoyaltyPayoutAmount(tenPointOnePercentRoyalty);
     }
 
@@ -239,7 +240,7 @@ contract TestHandshakeTld is Test {
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         vm.startPrank(notTldOwner);
-        vm.expectRevert("not approved or owner");
+        vm.expectRevert(HandshakeNft.NotApprovedOrOwner.selector);
         tld.setRegistrationStrategy(parentNamehash, strategy);
 
         assertEq(

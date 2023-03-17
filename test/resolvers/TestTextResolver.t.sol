@@ -72,7 +72,7 @@ contract TestTextResolver is Test {
 
         //
         vm.startPrank(not_approved);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.setText(node, key, value);
 
         //should be blank

@@ -17,6 +17,7 @@ import "src/utils/Namehash.sol";
 import "structs/SldRegistrationDetail.sol";
 import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
+import "src/contracts/RegistrationManagerErrors.sol";
 
 contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationManagerBase {
     function testUpdateLabelValidatorFromOwner_success() public {
@@ -118,7 +119,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     function testSetWalletAddressToZeroAddressFromContractOwner_fail() public {
         address addr = address(0x0);
 
-        vm.expectRevert("cannot set to zero address");
+        vm.expectRevert(RegistrationManagerErrors.InvalidAddress.selector);
         manager.updatePaymentAddress(addr);
     }
 
@@ -154,7 +155,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         uint256 currentValue = manager.percentCommission();
 
-        vm.expectRevert("cannot set to more than 10 percent");
+        vm.expectRevert(SldRegistrationManager.PercentTooHigh.selector);
         manager.updatePaymentPercent(percent);
 
         assertEq(manager.percentCommission(), currentValue, "percent set");

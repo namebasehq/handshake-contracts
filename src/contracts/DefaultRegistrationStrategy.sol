@@ -60,8 +60,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
 
         uint256 currentPrice = type(uint256).max;
         for (uint256 i; i < _prices.length; ) {
-
-            if(_prices[i] > currentPrice){
+            if (_prices[i] > currentPrice) {
                 revert PriceTooHigh(currentPrice);
             }
             currentPrice = _prices[i];
@@ -78,14 +77,14 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         public
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        if(_discounts.length > 10){
+        if (_discounts.length > 10) {
             revert LengthTooLong();
         }
 
         uint256 currentDiscount;
 
         for (uint256 i; i < _discounts.length; ) {
-            if(_discounts[i] < currentDiscount) {
+            if (_discounts[i] < currentDiscount) {
                 revert DiscountTooLow(currentDiscount);
             }
             currentDiscount = _discounts[i];
@@ -94,8 +93,8 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
                 ++i;
             }
         }
-        
-        if(currentDiscount > 50){
+
+        if (currentDiscount > 50) {
             revert DiscountTooHigh(50);
         }
 
@@ -109,7 +108,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     {
         uint256[] storage prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
-        if(priceCount == 0){
+        if (priceCount == 0) {
             revert NoPricesSet();
         }
 
@@ -121,8 +120,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         uint256[] calldata _priceInDollarsPerYear
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        if(_labels.length != _priceInDollarsPerYear.length)
-        {
+        if (_labels.length != _priceInDollarsPerYear.length) {
             revert InvalidArrayLength();
         }
 
@@ -140,7 +138,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         address[] calldata _claimants
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        if(_labels.length != _claimants.length){
+        if (_labels.length != _claimants.length) {
             revert InvalidArrayLength();
         }
 
@@ -167,14 +165,15 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         uint256 _registrationLength,
         bool _isRenewal
     ) public view returns (uint256) {
-
-        if(_registrationLength < 365){
+        if (_registrationLength < 365) {
             revert RegistrationTooShort(365);
         }
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
-
-        if(!_isRenewal && (reservedNames[namehash] != _buyingAddress && reservedNames[namehash] != address(0))){
+        if (
+            !_isRenewal &&
+            (reservedNames[namehash] != _buyingAddress && reservedNames[namehash] != address(0))
+        ) {
             revert NameReserved(reservedNames[namehash]);
         }
 
@@ -229,11 +228,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
-        
-        if(!registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash)))
-            {
-                revert NotApprovedOrOwner();
-            }
+        if (!registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash))) {
+            revert NotApprovedOrOwner();
+        }
         _;
     }
 }

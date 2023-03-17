@@ -88,7 +88,7 @@ contract TestTldClaimManager is Test {
         manager.addTldAndClaimant(addresses, domains);
         manager.claimTld("badass", allowed_address);
         assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), allowed_address);
-        vm.expectRevert("not eligible to claim");
+        vm.expectRevert(RegistrationManagerErrors.NotEligible.selector);
         manager.claimTld("badass", allowed_address);
         vm.stopPrank();
     }
@@ -106,7 +106,7 @@ contract TestTldClaimManager is Test {
         vm.startPrank(allowed_address);
         manager.addTldAndClaimant(addresses, domains);
         assertFalse(manager.canClaim(allowed_address, "notbadass"));
-        vm.expectRevert("not eligible to claim");
+        vm.expectRevert(RegistrationManagerErrors.NotEligible.selector);
         manager.claimTld("notbadass", msg.sender);
         vm.stopPrank();
     }
@@ -127,7 +127,7 @@ contract TestTldClaimManager is Test {
         vm.stopPrank();
         vm.startPrank(address(0x131313)); //wallet should only be allowed to claim "notbadass"
         assertFalse(manager.canClaim(other_address, "badass"));
-        vm.expectRevert("not eligible to claim");
+        vm.expectRevert(RegistrationManagerErrors.NotEligible.selector);
         manager.claimTld("badass", msg.sender);
         vm.stopPrank();
     }
@@ -141,7 +141,7 @@ contract TestTldClaimManager is Test {
         domains[0] = "badass";
         addresses[0] = allowed_address;
         vm.startPrank(allowed_address);
-        vm.expectRevert("not authorised to add TLD");
+        vm.expectRevert(RegistrationManagerErrors.InvalidManager.selector);
         manager.addTldAndClaimant(addresses, domains);
         vm.stopPrank();
     }
@@ -155,7 +155,7 @@ contract TestTldClaimManager is Test {
         addresses[0] = allowed_address;
         addresses[1] = address(0x99);
         vm.startPrank(allowed_address);
-        vm.expectRevert("address and domain list should be the same length");
+        vm.expectRevert(RegistrationManagerErrors.InvalidArrayLength.selector);
         manager.addTldAndClaimant(addresses, domains);
         vm.stopPrank();
     }
@@ -214,7 +214,7 @@ contract TestTldClaimManager is Test {
         addresses[0] = allowed_address;
         startHoax(allowed_address, price);
         manager.addTldAndClaimant(addresses, domains);
-        vm.expectRevert("not enough ether");
+        vm.expectRevert(PaymentErrors.InsufficientFunds.selector);
         manager.claimTld{value: 1 ether - 1}("badass", allowed_address);
     }
 

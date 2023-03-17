@@ -17,6 +17,8 @@ import "src/utils/Namehash.sol";
 import "structs/SldRegistrationDetail.sol";
 import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
+import "src/contracts/RegistrationManagerErrors.sol";
+import "src/contracts/PaymentErrors.sol";
 
 contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManagerBase {
     using stdStorage for StdStorage;
@@ -37,7 +39,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         vm.prank(address(0x420));
-        vm.expectRevert("invalid label");
+        vm.expectRevert(RegistrationManagerErrors.InvalidLabel.selector);
         manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
     }
 
@@ -57,7 +59,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         vm.prank(address(0x420));
-        vm.expectRevert("failed global strategy");
+        vm.expectRevert(RegistrationManagerErrors.GlobalValidationFailed.selector);
         manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
     }
 
@@ -124,7 +126,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         vm.warp(block.timestamp + (registrationLength * 86400) - 10);
 
         vm.prank(address(0x420));
-        vm.expectRevert("domain already registered");
+        vm.expectRevert(RegistrationManagerErrors.DomainExists.selector);
         manager.registerSld{value: 2 ether}(
             label,
             secret,
@@ -178,7 +180,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
-        vm.expectRevert("registration strategy disabled");
+        vm.expectRevert(RegistrationManagerErrors.StrategyDisabled.selector);
         manager.registerSld{value: 2 ether}(
             label,
             secret,
@@ -228,7 +230,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
 
         vm.prank(sendingAddress);
-        vm.expectRevert("registration strategy does not support interface");
+        vm.expectRevert(RegistrationManagerErrors.InvalidStrategy.selector);
         manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
     }
 
@@ -335,7 +337,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.warp(block.timestamp + 420);
         hoax(claimant, 1.095 ether + 1);
-        vm.expectRevert("not enough ether");
+        vm.expectRevert(PaymentErrors.InsufficientFunds.selector);
         manager.renewSld{value: 1.095 ether + 1}(label, parentNamehash, newRegLength);
 
         hoax(claimant, 1.096 ether + 1);

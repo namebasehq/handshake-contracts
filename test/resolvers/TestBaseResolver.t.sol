@@ -75,7 +75,7 @@ contract TestBaseResolver is Test {
 
         sld.transferFrom(owner, address(0x696969), id);
 
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.incrementVersion(bytes32(id));
     }
 
@@ -101,7 +101,7 @@ contract TestBaseResolver is Test {
         sld.mint(owner, id);
 
         vm.prank(notApproved);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.incrementVersion(bytes32(id));
     }
 
@@ -113,7 +113,7 @@ contract TestBaseResolver is Test {
         tld.mint(owner, id);
 
         vm.prank(notApproved);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.incrementVersion(bytes32(id));
     }
 
@@ -142,7 +142,7 @@ contract TestBaseResolver is Test {
         tld.mint(owner, id);
 
         vm.prank(not_owner);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.setDelegate(id, delegate);
     }
 
@@ -165,7 +165,7 @@ contract TestBaseResolver is Test {
         assertEq(resolver.delegates(owner, id), new_delegate);
 
         vm.prank(delegate);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.incrementVersion(bytes32(id));
     }
 
@@ -184,7 +184,7 @@ contract TestBaseResolver is Test {
         assertEq(resolver.delegates(owner, id), delegate);
 
         vm.prank(not_owner);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.setDelegate(id, new_delegate);
     }
 
@@ -206,7 +206,7 @@ contract TestBaseResolver is Test {
         tld.safeTransferFrom(owner, new_owner, id);
 
         vm.prank(delegate);
-        vm.expectRevert("not authorised or owner");
+        vm.expectRevert(BaseResolver.NotApprovedOrOwner.selector);
         resolver.incrementVersion(bytes32(id));
     }
 }

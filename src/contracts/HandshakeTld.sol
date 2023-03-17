@@ -22,18 +22,26 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     }
 
     function setRoyaltyPayoutAddress(address _addr) public onlyOwner {
-        require(_addr != address(0), "cannot set to zero address");
+        if (_addr == address(0)) {
+            revert InvalidAddress();
+        }
         royaltyPayoutAddress = _addr;
     }
 
     function setRoyaltyPayoutAmount(uint256 _amount) public onlyOwner {
-        require(_amount < 101, "10% maximum royalty on TLD");
+        if (_amount > 100) {
+            revert RoyaltyAmountTooHigh();
+        }
         royaltyPayoutAmount = _amount;
     }
 
     function setRoyaltyPayoutAmountAndAddress(address _addr, uint256 _amount) public onlyOwner {
-        require(_amount < 101, "10% maximum royalty on TLD");
-        require(_addr != address(0), "cannot set to zero address");
+        if (_amount > 100) {
+            revert RoyaltyAmountTooHigh();
+        }
+        if (_addr == address(0)) {
+            revert InvalidAddress();
+        }
 
         royaltyPayoutAddress = _addr;
         royaltyPayoutAmount = _amount;
@@ -44,7 +52,9 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         string calldata _domain,
         ISldRegistrationStrategy _strategy
     ) external {
-        require(address(claimManager) == msg.sender, "not authorised");
+        if (address(claimManager) != msg.sender) {
+            revert NotRegistrationManager();
+        }
         bytes32 namehash = Namehash.getTldNamehash(_domain);
 
         _mint(_addr, uint256(namehash));

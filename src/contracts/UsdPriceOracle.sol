@@ -7,6 +7,8 @@ import "interfaces/IPriceOracle.sol";
 contract UsdPriceOracle is IPriceOracle {
     AggregatorV3Interface internal immutable priceFeed;
 
+    error InvalidPrice();
+
     constructor(address _oracle) {
         // goerli optimism - 0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8
         priceFeed = AggregatorV3Interface(_oracle);
@@ -14,7 +16,9 @@ contract UsdPriceOracle is IPriceOracle {
 
     function getPrice() public view returns (uint256) {
         (, int256 price, , , ) = priceFeed.latestRoundData();
-        require(price > 0, "oracle returned invalid price");
+        if (price == 0) {
+            revert InvalidPrice();
+        }
         return uint256(price);
     }
 

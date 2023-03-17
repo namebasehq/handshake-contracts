@@ -83,7 +83,7 @@ contract TestPaymentManager is Test {
         address sender = address(0x420);
 
         startHoax(sender, totalFunds);
-        vm.expectRevert("not enough ether");
+        vm.expectRevert(PaymentErrors.InsufficientFunds.selector);
         paymentManager.payableFunction{value: totalFunds - 1}(sldOwner, tldOwner, totalFunds);
     }
 }
