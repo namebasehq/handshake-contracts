@@ -38,11 +38,12 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
 
     function setDelegate(uint256 _id, address _delegate) public {
         // delegate can't be transferred by the delegate
-        if(
+        if (
             (!sldContract.isApprovedOrOwner(msg.sender, _id) &&
-                !tldContract.isApprovedOrOwner(msg.sender, _id))){
-                    revert NotApprovedOrOwner();
-                }
+                !tldContract.isApprovedOrOwner(msg.sender, _id))
+        ) {
+            revert NotApprovedOrOwner();
+        }
 
         delegates[getTokenOwner(_id)][_id] = _delegate;
     }
@@ -76,11 +77,11 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     modifier authorised(bytes32 _nodehash) {
         uint256 id = uint256(_nodehash);
 
-        if(!(
-            sldContract.isApprovedOrOwner(msg.sender, id) ||
+        if (
+            !(sldContract.isApprovedOrOwner(msg.sender, id) ||
                 tldContract.isApprovedOrOwner(msg.sender, id) ||
-                delegates[getTokenOwner(id)][id] == msg.sender
-        )){
+                delegates[getTokenOwner(id)][id] == msg.sender)
+        ) {
             revert NotApprovedOrOwner();
         }
         _;
