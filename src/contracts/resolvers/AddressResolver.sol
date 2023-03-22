@@ -7,8 +7,8 @@ import "interfaces/resolvers/IAddrResolver.sol";
 import "contracts/resolvers/BaseResolver.sol";
 
 abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolver {
-    uint256 private constant ETH_COINTYPE = 60;
-    uint256 private constant OPT_COINTYPE = 69;
+    uint256 private constant ETH_CHAINID = 1;
+    uint256 private constant OPT_CHAINID = 10;
 
     mapping(uint256 => mapping(bytes32 => mapping(address => mapping(uint256 => bytes)))) versionable_addresses;
 
@@ -18,8 +18,7 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
         ];
 
         if (
-            keccak256(addr1) == keccak256(bytes("")) &&
-            (_coinType == ETH_COINTYPE || _coinType == OPT_COINTYPE)
+            keccak256(addr1) == keccak256(bytes("")) 
         ) {
             return abi.encodePacked(ownerOf(_node));
         } else {
@@ -28,12 +27,12 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
     }
 
     function addr(bytes32 _node) public view returns (address payable) {
-        address addr1 = bytesToAddress(addr(_node, ETH_COINTYPE));
+        address addr1 = bytesToAddress(addr(_node, OPT_CHAINID));
         return payable(addr1);
     }
 
     function setAddress(bytes32 _node, address _addr) public authorised(_node) {
-        setAddress(_node, abi.encodePacked(_addr), ETH_COINTYPE);
+        setAddress(_node, abi.encodePacked(_addr), OPT_CHAINID);
     }
 
     function setAddress(bytes32 _node, bytes memory _addr, uint256 _cointype)

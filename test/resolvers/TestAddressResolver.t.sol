@@ -179,25 +179,41 @@ contract TestAddressResolver is Test {
     }
 
     function testMintTldFromOwnerAndTransferCheckOtherChainsAddress(uint256 _cointype) public {
-        vm.assume(_cointype != 60 && _cointype != 69); // mainnet = 1, optimism = 10
 
         address owner = address(0x99887766);
         address newOwner = address(0x55555555);
+        address altWallet = address(0x12345678);
         uint256 id = 696969;
         vm.prank(owner);
         tld.mint(owner, id);
 
+        bytes memory wallet = abi.encodePacked(altWallet);
+
         //default should resolve to owner of the NFT
-        assertFalse(
+        assertTrue(
             address(bytes20(resolver.addr(bytes32(id), _cointype))) == owner,
             "address does not match"
         );
 
-        vm.prank(owner);
-        tld.safeTransferFrom(owner, newOwner, id);
+        vm.startPrank(owner);
+        resolver.setAddress(bytes32(id), wallet, _cointype);
 
-        assertFalse(
+        assertTrue(
+            address(bytes20(resolver.addr(bytes32(id), _cointype))) == altWallet,
+            "address does not match"
+        );
+
+        tld.safeTransferFrom(owner, newOwner, id);
+        vm.stopPrank();
+        assertTrue(
             address(bytes20(resolver.addr(bytes32(id), _cointype))) == newOwner,
+            "address does not match"
+        );
+
+        vm.startPrank(newOwner);
+        tld.safeTransferFrom(newOwner, owner, id);
+        assertTrue(
+            address(bytes20(resolver.addr(bytes32(id), _cointype))) == altWallet,
             "address does not match"
         );
     }
