@@ -179,7 +179,6 @@ contract TestAddressResolver is Test {
     }
 
     function testMintTldFromOwnerAndTransferCheckOtherChainsAddress(uint256 _cointype) public {
-
         address owner = address(0x99887766);
         address newOwner = address(0x55555555);
         address altWallet = address(0x12345678);

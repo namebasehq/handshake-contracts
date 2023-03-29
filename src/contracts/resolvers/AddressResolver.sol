@@ -17,9 +17,7 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
             _coinType
         ];
 
-        if (
-            keccak256(addr1) == keccak256(bytes("")) 
-        ) {
+        if (keccak256(addr1) == keccak256(bytes(""))) {
             return abi.encodePacked(ownerOf(_node));
         } else {
             return addr1;

@@ -129,13 +129,11 @@ contract SldRegistrationManager is
             "registration strategy disabled"
         );
 
-        address tldOwner = tld.ownerOf(uint256(_parentNamehash));
         uint256 dollarPrice;
 
         dollarPrice = getRegistrationPrice(
             address(strategy),
             msg.sender,
-            tldOwner,
             _parentNamehash,
             _label,
             _registrationLength
@@ -166,7 +164,7 @@ contract SldRegistrationManager is
 
         distributePrimaryFunds(
             msg.sender,
-            tldOwner,
+            tld.ownerOf(uint256(_parentNamehash)),
             priceInWei,
             (weiValue * minDevContribution) / 1 ether
         );
@@ -494,14 +492,13 @@ contract SldRegistrationManager is
     function getRegistrationPrice(
         address _strategy,
         address _addr,
-        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256) {
         uint256 minPrice = (globalStrategy.minimumDollarPrice() * _registrationLength) / 365;
 
-        if (_tldOwner == _addr) {
+        if (tld.ownerOf(uint256(_parentNamehash)) == _addr) {
             return minPrice;
         } else {
             uint256 currentPrice = safeCallRegistrationStrategyInAssembly(

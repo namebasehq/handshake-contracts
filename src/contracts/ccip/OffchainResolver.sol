@@ -33,7 +33,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
             signers[_signers[i]] = true;
             emit NewSigners(_signers[i], true);
 
-            unchecked{
+            unchecked {
                 ++i;
             }
         }

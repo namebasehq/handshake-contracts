@@ -418,7 +418,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -482,7 +481,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice{gas: 2000000}(
             address(strategy),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -526,7 +524,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength * 2
@@ -571,7 +568,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy2),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -646,7 +642,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         uint256 price = manager.getRegistrationPrice(
             address(strategy),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -682,7 +677,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         price = manager.getRegistrationPrice(
             address(strategy),
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
