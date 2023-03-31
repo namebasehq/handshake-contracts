@@ -20,6 +20,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
 
     IMetadataService public metadata;
 
+    event RoyaltyPayoutAmountSet(bytes32 indexed _nftNamehash, uint256 _amount);
+    event RoyaltyPayoutAddressSet(bytes32 indexed _nftNamehash, address _payoutAddress);
+    event ResolverSet(bytes32 indexed _nftNamehash, address _resolver);
+
     constructor(string memory _symbol, string memory _name) ERC721(_symbol, _name) {}
 
     function tokenURI(uint256 _id) public view override returns (string memory) {
@@ -45,6 +49,7 @@ abstract contract HandshakeNft is ERC721, Ownable {
         onlyApprovedOrOwner(uint256(_namehash))
     {
         tokenResolverMap[_namehash] = _resolver;
+        emit ResolverSet(_namehash, address(_resolver));
     }
 
     function supportsInterface(bytes4 interfaceId) public view override returns (bool) {

@@ -49,6 +49,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         namehashToParentMap[sldNamehash] = _tldNamehash;
         namehashToLabelMap[sldNamehash] = _label;
         tokenResolverMap[sldNamehash] = defaultResolver;
+
+        emit ResolverSet(sldNamehash, address(defaultResolver));
     }
 
     /**
@@ -125,6 +127,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     {
         require(_amount <= 10, "10% maximum royalty on SLD");
         royaltyPayoutAmountMap[bytes32(_id)] = _amount;
+        emit RoyaltyPayoutAmountSet(bytes32(_id), _amount);
     }
 
     /**
@@ -141,6 +144,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     {
         require(_addr != address(0), "cannot set to zero address");
         royaltyPayoutAddressMap[bytes32(_id)][handshakeTldContract.ownerOf(_id)] = _addr;
+        emit RoyaltyPayoutAddressSet(bytes32(_id), _addr);
     }
 
     function getSingleSldDetails(

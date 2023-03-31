@@ -15,6 +15,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     address public royaltyPayoutAddress;
     uint256 public royaltyPayoutAmount = 50; //default 5%
 
+    event RegistrationStrategySet(bytes32 indexed namehash, ISldRegistrationStrategy strategy);
+
     constructor() HandshakeNft("TLD", "Handshake TLD") {}
 
     function setTldClaimManager(ITldClaimManager _manager) public onlyOwner {
@@ -51,6 +53,8 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         namehashToLabelMap[namehash] = _domain;
         tokenResolverMap[namehash] = defaultResolver;
         registrationStrategy[namehash] = _strategy;
+        emit RegistrationStrategySet(namehash, _strategy);
+        emit ResolverSet(namehash, address(defaultResolver));
     }
 
     function setResolver(bytes32 _namehash, IResolver _resolver)
