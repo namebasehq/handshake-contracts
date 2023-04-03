@@ -233,7 +233,6 @@ contract MockSldRegistrationManager is
 
         uint256 priceInDollars = getRenewalPrice(
             msg.sender,
-            tldOwner,
             _parentNamehash,
             _label,
             _registrationLength
@@ -365,11 +364,11 @@ contract MockSldRegistrationManager is
      */
     function getRenewalPrice(
         address _addr,
-        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
+        address tldOwner = tld.ownerOf(uint256(_parentNamehash));
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
         ISldRegistrationStrategy strategy = tld.registrationStrategy(_parentNamehash);
@@ -397,7 +396,7 @@ contract MockSldRegistrationManager is
 
         //
         uint256 renewalPrice = (((
-            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || _tldOwner == _addr
+            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || tldOwner == _addr
                 ? globalStrategy.minimumDollarPrice()
                 : renewalCostPerAnnum
         ) * _registrationLength) / 365);
@@ -538,18 +537,11 @@ contract MockSldRegistrationManager is
      */
     function getRenewalPricePerDay(
         address _addr,
-        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
-        uint256 price = getRenewalPrice(
-            _addr,
-            _tldOwner,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        uint256 price = getRenewalPrice(_addr, _parentNamehash, _label, _registrationLength);
 
         _price = price / _registrationLength;
     }

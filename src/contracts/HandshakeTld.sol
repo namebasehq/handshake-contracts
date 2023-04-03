@@ -51,9 +51,11 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
 
         _mint(_addr, uint256(namehash));
         namehashToLabelMap[namehash] = _domain;
-        tokenResolverMap[namehash] = defaultResolver;
+
         registrationStrategy[namehash] = _strategy;
         emit RegistrationStrategySet(namehash, _strategy);
+
+        tokenResolverMap[namehash] = defaultResolver;
         emit ResolverSet(namehash, address(defaultResolver));
     }
 
@@ -81,6 +83,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         onlyApprovedOrOwner(uint256(_namehash))
     {
         registrationStrategy[_namehash] = _strategy;
+        emit RegistrationStrategySet(_namehash, _strategy);
     }
 
     /**

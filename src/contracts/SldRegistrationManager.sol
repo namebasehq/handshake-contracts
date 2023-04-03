@@ -14,7 +14,6 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
-import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -231,7 +230,6 @@ contract SldRegistrationManager is
 
         uint256 priceInDollars = getRenewalPrice(
             msg.sender,
-            tldOwner,
             _parentNamehash,
             _label,
             _registrationLength
@@ -381,7 +379,6 @@ contract SldRegistrationManager is
      */
     function getRenewalPrice(
         address _addr,
-        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
@@ -389,17 +386,18 @@ contract SldRegistrationManager is
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
         ISldRegistrationStrategy strategy = tld.registrationStrategy(_parentNamehash);
-
-        uint256 registrationYears = (_registrationLength / 365); //get the annual rate
-
-        registrationYears = registrationYears > 10 ? 10 : registrationYears;
-
         uint256 index;
 
-        if (registrationYears > 10) {
-            index = 9;
-        } else if (registrationYears > 0) {
-            index = registrationYears - 1;
+        {
+            uint256 registrationYears = (_registrationLength / 365); //get the annual rate
+
+            registrationYears = registrationYears > 10 ? 10 : registrationYears;
+
+            if (registrationYears > 10) {
+                index = 9;
+            } else if (registrationYears > 0) {
+                index = registrationYears - 1;
+            }
         }
 
         uint256 renewalCostPerAnnum = pricesAtRegistration[sldNamehash][index];
@@ -419,7 +417,8 @@ contract SldRegistrationManager is
 
         //
         uint256 renewalPrice = (((
-            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || _tldOwner == _addr
+            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() ||
+                tld.ownerOf(uint256(_parentNamehash)) == _addr
                 ? globalStrategy.minimumDollarPrice()
                 : renewalCostPerAnnum
         ) * _registrationLength) / 365);
@@ -559,18 +558,11 @@ contract SldRegistrationManager is
      */
     function getRenewalPricePerDay(
         address _addr,
-        address _tldOwner,
         bytes32 _parentNamehash,
         string calldata _label,
         uint256 _registrationLength
     ) public view returns (uint256 _price) {
-        uint256 price = getRenewalPrice(
-            _addr,
-            _tldOwner,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        uint256 price = getRenewalPrice(_addr, _parentNamehash, _label, _registrationLength);
 
         _price = price / _registrationLength;
     }

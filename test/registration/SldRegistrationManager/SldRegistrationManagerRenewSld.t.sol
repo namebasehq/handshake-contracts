@@ -298,7 +298,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             msg.sender,
-            address(0x99),
             parentNamehash,
             "yo",
             _years * 365
@@ -368,7 +367,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         for (uint256 i; i < 10; i++) {
             uint256 actual = manager.getRenewalPricePerDay(
                 msg.sender,
-                address(0x99),
                 parentNamehash,
                 label,
                 (i + 1) * 365
@@ -437,7 +435,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -591,7 +588,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -660,7 +656,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         uint256 renewalPrice = manager.getRenewalPrice(
             addr,
-            address(this),
             parentNamehash,
             label,
             registrationLength
@@ -693,13 +688,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         assertEq(price, minPrice * 1 ether, "price should be min price");
 
-        renewalPrice = manager.getRenewalPrice(
-            addr,
-            address(this),
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, minPrice * 1 ether, "renewal price should min price");
     }

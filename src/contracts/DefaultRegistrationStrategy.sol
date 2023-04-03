@@ -17,12 +17,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
 
     mapping(bytes32 => bool) public isEnabled;
 
-    event PremiumNameSet(bytes32 indexed _tokenNamehash, uint256 _price, string _label);
-    event ReservedNameSet(bytes32 indexed _tokenNamehash, address indexed _claimant, string _label);
-    event LengthCostSet(bytes32 indexed _tokenNamehash, uint256[] _prices);
-    event MultiYearDiscountSet(bytes32 indexed _tokenNamehash, uint256[] _discounts);
-    event EnabledSet(bytes32 indexed _tokenNamehash, bool _enabled);
-
     constructor(ISldRegistrationManager _manager) {
         registrationManager = _manager;
     }
@@ -153,7 +147,8 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
             "reserved name"
         );
 
-        uint256 minPrice = (_registrationLength * minDollarPrice());
+        uint256 minPrice = (_registrationLength *
+            registrationManager.globalStrategy().minimumDollarPrice());
 
         uint256 calculatedPrice;
         uint256 annualPrice = premiumNames[namehash];
@@ -197,10 +192,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
             interfaceId == this.isEnabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||
             super.supportsInterface(interfaceId);
-    }
-
-    function minDollarPrice() private view returns (uint256) {
-        return registrationManager.globalStrategy().minimumDollarPrice();
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {

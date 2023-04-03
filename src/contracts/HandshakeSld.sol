@@ -24,6 +24,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
 
     ISldRegistrationManager public registrationManager;
 
+    event RoyaltyPayoutAmountSet(bytes32 indexed _nftNamehash, uint256 _amount);
+    event RoyaltyPayoutAddressSet(bytes32 indexed _nftNamehash, address _payoutAddress);
+
     constructor(IHandshakeTld _tld) HandshakeNft("SLD", "Handshake SLD") {
         handshakeTldContract = _tld;
     }
@@ -48,8 +51,8 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _mint(_to, uint256(sldNamehash));
         namehashToParentMap[sldNamehash] = _tldNamehash;
         namehashToLabelMap[sldNamehash] = _label;
-        tokenResolverMap[sldNamehash] = defaultResolver;
 
+        tokenResolverMap[sldNamehash] = defaultResolver;
         emit ResolverSet(sldNamehash, address(defaultResolver));
     }
 
