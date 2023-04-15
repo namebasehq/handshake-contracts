@@ -51,5 +51,7 @@ interface ISldRegistrationManager {
         string _label,
         uint256 _expiry
     );
+
+
     event RenewSld(bytes32 indexed _tldNamehash, string _label, uint256 _expiry);
 }

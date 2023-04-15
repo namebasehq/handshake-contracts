@@ -13,8 +13,9 @@ contract UsdPriceOracle is IPriceOracle {
     }
 
     function getPrice() public view returns (uint256) {
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
         require(price > 0, "oracle returned invalid price");
+        require(updatedAt > block.timestamp - 1 hours, "oracle price is stale");
         return uint256(price);
     }
 

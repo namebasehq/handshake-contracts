@@ -19,8 +19,9 @@ contract DeployOffchainResolverScript is Script {
 
         address[] memory signers = new address[](1);
         signers[0] = 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f;
-        string memory url = "https://handshake-ccip.hodlthedoor.repl.co/{sender}/{data}.json";
-
+        // 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f
+        //string memory url = "http://localhost:3001/api/ccip-gateway/{sender}/{data}.json";
+        string memory url = "http://localhost:3001/api/ccip-gateway?sender={sender}&data={data}";
         vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
 
         OffchainResolver offchainResolver = new OffchainResolver(url, signers);
