@@ -41,10 +41,11 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         public
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        require(_prices.length < 11, "max 10 characters");
+        uint256 arrayLength = _prices.length;
+        require(arrayLength < 11, "max 10 characters");
 
         uint256 currentPrice = type(uint256).max;
-        for (uint256 i; i < _prices.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             require(_prices[i] <= currentPrice, "must be less than or equal to previous length");
             currentPrice = _prices[i];
 
@@ -60,11 +61,12 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         public
         isApprovedOrTokenOwner(_parentNamehash)
     {
-        require(_discounts.length < 11, "cannot set more than 10 year discount");
+        uint256 arrayLength = _discounts.length;
+        require(arrayLength < 11, "cannot set more than 10 year discount");
 
         uint256 currentDiscount;
 
-        for (uint256 i; i < _discounts.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             require(_discounts[i] >= currentDiscount, "must be more or equal to previous year");
             currentDiscount = _discounts[i];
 
@@ -95,9 +97,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         uint256[] calldata _priceInDollarsPerYear
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        require(_labels.length == _priceInDollarsPerYear.length, "array lengths do not match");
+        uint256 arrayLength = _labels.length;
+        require(arrayLength == _priceInDollarsPerYear.length, "array lengths do not match");
 
-        for (uint256 i; i < _labels.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             setPremiumName(_parentNamehash, _labels[i], _priceInDollarsPerYear[i]);
 
             unchecked {
@@ -111,9 +114,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         string[] calldata _labels,
         address[] calldata _claimants
     ) public isApprovedOrTokenOwner(_parentNamehash) {
-        require(_labels.length == _claimants.length, "array lengths do not match");
+        uint256 arrayLength = _labels.length;
+        require(arrayLength == _claimants.length, "array lengths do not match");
 
-        for (uint256 i; i < _labels.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             setReservedName(_parentNamehash, _labels[i], _claimants[i]);
 
             unchecked {
@@ -173,12 +177,14 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     function getDiscount(bytes32 _parentNamehash, uint256 _years) private view returns (uint256) {
         uint256[] storage discounts = multiYearDiscount[_parentNamehash];
 
-        if (discounts.length == 0) {
+        uint256 arrayLength = discounts.length;
+
+        if (arrayLength == 0) {
             return 0;
-        } else if (discounts.length >= _years) {
+        } else if (arrayLength >= _years) {
             return discounts[_years - 1];
         } else {
-            return discounts[discounts.length - 1];
+            return discounts[arrayLength - 1];
         }
     }
 

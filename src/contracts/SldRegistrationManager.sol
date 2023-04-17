@@ -190,9 +190,10 @@ contract SldRegistrationManager is
             tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
             "not approved or owner"
         );
-        require(_addresses.length == _discounts.length, "array lengths do not match");
+        uint256 arrayLength = _discounts.length;
+        require(_addresses.length == arrayLength, "array lengths do not match");
 
-        for (uint256 i; i < _discounts.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
 
             emit DiscountSet(_parentNamehash, _addresses[i], _discounts[i]);
@@ -350,8 +351,9 @@ contract SldRegistrationManager is
     ) private {
         // checked this.. Most gas efficient way to do this
         uint80[10] storage arr = pricesAtRegistration[_namehash];
+        uint256 arrayLength = arr.length;
 
-        for (uint256 i; i < arr.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             uint256 price = _strategy.getPriceInDollars(
                 msg.sender,
                 _parentNamehash,
@@ -360,7 +362,14 @@ contract SldRegistrationManager is
                 false
             );
 
-            arr[i] = uint80(price / (i + 1));
+            uint256 annualPrice = price / (i + 1);
+
+            // don't think that this is an issue. but just in case there is
+            // some overflow exploit.. We need to check each year as user
+            // can use custom registration contract
+            require(annualPrice < type(uint80).max, "price too high");
+
+            arr[i] = uint80(annualPrice);
 
             unchecked {
                 ++i;

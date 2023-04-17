@@ -9,8 +9,10 @@ abstract contract Multicallable is IMulticallable, ERC165 {
         internal
         returns (bytes[] memory results)
     {
-        results = new bytes[](data.length);
-        for (uint256 i = 0; i < data.length; i++) {
+        uint256 arrayLength = data.length;
+        results = new bytes[](arrayLength);
+
+        for (uint256 i = 0; i < arrayLength; i++) {
             if (nodehash != bytes32(0)) {
                 bytes32 txNamehash = bytes32(data[i][4:36]);
                 require(

@@ -126,14 +126,15 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         external
         onlyAuthorisedTldManager
     {
+        uint256 arrayLength = _addr.length;
         require(
-            _addr.length == _domain.length,
+            arrayLength== _domain.length,
             "address and domain list should be the same length"
         );
 
         bytes32 tldNamehash;
 
-        for (uint256 i; i < _addr.length; ) {
+        for (uint256 i; i < arrayLength; ) {
             require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];

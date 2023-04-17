@@ -29,7 +29,8 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         url = _url;
         emit UpdateUrl(_url);
 
-        for (uint256 i; i < _signers.length; ) {
+        uint256 arrayLength = _signers.length;
+        for (uint256 i; i < arrayLength; ) {
             signers[_signers[i]] = true;
             emit NewSigners(_signers[i], true);
 

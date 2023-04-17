@@ -65,7 +65,8 @@ contract BlankSldMetadataService is IMetadataService {
             ? resolver.text(_namehash, "avatar")
             : "";
 
-        if (bytes(_image).length == 0) {
+        uint256 imageLength = bytes(_image).length;
+        if (imageLength == 0) {
             bytes32 parentHash = sld.namehashToParentMap(_namehash);
 
             nft = IHandshakeNft(address(tld));
