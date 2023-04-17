@@ -14,7 +14,7 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _registrationLength,
         uint256 _dollarCost
     ) external pure returns (bool) {
-        require(_registrationLength > 364, "less than 365 days registration");
+        require(_registrationLength >= DAYS_IN_A_YEAR, "less than 365 days registration");
         require(
             ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
             "min price $1/year"
@@ -26,12 +26,12 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         address, // _buyingAddress,
         bytes32, // _parentNamehash,
         string calldata, // _label,
-        uint256 _registrationLength,
+        uint256 _renewalLength,
         uint256 _dollarCost
     ) external pure returns (bool) {
-        require(_registrationLength > 364, "less than 365 days renewal");
+        require(_renewalLength >= DAYS_IN_A_YEAR, "less than 365 days renewal");
         require(
-            ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
+            ((_dollarCost * DAYS_IN_A_YEAR) / _renewalLength) >= minimumDollarPrice,
             "min price $1/year"
         );
         return true;
