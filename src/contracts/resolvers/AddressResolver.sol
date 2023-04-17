@@ -7,8 +7,26 @@ import "interfaces/resolvers/IAddrResolver.sol";
 import "contracts/resolvers/BaseResolver.sol";
 
 abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolver {
-    uint256 private constant ETH_CHAINID = 1;
-    uint256 private constant OPT_CHAINID = 10;
+    uint256 private constant ETH_COINID = 60;
+    uint256 private constant OPT_COINID = 614;
+    uint256 private constant BSC_COINID = 9006;
+    uint256 private constant MATIC_COINID = 966;
+    uint256 private constant ARB_COINID = 9001;
+    uint256 private constant AVAX_COINID = 9000;
+    uint256 private constant AVAXC_COINID = 9005;
+
+    mapping(uint256 => bool) public defaultCoinTypes;
+
+    constructor(){
+        defaultCoinTypes[ETH_COINID] = true;
+        defaultCoinTypes[OPT_COINID] = true;
+        defaultCoinTypes[BSC_COINID] = true;
+        defaultCoinTypes[MATIC_COINID] = true;
+        defaultCoinTypes[ARB_COINID] = true;
+        defaultCoinTypes[AVAX_COINID] = true;
+        defaultCoinTypes[AVAXC_COINID] = true;
+    }
+
 
     mapping(uint256 => mapping(bytes32 => mapping(address => mapping(uint256 => bytes)))) versionable_addresses;
 
@@ -17,7 +35,7 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
             _coinType
         ];
 
-        if (keccak256(addr1) == keccak256(bytes(""))) {
+        if (keccak256(addr1) == keccak256(bytes("")) && defaultCoinTypes[_coinType]) {
             return abi.encodePacked(ownerOf(_node));
         } else {
             return addr1;
@@ -25,12 +43,12 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
     }
 
     function addr(bytes32 _node) public view returns (address payable) {
-        address addr1 = bytesToAddress(addr(_node, OPT_CHAINID));
+        address addr1 = bytesToAddress(addr(_node, OPT_COINID));
         return payable(addr1);
     }
 
     function setAddress(bytes32 _node, address _addr) public authorised(_node) {
-        setAddress(_node, abi.encodePacked(_addr), OPT_CHAINID);
+        setAddress(_node, abi.encodePacked(_addr), OPT_COINID);
     }
 
     function setAddress(bytes32 _node, bytes memory _addr, uint256 _cointype)

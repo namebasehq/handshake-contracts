@@ -12,6 +12,8 @@ contract TestAddressResolver is Test {
     MockHandshakeNft tld;
     MockHandshakeNft sld;
 
+    
+
     function setUp() public {
         tld = new MockHandshakeNft();
         sld = new MockHandshakeNft();
@@ -159,9 +161,12 @@ contract TestAddressResolver is Test {
         vm.prank(owner);
         tld.mint(owner, id);
 
-        uint256 cointype = 69;
+        uint256 cointype = 614;
 
-        //default should resolve to owner of the NFT
+        //default should resolve to owner of the NFT if no address is set
+
+        if(resolver.defaultCoinTypes(cointype)){
+
         assertEq(
             address(bytes20(resolver.addr(bytes32(id), cointype))),
             owner,
@@ -176,9 +181,13 @@ contract TestAddressResolver is Test {
             newOwner,
             "address does not match"
         );
+
+        }
     }
 
     function testMintTldFromOwnerAndTransferCheckOtherChainsAddress(uint256 _cointype) public {
+
+        
         address owner = address(0x99887766);
         address newOwner = address(0x55555555);
         address altWallet = address(0x12345678);
@@ -187,6 +196,8 @@ contract TestAddressResolver is Test {
         tld.mint(owner, id);
 
         bytes memory wallet = abi.encodePacked(altWallet);
+
+        if(resolver.defaultCoinTypes(_cointype)){
 
         //default should resolve to owner of the NFT
         assertTrue(
@@ -215,5 +226,15 @@ contract TestAddressResolver is Test {
             address(bytes20(resolver.addr(bytes32(id), _cointype))) == altWallet,
             "address does not match"
         );
+
+        }
+        else {
+
+        // coins that are not in the evm list should not be set
+        assertTrue(
+            address(bytes20(resolver.addr(bytes32(id), _cointype))) == address(0),
+            "address does not match"
+        );
+        }
     }
 }
