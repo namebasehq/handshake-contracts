@@ -38,9 +38,17 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         addSldDetail(_sldNamehash, detail);
     }
 
-    function registerSld(
+    function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable {}
+
+    function registerWithSignature(
+        string calldata _label,
+        bytes calldata _sig,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         address _recipient
@@ -79,9 +87,17 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
         return 69420;
     }
 
-    function registerSld(
+    function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable {}
+
+    function registerWithSignature(
+        string calldata _label,
+        bytes calldata _sig,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         address _recipient

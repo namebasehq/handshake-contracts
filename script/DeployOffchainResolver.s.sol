@@ -20,11 +20,17 @@ contract DeployOffchainResolverScript is Script {
         address[] memory signers = new address[](1);
         signers[0] = 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f;
         // 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f
-        //string memory url = "http://localhost:3001/api/ccip-gateway/{sender}/{data}.json";
-        string memory url = "http://localhost:3001/api/ccip-gateway?sender={sender}&data={data}";
+        // string memory url = "http://localhost:3001/api/ccip-gateway/{sender}/{data}.json";
+        string memory url = "https://hnst.id/api/ccip-gateway?sender={sender}&data={data}";
         vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
 
-        OffchainResolver offchainResolver = new OffchainResolver(url, signers);
+        // server - 0xdbc6833ead91396143674120548d94be8216a180
+        // localhost - 0xcaf98708ff63121055647a7f15a690c338fde6cf
+
+        OffchainResolver offchainResolver = OffchainResolver(
+            0xdbC6833eAd91396143674120548D94Be8216a180
+        );
+        offchainResolver.updateUrl(url);
 
         console.log("Deployed OffchainResolver at address: %s", address(offchainResolver));
     }

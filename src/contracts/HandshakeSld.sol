@@ -255,7 +255,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
     }
 
     function expiry(bytes32 _namehash)
-        external
+        public
         view
         override(HandshakeNft, IHandshakeSld)
         returns (uint256 _expiry)

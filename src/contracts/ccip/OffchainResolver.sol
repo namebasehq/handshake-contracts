@@ -85,7 +85,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     {
         for (uint256 i = 0; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
-            emit NewSigners(_signers[i], true);
+            emit NewSigners(_signers[i], _isSigner[i]);
         }
     }
 

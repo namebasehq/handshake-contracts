@@ -98,13 +98,9 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
             abi.encodeCall(manager.sld().registerSld, (sendingAddress, parentNamehash, label))
         );
         vm.startPrank(sendingAddress);
-        manager.registerSld{value: (uint256(1 ether) / uint256(365)) * registrationLength + 137}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{
+            value: (uint256(1 ether) / uint256(365)) * registrationLength + 137
+        }(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testSetWalletAddressFromContractOwner_pass() public {

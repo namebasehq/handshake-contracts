@@ -38,7 +38,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(address(0x420));
         vm.expectRevert("invalid label");
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerWithCommit(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testPurchaseSldGlobalRegistrationRulesReturnFalse_fail() public {
@@ -58,7 +58,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(address(0x420));
         vm.expectRevert("failed global strategy");
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerWithCommit(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testMintSldFromAuthorisedWalletRepurchaseWhenExpired_success() public {
@@ -77,7 +77,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         hoax(address(0x420), 4 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -88,7 +88,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         vm.warp(block.timestamp + (registrationLength * 86400) + 1);
 
         vm.prank(address(0x420));
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -113,7 +113,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         hoax(address(0x420), 4 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -125,7 +125,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(address(0x420));
         vm.expectRevert("domain already registered");
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -153,7 +153,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
             abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
         vm.prank(sendingAddress);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -179,7 +179,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectRevert("registration strategy disabled");
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -205,7 +205,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         stdstore.target(address(mockStrategy)).sig("isEnabledBool()").checked_write(false);
 
         hoax(owner, 2 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -229,7 +229,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(sendingAddress);
         vm.expectRevert("registration strategy does not support interface");
-        manager.registerSld(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerWithCommit(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testMintSingleDomainCheckHistory() public {
@@ -254,7 +254,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         );
 
         vm.startPrank(sendingAddress);
-        manager.registerSld{value: 1 ether + 1}(
+        manager.registerWithCommit{value: 1 ether + 1}(
             label,
             secret,
             registrationLength,
@@ -318,7 +318,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         uint256 registrationTimestamp = block.timestamp;
 
         hoax(claimant, 2 ether + 1);
-        manager.registerSld{value: 2 ether + 1}( //should cost 2 ether
+        manager.registerWithCommit{value: 2 ether + 1}( //should cost 2 ether
             label,
             0x0, //secret
             registrationLength,
@@ -394,7 +394,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         vm.warp(6688);
 
         hoax(claimant, 1 ether);
-        manager.registerSld{value: 1 ether}(
+        manager.registerWithCommit{value: 1 ether}(
             label,
             0x0, //secret
             registrationLength,

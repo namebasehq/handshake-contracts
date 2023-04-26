@@ -87,6 +87,14 @@ contract MockSldRegistrationManager is
         _transferOwnership(_owner);
     }
 
+    function registerWithSignature(
+        string calldata _label,
+        bytes calldata _sig,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable {}
+
     /**
      * @notice Register an eligible Sld. Require to send in the appropriate amount of ethereum
      * @dev Checks commitIntent, labelValidator, globalStrategy to ensure domain can be registered
@@ -97,7 +105,7 @@ contract MockSldRegistrationManager is
      * @param _parentNamehash bytes32 representation of the top level domain
      * @param _recipient Address that the sld should be sent to. address(0) will send to msg.sender
      */
-    function registerSld(
+    function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
         uint256 _registrationLength,

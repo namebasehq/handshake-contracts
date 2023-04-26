@@ -5,9 +5,17 @@ import "interfaces/IHandshakeTld.sol";
 import "interfaces/IGlobalRegistrationRules.sol";
 
 interface ISldRegistrationManager {
-    function registerSld(
+    function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable;
+
+    function registerWithSignature(
+        string calldata _label,
+        bytes calldata _signature,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         address _recipient
@@ -51,7 +59,6 @@ interface ISldRegistrationManager {
         string _label,
         uint256 _expiry
     );
-
 
     event RenewSld(bytes32 indexed _tldNamehash, string _label, uint256 _expiry);
 }

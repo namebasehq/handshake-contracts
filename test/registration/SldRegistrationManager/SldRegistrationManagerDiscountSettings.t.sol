@@ -63,7 +63,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -129,7 +129,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(arr1[0], price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             "foo",
             bytes32(uint256(555)),
             365,
@@ -154,7 +154,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(arr1[1], price2);
-        manager.registerSld{value: price2}(
+        manager.registerWithCommit{value: price2}(
             "bar",
             bytes32(uint256(555)),
             365,
@@ -214,7 +214,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         console.log("price: %s", price);
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -279,7 +279,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -344,7 +344,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -411,7 +411,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -480,7 +480,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price + 1);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -548,7 +548,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price + 1);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -616,7 +616,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price + 1);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -684,7 +684,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price + 1);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -779,7 +779,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         assertEq(price, annualCost, "registration should be at full cost"); //completed now
 
         hoax(addr, price + 1);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -876,7 +876,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         vm.stopPrank();
         startHoax(address(0x4444), price);
 
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -1007,7 +1007,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(arr1[0], price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -1200,7 +1200,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,

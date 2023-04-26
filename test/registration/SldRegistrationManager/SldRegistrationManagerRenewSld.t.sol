@@ -37,7 +37,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 50 ether);
 
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -78,7 +78,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 50 ether);
 
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -109,7 +109,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 30 ether);
 
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -159,7 +159,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         startHoax(address(0x420), 20 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -192,7 +192,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -223,7 +223,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerSld{value: 2 ether}(
+        manager.registerWithCommit{value: 2 ether}(
             label,
             secret,
             registrationLength,
@@ -285,7 +285,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address sendingAddress = address(0x420);
         startHoax(sendingAddress, 100 ether);
 
-        manager.registerSld{value: 10 ether + 1}("yo", 0x0, 365, parentNamehash, address(0));
+        manager.registerWithCommit{value: 10 ether + 1}("yo", 0x0, 365, parentNamehash, address(0));
 
         bytes32 sldNamehash = Namehash.getNamehash(parentNamehash, "yo");
 
@@ -352,7 +352,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         );
 
         vm.startPrank(sendingAddress);
-        manager.registerSld{value: 10.11 ether}(
+        manager.registerWithCommit{value: 10.11 ether}(
             label,
             secret,
             registrationLength,
@@ -422,7 +422,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -573,7 +573,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         assertEq(price, annualCost, "price should be $2000");
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -644,7 +644,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,
@@ -678,7 +678,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         );
 
         hoax(addr, price);
-        manager.registerSld{value: price}(
+        manager.registerWithCommit{value: price}(
             label,
             bytes32(uint256(555)),
             registrationLength,

@@ -127,10 +127,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         onlyAuthorisedTldManager
     {
         uint256 arrayLength = _addr.length;
-        require(
-            arrayLength== _domain.length,
-            "address and domain list should be the same length"
-        );
+        require(arrayLength == _domain.length, "address and domain list should be the same length");
 
         bytes32 tldNamehash;
 

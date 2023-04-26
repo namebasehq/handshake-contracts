@@ -97,7 +97,7 @@ contract SldRegistrationManager is
      * @param _parentNamehash bytes32 representation of the top level domain
      * @param _recipient Address that the sld should be sent to. address(0) will send to msg.sender
      */
-    function registerSld(
+    function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
         uint256 _registrationLength,
@@ -105,7 +105,35 @@ contract SldRegistrationManager is
         address _recipient
     ) external payable {
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        require(
+            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
+            "No valid commit intent"
+        );
+        registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
 
+        emit RegisterSld(
+            _parentNamehash,
+            _secret,
+            _label,
+            block.timestamp + (_registrationLength * 1 days)
+        );
+    }
+
+    function registerWithSignature(
+        string calldata _label,
+        bytes calldata _signature,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) external payable {}
+
+    function registerSld(
+        string calldata _label,
+        bytes32 sldNamehash,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) private {
         require(canRegister(sldNamehash), "domain already registered");
 
         _recipient = _recipient == address(0) ? msg.sender : _recipient;
@@ -166,18 +194,6 @@ contract SldRegistrationManager is
             tld.ownerOf(uint256(_parentNamehash)),
             priceInWei,
             (weiValue * minDevContribution) / 1 ether
-        );
-
-        require(
-            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
-            "No valid commit intent"
-        );
-
-        emit RegisterSld(
-            _parentNamehash,
-            _secret,
-            _label,
-            block.timestamp + (_registrationLength * 1 days)
         );
     }
 
@@ -325,6 +341,16 @@ contract SldRegistrationManager is
      */
     function updatePriceOracle(IPriceOracle _oracle) public onlyOwner {
         usdOracle = _oracle;
+    }
+
+    /**
+     * @notice Update the commit intent
+     * @dev Might update this in the future to prevent frontrunning
+     *
+     * @param _commitIntent Address of the commit intent contract
+     */
+    function updateCommitIntent(ICommitIntent _commitIntent) public onlyOwner {
+        commitIntent = _commitIntent;
     }
 
     /**

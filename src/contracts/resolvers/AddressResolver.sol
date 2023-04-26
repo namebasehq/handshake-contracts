@@ -17,7 +17,7 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
 
     mapping(uint256 => bool) public defaultCoinTypes;
 
-    constructor(){
+    constructor() {
         defaultCoinTypes[ETH_COINID] = true;
         defaultCoinTypes[OPT_COINID] = true;
         defaultCoinTypes[BSC_COINID] = true;
@@ -26,7 +26,6 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
         defaultCoinTypes[AVAX_COINID] = true;
         defaultCoinTypes[AVAXC_COINID] = true;
     }
-
 
     mapping(uint256 => mapping(bytes32 => mapping(address => mapping(uint256 => bytes)))) versionable_addresses;
 

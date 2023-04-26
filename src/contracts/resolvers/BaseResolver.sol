@@ -28,7 +28,6 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     // we can use this nonce to invalidate all records for a given node
     // with a single transaction
     function incrementVersion(bytes32 _nodehash) public virtual authorised(_nodehash) {
-        
         unchecked {
             recordVersions[_nodehash]++;
         }

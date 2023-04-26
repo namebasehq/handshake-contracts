@@ -138,16 +138,6 @@ contract DeployScript is Script {
 
         DefaultResolver resolver = new DefaultResolver(tld, sld);
 
-        // TldClaimManager(address(uups)).init(
-        //     labelValidator,
-        //     ownerWallet,
-        //     tld,
-        //     strategy,
-        //     priceOracle,
-        //     100 ether,
-        //     ownerWallet
-        // );
-
         //transfer ownership of ownable contracts
         sld.setDefaultResolver(IResolver(address(resolver)));
         tld.setDefaultResolver(IResolver(address(resolver)));
