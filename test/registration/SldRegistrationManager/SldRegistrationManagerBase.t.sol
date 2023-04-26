@@ -20,7 +20,7 @@ import "mocks/MockUsdOracle.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract TestSldRegistrationManagerBase is Test {
-    SldRegistrationManager manager;
+    SldRegistrationManager internal manager;
     using stdStorage for StdStorage;
 
     MockHandshakeSld sld;

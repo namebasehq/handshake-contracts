@@ -14,7 +14,9 @@ import "./PaymentManager.sol";
 import "./HasUsdOracle.sol";
 import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
-
+import "structs/EIP712Domain.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "forge-std/console.sol";
 /**
  * Registration manager for second level domains
  *
@@ -33,11 +35,23 @@ contract SldRegistrationManager is
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
     mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
+    mapping(address => bool) public ValidSigner;
+    mapping(bytes32 => uint256) public subdomainRegistrationNonce;
 
     IGlobalRegistrationRules public globalStrategy;
 
     IHandshakeSld public sld;
     IHandshakeTld public tld;
+
+    /**
+     * @return DOMAIN_SEPARATOR is used for eip712
+     */
+    bytes32 public DOMAIN_SEPARATOR;
+
+    bytes32 private EIP712DOMAIN_TYPEHASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
 
     ICommitIntent public commitIntent;
 
@@ -85,6 +99,15 @@ contract SldRegistrationManager is
         labelValidator = _validator;
         minDevContribution = 0.2 ether; // $0.20
         _transferOwnership(_owner);
+
+        DOMAIN_SEPARATOR = hash(
+            EIP712Domain({
+                name: "Namebase",
+                version: "1",
+                chainId: block.chainid,
+                verifyingContract: address(this)
+            })
+        );
     }
 
     /**
@@ -119,13 +142,69 @@ contract SldRegistrationManager is
         );
     }
 
+    function getRegistrationHash(address buyer, bytes32 subdomainHash) public view returns(bytes32){
+        
+        uint256 nonce = subdomainRegistrationNonce[subdomainHash];
+        return keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    DOMAIN_SEPARATOR,
+                    keccak256(
+                        abi.encode(
+                            buyer,subdomainHash, nonce)
+                        )
+                    )
+                );
+    }
+
+    function hash(
+        EIP712Domain memory eip712Domain
+    ) internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    EIP712DOMAIN_TYPEHASH,
+                    keccak256(bytes(eip712Domain.name)),
+                    keccak256(bytes(eip712Domain.version)),
+                    eip712Domain.chainId,
+                    eip712Domain.verifyingContract
+                )
+            );
+    }
+
+    function checkSignatureValid(address buyer, bytes32 subdomainHash, uint8 v, bytes32 r, bytes32 s) private view returns(address){
+        address signer = ecrecover(getRegistrationHash(buyer, subdomainHash), v, r, s);
+
+        require(
+             ValidSigner[signer],
+            "invalid signature"
+        );
+        return signer;
+
+    }
+
     function registerWithSignature(
         string calldata _label,
-        bytes calldata _signature,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        address _recipient
-    ) external payable {}
+        address _recipient,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
+        registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
+
+        bytes32 result = bytes32(abi.encodePacked(signer));
+
+        emit RegisterSld(
+            _parentNamehash,
+            result,
+            _label,
+            block.timestamp + (_registrationLength * 1 days)
+        );
+    }
 
     function registerSld(
         string calldata _label,
@@ -351,6 +430,17 @@ contract SldRegistrationManager is
      */
     function updateCommitIntent(ICommitIntent _commitIntent) public onlyOwner {
         commitIntent = _commitIntent;
+    }
+
+    /**
+     * @notice Update a signer
+     * @dev Might update this in the future to prevent frontrunning
+     *
+     * @param _signer Public address of the signer
+     * @param _status Boolean to set the signer to
+     */
+    function updateSigner(address _signer, bool _status) public onlyOwner {
+        ValidSigner[_signer] = _status;
     }
 
     /**

@@ -89,10 +89,10 @@ contract MockSldRegistrationManager is
 
     function registerWithSignature(
         string calldata _label,
-        bytes calldata _sig,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        address _recipient
+        address _recipient,
+        uint8 v, bytes32 r, bytes32 s
     ) external payable {}
 
     /**

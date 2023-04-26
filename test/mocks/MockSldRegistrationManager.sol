@@ -48,10 +48,10 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
 
     function registerWithSignature(
         string calldata _label,
-        bytes calldata _sig,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        address _recipient
+        address _recipient,
+        uint8 v, bytes32 r, bytes32 s
     ) external payable {}
 
     function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
@@ -97,10 +97,10 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
 
     function registerWithSignature(
         string calldata _label,
-        bytes calldata _sig,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
-        address _recipient
+        address _recipient,
+        uint8 v, bytes32 r, bytes32 s
     ) external payable {}
 
     function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)

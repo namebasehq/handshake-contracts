@@ -66,6 +66,24 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         );
     }
 
+    function testSetCommitIntentFromContractOwner_pass() public {
+        MockCommitIntent intent = new MockCommitIntent(false);
+        manager.updateCommitIntent(intent);
+
+        assertEq(
+            address(manager.commitIntent()),
+            address(intent),
+            "commit intent not set correctly"
+        );
+    }
+
+    function testSetCommitIntentFromNotContractOwner_fail() public {
+        MockCommitIntent intent = new MockCommitIntent(false);
+        vm.prank(address(0x420));
+        vm.expectRevert("Ownable: caller is not the owner");
+        manager.updateCommitIntent(intent);
+    }
+
     function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
         IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
             false,
