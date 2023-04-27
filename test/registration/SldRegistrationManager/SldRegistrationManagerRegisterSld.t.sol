@@ -162,7 +162,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         );
     }
 
-        function testPurchaseSldInvalidCommitIntent() public {
+    function testPurchaseSldInvalidCommitIntent() public {
         setUpLabelValidator();
         setUpGlobalStrategy(true, true, 1 ether);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));

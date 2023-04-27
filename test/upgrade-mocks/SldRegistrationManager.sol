@@ -92,7 +92,9 @@ contract MockSldRegistrationManager is
         uint256 _registrationLength,
         bytes32 _parentNamehash,
         address _recipient,
-        uint8 v, bytes32 r, bytes32 s
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external payable {}
 
     /**

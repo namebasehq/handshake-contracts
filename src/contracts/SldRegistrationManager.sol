@@ -17,6 +17,7 @@ import "structs/SldDiscountSettings.sol";
 import "structs/EIP712Domain.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "forge-std/console.sol";
+
 /**
  * Registration manager for second level domains
  *
@@ -142,24 +143,23 @@ contract SldRegistrationManager is
         );
     }
 
-    function getRegistrationHash(address buyer, bytes32 subdomainHash) public view returns(bytes32){
-        
+    function getRegistrationHash(address buyer, bytes32 subdomainHash)
+        public
+        view
+        returns (bytes32)
+    {
         uint256 nonce = subdomainRegistrationNonce[subdomainHash];
-        return keccak256(
+        return
+            keccak256(
                 abi.encodePacked(
                     "\x19\x01",
                     DOMAIN_SEPARATOR,
-                    keccak256(
-                        abi.encode(
-                            buyer,subdomainHash, nonce)
-                        )
-                    )
-                );
+                    keccak256(abi.encode(buyer, subdomainHash, nonce))
+                )
+            );
     }
 
-    function hash(
-        EIP712Domain memory eip712Domain
-    ) internal view returns (bytes32) {
+    function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
@@ -172,15 +172,17 @@ contract SldRegistrationManager is
             );
     }
 
-    function checkSignatureValid(address buyer, bytes32 subdomainHash, uint8 v, bytes32 r, bytes32 s) private view returns(address){
+    function checkSignatureValid(
+        address buyer,
+        bytes32 subdomainHash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) private view returns (address) {
         address signer = ecrecover(getRegistrationHash(buyer, subdomainHash), v, r, s);
 
-        require(
-             ValidSigner[signer],
-            "invalid signature"
-        );
+        require(ValidSigner[signer], "invalid signature");
         return signer;
-
     }
 
     function registerWithSignature(

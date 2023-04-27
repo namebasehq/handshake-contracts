@@ -29,22 +29,27 @@ contract DeployCommitIntentScript is Script {
     GlobalRegistrationRules globalRules;
 
     function run() public {
-        TransparentUpgradeableProxy uups2 = TransparentUpgradeableProxy(
-            payable(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6)
+        SldRegistrationManager manager = SldRegistrationManager(
+            0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6
         );
 
-        commitIntent = new SldCommitIntentPassthrough();
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
-        // address ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
-        // address deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        // manager.updateSigner(0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f, true);
+        bool valid = manager.ValidSigner(0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f);
+        address buyer = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        bytes32 subdomainHash = 0x243c7f49b47b0c3ebec972b3b29671263571c473d9f9ad8aab143c745acde83f;
+        console.logBytes32(manager.getRegistrationHash(buyer, subdomainHash));
+        address signer = ecrecover(
+            manager.getRegistrationHash(buyer, subdomainHash),
+            28,
+            0xd2ba7c6f2eeece87d24fc06a1801460934db2d55fee70bfb18ac0e3cdac4bfa0,
+            0x48fff59526011a6bb2ef3ed99230e47972b0636fb8a719ff733ccb2cd20164ae
+            
+        );
 
-        vm.startBroadcast(0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d);
-        SldRegistrationManager manager = new SldRegistrationManager();
-        uups2.upgradeTo(address(manager));
-
-        //vm.startBroadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
-
-        // vm.prank(ownerWallet);
-        //SldRegistrationManager(address(uups2)).updateCommitIntent(commitIntent);
+        console.log(signer);
+        console.log(block.chainid);
+        console.logBytes32(manager.DOMAIN_SEPARATOR());
     }
 }
