@@ -49,10 +49,11 @@ contract SldRegistrationManager is
      */
     bytes32 public DOMAIN_SEPARATOR;
 
-    bytes32 private EIP712DOMAIN_TYPEHASH =
+    bytes32 constant private EIP712DOMAIN_TYPEHASH =
         keccak256(
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
+
 
     ICommitIntent public commitIntent;
 
@@ -101,16 +102,33 @@ contract SldRegistrationManager is
         minDevContribution = 0.2 ether; // $0.20
         _transferOwnership(_owner);
 
-        DOMAIN_SEPARATOR = hash(
-            EIP712Domain({
+        DOMAIN_SEPARATOR = hashDomain();
+
+        console.log('domain separator');
+        console.logBytes32(DOMAIN_SEPARATOR);
+
+    }
+
+    function hashDomain() internal view returns (bytes32) {
+
+        EIP712Domain memory eip712Domain = EIP712Domain({
                 name: "Namebase",
                 version: "1",
                 chainId: block.chainid,
                 verifyingContract: address(this)
-            })
-        );
-    }
+            });
 
+        return
+            keccak256(
+                abi.encodePacked(
+                    EIP712DOMAIN_TYPEHASH,
+                    keccak256(bytes(eip712Domain.name)),
+                    keccak256(bytes(eip712Domain.version)),
+                    eip712Domain.chainId,
+                    eip712Domain.verifyingContract
+                )
+            );
+    }
     /**
      * @notice Register an eligible Sld. Require to send in the appropriate amount of ethereum
      * @dev Checks commitIntent, labelValidator, globalStrategy to ensure domain can be registered
@@ -154,15 +172,15 @@ contract SldRegistrationManager is
                 abi.encodePacked(
                     "\x19\x01",
                     DOMAIN_SEPARATOR,
-                    keccak256(abi.encode(buyer, subdomainHash, nonce))
+                    keccak256(abi.encodePacked(buyer, subdomainHash, nonce))
                 )
             );
     }
 
-    function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
+     function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
         return
             keccak256(
-                abi.encode(
+                abi.encodePacked(
                     EIP712DOMAIN_TYPEHASH,
                     keccak256(bytes(eip712Domain.name)),
                     keccak256(bytes(eip712Domain.version)),
@@ -178,8 +196,9 @@ contract SldRegistrationManager is
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) private view returns (address) {
-        address signer = ecrecover(getRegistrationHash(buyer, subdomainHash), v, r, s);
+    ) public view returns (address) {
+        bytes32 message = getRegistrationHash(buyer, subdomainHash);
+        address signer = ecrecover(message, v, r, s);
 
         require(ValidSigner[signer], "invalid signature");
         return signer;
@@ -199,6 +218,10 @@ contract SldRegistrationManager is
         registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
 
         bytes32 result = bytes32(abi.encodePacked(signer));
+
+        unchecked {
+            ++subdomainRegistrationNonce[sldNamehash];
+        }
 
         emit RegisterSld(
             _parentNamehash,

@@ -127,6 +127,8 @@ contract DeployScript is Script {
                 "#1f7bac"
             );
 
+            SldRegistrationManager(address(uups2)).updateSigner(0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,true);
+
             console.log("tld metadata", address(tldMetadata));
             console.log("sld metadata", address(sldMetadata));
 
