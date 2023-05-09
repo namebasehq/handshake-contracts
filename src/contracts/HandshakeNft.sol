@@ -12,12 +12,11 @@ abstract contract HandshakeNft is ERC721, Ownable {
     using ERC165Checker for address;
 
     // token uri for metadata service uses namehash as the input value
-    bytes4 private constant TOKEN_URI_SELECTOR = bytes4(keccak256("tokenURI(bytes32)"));
+    bytes4 private constant TOKEN_URI_SELECTOR = IMetadataService.tokenURI.selector;
 
     mapping(bytes32 => IResolver) public tokenResolverMap;
 
-    IResolver defaultResolver;
-
+    IResolver public defaultResolver;
     IMetadataService public metadata;
 
     event ResolverSet(bytes32 indexed _nftNamehash, address _resolver);
@@ -116,15 +115,6 @@ abstract contract HandshakeNft is ERC721, Ownable {
 
     function expiry(bytes32 _namehash) public view virtual returns (uint256 _expiry) {}
 
-    /**
-     * @notice modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
-     * @param tokenId uint256 ID of the token to be transferred
-     */
-    modifier onlyApprovedOrOwner(uint256 tokenId) {
-        require(isApprovedOrOwner(msg.sender, tokenId), "not approved or owner");
-        _;
-    }
-
     function hasExpired(bytes32) internal view virtual returns (bool _expired) {}
 
     function transferFrom(address from, address to, uint256 tokenId) public virtual override {
@@ -156,5 +146,14 @@ abstract contract HandshakeNft is ERC721, Ownable {
      */
     function exists(uint256 tokenId) public view virtual returns (bool) {
         return ERC721._exists(tokenId);
+    }
+
+    /**
+     * @notice modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    modifier onlyApprovedOrOwner(uint256 tokenId) {
+        require(isApprovedOrOwner(msg.sender, tokenId), "not approved or owner");
+        _;
     }
 }
