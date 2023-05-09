@@ -16,6 +16,8 @@ interface ITldClaimManager {
 
     function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external;
 
+    function tldExpiry(bytes32 _node) external view returns (uint256);
+
     event TldClaimed(address indexed _to, uint256 indexed _id, string _label);
 
     event UpdateAllowedTldManager(address indexed _addr, bool _allowed);

@@ -84,8 +84,9 @@ contract TestHandshakeTld is Test {
         string memory domain = "test";
         uint256 tldId = uint256(getTldNamehash(domain));
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
+        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(claimManager));
 
+        vm.prank(address(claimManager));
         tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
         assertEq(address(0x1339), tld.ownerOf(tldId));
     }
@@ -95,8 +96,9 @@ contract TestHandshakeTld is Test {
         bytes32 namehash = getTldNamehash(domain);
 
         //https://book.getfoundry.sh/reference/forge-std/std-storage
-        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(this));
+        stdstore.target(address(tld)).sig("claimManager()").checked_write(address(claimManager));
 
+        vm.prank(address(claimManager));
         tld.registerWithResolver(address(0x1339), domain, defaultRegistrationStrategy);
 
         assertEq(domain, tld.namehashToLabelMap(namehash));
@@ -180,7 +182,7 @@ contract TestHandshakeTld is Test {
 
     function testAddRegistrationStrategyToTldDomain_pass() public {
         string memory tldName = "test";
-        address tldOwner = address(0x44668822);
+        address tldOwner = address(claimManager);
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -200,7 +202,7 @@ contract TestHandshakeTld is Test {
 
     function testAddRegistrationStrategyToTldDomainByApprovedAddress_pass() public {
         string memory tldName = "test";
-        address tldOwner = address(0x44668822);
+        address tldOwner = address(claimManager);
         address approved = address(0x420420);
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
@@ -224,7 +226,7 @@ contract TestHandshakeTld is Test {
 
     function testAddRegistrationStrategyToTldNotOwner_fail() public {
         string memory tldName = "test";
-        address tldOwner = address(0x44668822);
+        address tldOwner = address(claimManager);
         address notTldOwner = address(0x232323);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -250,7 +252,7 @@ contract TestHandshakeTld is Test {
 
     function testRegisterTldDefaultRegistrationStrategyIsSet() public {
         string memory tldName = "test";
-        address tldOwner = address(0x44668822);
+        address tldOwner = address(claimManager);
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -268,7 +270,7 @@ contract TestHandshakeTld is Test {
 
     function testRegisterTldDefaultResolverIsSet() public {
         string memory tldName = "test";
-        address tldOwner = address(0x44668822);
+        address tldOwner = address(claimManager);
         bytes32 parentNamehash = Namehash.getTldNamehash(tldName);
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation

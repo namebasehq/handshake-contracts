@@ -251,12 +251,15 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         uint80 registrationLength = 500;
         bytes32 parentNamehash = bytes32(uint256(0x55446677));
 
+        address owner = address(0x99);
+        tld.register(owner, uint256(parentNamehash));
+
         address recipient = address(0xbadbad);
 
         address sendingAddress = address(0x420);
 
         vm.prank(sendingAddress);
-        vm.expectRevert("registration strategy does not support interface");
+        vm.expectRevert();
         manager.registerWithCommit(label, secret, registrationLength, parentNamehash, recipient);
     }
 

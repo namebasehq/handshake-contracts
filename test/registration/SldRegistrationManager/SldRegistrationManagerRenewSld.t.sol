@@ -60,6 +60,50 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         assertEq(actualValue, expectedValue, "invalid registration details");
     }
 
+    function testRenewSldFromSldOwnerExpiredTld_pass() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+        uint80 renewalLength = 1200;
+
+        uint256 regdate = block.timestamp;
+
+        address recipient = address(0x5555);
+
+        startHoax(address(0x420), 50 ether);
+
+        manager.registerWithCommit{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        vm.warp(tld.expiry(parentNamehash) + 100);
+        manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
+
+        (
+            uint80 actualRegistrationTime,
+            uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
+
+        ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+
+        uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
+        uint256 actualValue = regdate + ((registrationLength + renewalLength) * 1 days);
+
+        //check that the registration details have been updated.
+        assertEq(actualValue, expectedValue, "invalid registration details");
+    }
+
     function testRenewSldFromSldOwnerGlobalRulesFail_fail() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);

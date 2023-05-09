@@ -49,6 +49,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         require(address(claimManager) == msg.sender, "not authorised");
         bytes32 namehash = Namehash.getTldNamehash(_domain);
 
+        if (hasExpired(namehash)) {
+            _burn(uint256(namehash));
+        }
+
         _mint(_addr, uint256(namehash));
         namehashToLabelMap[namehash] = _domain;
 
@@ -68,6 +72,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
 
     function name(bytes32 _namehash) public view override returns (string memory _name) {
         _name = namehashToLabelMap[_namehash];
+    }
+
+    function expiry(bytes32 _namehash) public view override returns (uint256 _expiry) {
+        return claimManager.tldExpiry(_namehash);
     }
 
     /**
@@ -107,13 +115,31 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return (payoutAddress, amount);
     }
 
-    function ownerOf(uint256 _id)
+    /**
+     * @notice Check the owner of a specified token.
+     * @dev This function returns back the owner of an NFT. Will revert if the token does
+     *      not exist or has expired. Return back the contract owner if the TLD has expired
+     * @param _tokenId The token ID of the SLD NFT to be checked
+     * @return _addr Owner of NFT
+     */
+    function ownerOf(uint256 _tokenId)
         public
         view
         override(HandshakeNft, IHandshakeTld)
-        returns (address)
+        returns (address _addr)
     {
-        return HandshakeNft.ownerOf(_id);
+        if (hasExpired(bytes32(_tokenId))) {
+            return owner();
+        }
+
+        return HandshakeNft.ownerOf(_tokenId);
+    }
+
+    function hasExpired(bytes32 _namehash) internal view override returns (bool) {
+        if (!_exists(uint256(_namehash))) {
+            return false;
+        }
+        return block.timestamp > expiry(_namehash);
     }
 
     function isApprovedOrOwner(address _operator, uint256 _id)

@@ -16,7 +16,7 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
     mapping(uint256 => address) private approvedMap;
     mapping(uint256 => mapping(address => bool)) idToAddressToApproved;
     mapping(bytes32 => ISldRegistrationStrategy) public registrationStrategy;
-
+    mapping(bytes32 => uint256) public expiries;
     mapping(bytes32 => IResolver) public tokenResolverMap;
 
     string public label;
@@ -83,5 +83,13 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
 
     function namehashToLabelMap(bytes32 _b) external view returns (string memory) {
         return (name(_b));
+    }
+
+    function setExpiry(bytes32 _namehash, uint256 _expiry) public {
+        expiries[_namehash] = _expiry;
+    }
+
+    function expiry(bytes32 _namehash) public view returns (uint256) {
+        return expiries[_namehash];
     }
 }

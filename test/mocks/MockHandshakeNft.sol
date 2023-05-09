@@ -46,4 +46,8 @@ contract MockHandshakeNft is HandshakeNft {
     function setName(bytes32 _namehash, string calldata _name) public {
         nodeToName[_namehash] = _name;
     }
+
+    function hasExpired(bytes32) internal pure override returns (bool) {
+        return false;
+    }
 }

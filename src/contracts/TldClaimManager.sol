@@ -15,8 +15,6 @@ import "src/contracts/HasUsdOracle.sol";
  *         TLD managers can add allowed TLDs that can be minted by address
  */
 contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator, HasUsdOracle {
-    //TODO: remove bools to improve gas usage
-    mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
     mapping(bytes32 => address) public tldClaimantMap;
     mapping(bytes32 => address) public tldProviderMap;
@@ -61,7 +59,7 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      * @return _canClaim Return bool value
      */
     function canClaim(address _addr, bytes32 _namehash) public view returns (bool _canClaim) {
-        _canClaim = tldClaimantMap[_namehash] == _addr && !isNodeRegistered[_namehash];
+        _canClaim = tldClaimantMap[_namehash] == _addr;
     }
 
     function setHandshakeTldContract(IHandshakeTld _tld) external onlyOwner {
@@ -93,14 +91,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      *
      * @param _domain string domain TLD
      */
-    function claimTld(string calldata _domain, address _addr) external payable {
+    function claimTld(string calldata _domain, address _addr) public payable {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
 
         require(canClaim(msg.sender, namehash), "not eligible to claim");
         require(msg.value >= expectedEther, "not enough ether");
 
-        isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
         (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
@@ -108,10 +105,14 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         require(result, "transfer failed");
         // refund any extra ether
         if (expectedEther < msg.value) {
-            (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
-            require(result, "transfer failed");
+            unchecked {
+                // we already do a check that msg.value must be >= expectedEther
+                (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
+                require(result, "transfer failed");
+            }
         }
 
+        delete tldClaimantMap[namehash];
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
     }
 
@@ -143,6 +144,11 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
                 ++i;
             }
         }
+    }
+
+    // just a place holder for when TLD expiries get added later.
+    function tldExpiry(bytes32) public view virtual returns (uint256) {
+        return type(uint64).max;
     }
 
     /**

@@ -9,6 +9,7 @@ import "contracts/TldClaimManager.sol";
 import "contracts/HandshakeTld.sol";
 import "test/mocks/MockLabelValidator.sol";
 import "test/mocks/MockUsdOracle.sol";
+import "test/mocks/TestingTldClaimManager.sol";
 import "interfaces/ILabelValidator.sol";
 import "test/mocks/MockMetadataService.sol";
 import "mocks/MockHandshakeSld.sol";
@@ -17,6 +18,8 @@ import "utils/Namehash.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract TestTldClaimManager is Test {
+    using stdStorage for StdStorage;
+
     TldClaimManager internal manager;
     HandshakeTld internal nft;
     IHandshakeSld internal sld;
@@ -28,7 +31,7 @@ contract TestTldClaimManager is Test {
     function setUp() public {
         metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
-        TldClaimManager implementation = new TldClaimManager();
+        TestingTldClaimManager implementation = new TestingTldClaimManager();
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(implementation),
             address(0x224455),
@@ -91,6 +94,110 @@ contract TestTldClaimManager is Test {
         vm.expectRevert("not eligible to claim");
         manager.claimTld("badass", allowed_address);
         vm.stopPrank();
+    }
+
+    function testAddWalletAndClaimExpiredTldFromOriginalClaimWallet_expectFail() public {
+        address allowed_address = address(0x134567);
+        address new_owner = address(0x666);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+        manager.claimTld("badass", allowed_address);
+        assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), allowed_address);
+
+        vm.warp(manager.tldExpiry(bytes32(0)) + 1);
+        // should be expired and return zero address as owner
+
+        TestingTldClaimManager(address(manager)).setGlobalExpiry(block.timestamp + 100);
+        vm.expectRevert("not eligible to claim");
+        manager.claimTld("badass", allowed_address);
+    }
+
+    function testAddWalletAndClaimExpiredTransferAfterExpiry_expectfail() public {
+        address allowed_address = address(0x134567);
+        address new_owner = address(0x666);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+        manager.claimTld("badass", allowed_address);
+
+        uint256 tokenId = uint256(Namehash.getTldNamehash(domains[0]));
+
+        assertEq(nft.ownerOf(tokenId), allowed_address);
+
+        vm.warp(manager.tldExpiry(bytes32(0)) + 1);
+        // should be expired and return zero address as owner
+        vm.stopPrank();
+        vm.startPrank(nft.owner());
+
+        vm.expectRevert("cannot transfer expired token");
+        nft.transferFrom(allowed_address, address(0x1234), tokenId);
+
+        vm.expectRevert("cannot transfer expired token");
+        nft.safeTransferFrom(allowed_address, address(0x1234), tokenId);
+
+        vm.expectRevert("cannot transfer expired token");
+        nft.safeTransferFrom(allowed_address, address(0x1234), tokenId, "");
+    }
+
+    function testAddWalletClaimExpireAddNewWalletClaimSuccess() public {
+        address allowed_address = address(0x134567);
+        address new_owner = address(0x666);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+        manager.claimTld("badass", allowed_address);
+        assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), allowed_address);
+
+        vm.warp(manager.tldExpiry(bytes32(0)) + 1);
+        // should be expired and return zero address as owner
+
+        addresses[0] = new_owner;
+        manager.addTldAndClaimant(addresses, domains);
+        vm.stopPrank();
+        vm.prank(new_owner);
+        manager.claimTld("badass", new_owner);
+        TestingTldClaimManager(address(manager)).setGlobalExpiry(block.timestamp + 100);
+        assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), new_owner);
+        vm.stopPrank();
+    }
+
+    function testAddWalletAndClaimExpiredTld_expectSuccess() public {
+        address allowed_address = address(0x134567);
+        address new_owner = address(0x666);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+        manager.claimTld("badass", allowed_address);
+        assertEq(nft.ownerOf(uint256(Namehash.getTldNamehash(domains[0]))), allowed_address);
+        TestingTldClaimManager(address(manager)).setGlobalExpiry(20);
+        vm.warp(manager.tldExpiry(bytes32(0)) + 1);
+        // should be expired and return contract owner as owner
+        uint256 id = uint256(Namehash.getTldNamehash(domains[0]));
+
+        address owner = nft.ownerOf(id);
+
+        assertEq(owner, nft.owner(), "expired token will give nft contract owner return");
     }
 
     function testAddWalletAndClaimIncorrectTld() public {

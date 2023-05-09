@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "interfaces/IHandshakeSld.sol";
 import "interfaces/IHandshakeTld.sol";
 import "interfaces/ICommitIntent.sol";
@@ -16,7 +15,6 @@ import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
 import "structs/EIP712Domain.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -31,8 +29,6 @@ contract SldRegistrationManager is
     HasUsdOracle,
     HasLabelValidator
 {
-    using ERC165Checker for address;
-
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
     mapping(bytes32 => uint80[10]) public pricesAtRegistration;
     mapping(bytes32 => mapping(address => SldDiscountSettings)) public addressDiscounts;
@@ -49,11 +45,10 @@ contract SldRegistrationManager is
      */
     bytes32 public DOMAIN_SEPARATOR;
 
-    bytes32 constant private EIP712DOMAIN_TYPEHASH =
+    bytes32 private constant EIP712DOMAIN_TYPEHASH =
         keccak256(
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
-
 
     ICommitIntent public commitIntent;
 
@@ -103,20 +98,15 @@ contract SldRegistrationManager is
         _transferOwnership(_owner);
 
         DOMAIN_SEPARATOR = hashDomain();
-
-        console.log('domain separator');
-        console.logBytes32(DOMAIN_SEPARATOR);
-
     }
 
     function hashDomain() internal view returns (bytes32) {
-
         EIP712Domain memory eip712Domain = EIP712Domain({
-                name: "Namebase",
-                version: "1",
-                chainId: block.chainid,
-                verifyingContract: address(this)
-            });
+            name: "Namebase",
+            version: "1",
+            chainId: block.chainid,
+            verifyingContract: address(this)
+        });
 
         return
             keccak256(
@@ -129,6 +119,7 @@ contract SldRegistrationManager is
                 )
             );
     }
+
     /**
      * @notice Register an eligible Sld. Require to send in the appropriate amount of ethereum
      * @dev Checks commitIntent, labelValidator, globalStrategy to ensure domain can be registered
@@ -153,12 +144,14 @@ contract SldRegistrationManager is
         );
         registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
 
-        emit RegisterSld(
-            _parentNamehash,
-            _secret,
-            _label,
-            block.timestamp + (_registrationLength * 1 days)
-        );
+        unchecked {
+            emit RegisterSld(
+                _parentNamehash,
+                _secret,
+                _label,
+                block.timestamp + (_registrationLength * 1 days)
+            );
+        }
     }
 
     function getRegistrationHash(address buyer, bytes32 subdomainHash)
@@ -177,7 +170,7 @@ contract SldRegistrationManager is
             );
     }
 
-     function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
+    function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
@@ -221,14 +214,14 @@ contract SldRegistrationManager is
 
         unchecked {
             ++subdomainRegistrationNonce[sldNamehash];
-        }
 
-        emit RegisterSld(
-            _parentNamehash,
-            result,
-            _label,
-            block.timestamp + (_registrationLength * 1 days)
-        );
+            emit RegisterSld(
+                _parentNamehash,
+                result,
+                _label,
+                block.timestamp + (_registrationLength * 1 days)
+            );
+        }
     }
 
     function registerSld(
@@ -246,23 +239,14 @@ contract SldRegistrationManager is
         require(labelValidator.isValidLabel(_label), "invalid label");
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-        require(
-            address(strategy).supportsInterface(type(IERC165).interfaceId) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector),
-            "registration strategy does not support interface"
-        );
-
-        bool isApproved = tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash));
 
         require(
-            strategy.isEnabled(_parentNamehash) || isApproved,
+            strategy.isEnabled(_parentNamehash) ||
+                tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
             "registration strategy disabled"
         );
 
-        uint256 dollarPrice;
-
-        dollarPrice = getRegistrationPrice(
+        uint256 dollarPrice = getRegistrationPrice(
             address(strategy),
             msg.sender,
             _parentNamehash,

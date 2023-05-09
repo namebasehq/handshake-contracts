@@ -125,6 +125,27 @@ abstract contract HandshakeNft is ERC721, Ownable {
         _;
     }
 
+    function hasExpired(bytes32) internal view virtual returns (bool _expired) {}
+
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
+        require(!hasExpired(bytes32(tokenId)), "cannot transfer expired token");
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+        public
+        virtual
+        override
+    {
+        require(!hasExpired(bytes32(tokenId)), "cannot transfer expired token");
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
+        require(!hasExpired(bytes32(tokenId)), "cannot transfer expired token");
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
     /**
      * @dev Returns whether `tokenId` exists.
      *

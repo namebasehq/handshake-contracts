@@ -596,10 +596,10 @@ contract TestHandshakeSld is Test {
         vm.warp(block.timestamp + 1);
 
         vm.startPrank(newAddress);
-        vm.expectRevert("sld expired");
+        vm.expectRevert("cannot transfer expired token");
         sld.safeTransferFrom(newAddress, address(0x888), uint256(sldNamehash));
 
-        vm.expectRevert("sld expired");
+        vm.expectRevert("cannot transfer expired token");
         sld.transferFrom(newAddress, address(0x888), uint256(sldNamehash));
 
         assertFalse(sld.exists(uint256(sldNamehash)));

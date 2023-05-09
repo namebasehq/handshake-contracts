@@ -56,6 +56,8 @@ contract MockTldClaimManager is
         _transferOwnership(_owner);
     }
 
+    function tldExpiry(bytes32 _node) external view returns (uint256) {}
+
     /**
      * @notice Helper function to check if an address can claim a TLD
      * @dev This function is public so that it can be used by UI if required.

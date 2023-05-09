@@ -89,7 +89,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _addr = HandshakeNft.ownerOf(_tokenId);
     }
 
-    function hasExpired(bytes32 _sldNamehash) private view returns (bool _hasExpired) {
+    function hasExpired(bytes32 _sldNamehash) internal view override returns (bool _hasExpired) {
         if (_exists(uint256(_sldNamehash))) {
             (uint80 regTime, uint96 regLength, ) = registrationManager.sldRegistrationHistory(
                 _sldNamehash

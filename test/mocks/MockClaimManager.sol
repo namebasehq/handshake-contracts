@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "interfaces/ITldClaimManager.sol";
+import "forge-std/console.sol";
 
 contract MockClaimManager is ITldClaimManager {
     function canClaim(address _addr, bytes32 _namehash) external view returns (bool) {}
@@ -15,4 +16,9 @@ contract MockClaimManager is ITldClaimManager {
     function allowedTldManager(address _addr) external view returns (bool) {}
 
     function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external {}
+
+    function tldExpiry(bytes32 _node) external view returns (uint256) {
+        console.log("tldExpiry");
+        return type(uint64).max;
+    }
 }
