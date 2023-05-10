@@ -1,14 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "interfaces/resolvers/ITextResolver.sol";
 import "contracts/resolvers/BaseResolver.sol";
+import "contracts/HandshakeSld.sol";
 
 abstract contract TextResolver is ITextResolver, BaseResolver {
     mapping(uint256 => mapping(bytes32 => mapping(string => string))) versionable_texts;
 
-    function text(bytes32 node, string calldata key) external view returns (string memory) {
-        return versionable_texts[recordVersions[node]][node][key];
+    function text(bytes32 node, string calldata key) public view returns (string memory) {
+        string memory avatar;
+        
+        if(keccak256(bytes(key)) == keccak256(bytes("avatar")) && sldContract.exists(uint256(node))){
+            avatar = getParentAvatar(node, key);           
+        }
+
+        string memory thisAvatar = versionable_texts[recordVersions[node]][node][key];
+
+        return (bytes(thisAvatar).length == 0) ? avatar : thisAvatar;
     }
 
     /**
@@ -31,5 +41,16 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
         return
             _interfaceId == type(ITextResolver).interfaceId ||
             super.supportsInterface(_interfaceId);
+    }
+
+    function getParentAvatar(bytes32 node, string calldata key) private view returns (string memory) {
+
+        HandshakeSld sld = HandshakeSld(address(sldContract));
+
+        bytes32 parentNode = sld.namehashToParentMap(node);
+
+        return text(parentNode, key);
+
+
     }
 }

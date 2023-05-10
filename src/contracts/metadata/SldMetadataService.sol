@@ -67,22 +67,9 @@ contract SldMetadataService is IMetadataService {
             ? resolver.text(_namehash, "avatar")
             : "";
 
-        if (bytes(_image).length == 0) {
-            bytes32 parentHash = sld.namehashToParentMap(_namehash);
-
-            nft = IHandshakeNft(address(tld));
-            resolver = IResolver(nft.tokenResolverMap(parentHash));
-
-            data = abi.encodeWithSelector(resolver.text.selector, parentHash, "avatar");
-
-            _image = canGetImageFromResolver(address(resolver), data)
-                ? resolver.text(parentHash, "avatar")
-                : "";
-
             if (bytes(_image).length == 0) {
                 _image = svg(_name);
             }
-        }
     }
 
     function json(
