@@ -17,9 +17,6 @@ contract DeployMetadataScript is Script {
     function setUp() public {}
 
     function run() public {
-
-
-
         //source .test-env
         //forge script script/DeployMetadata.s.sol:DeployMetadataScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
@@ -33,11 +30,10 @@ contract DeployMetadataScript is Script {
 
         vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
-         SldMetadataService sldMD = new SldMetadataService(sld, tld, manager, "#d90e2d");
+        SldMetadataService sldMD = new SldMetadataService(sld, tld, manager, "#d90e2d");
 
-         HandshakeSld(address(sld)).setMetadataContract(sldMD);
+        HandshakeSld(address(sld)).setMetadataContract(sldMD);
 
         //string memory uri = HandshakeSld(address(sld)).tokenURI(0);
-
     }
 }

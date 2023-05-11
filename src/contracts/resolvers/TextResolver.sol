@@ -11,9 +11,11 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
 
     function text(bytes32 node, string calldata key) public view returns (string memory) {
         string memory avatar;
-        
-        if(keccak256(bytes(key)) == keccak256(bytes("avatar")) && sldContract.exists(uint256(node))){
-            avatar = getParentAvatar(node, key);           
+
+        if (
+            keccak256(bytes(key)) == keccak256(bytes("avatar")) && sldContract.exists(uint256(node))
+        ) {
+            avatar = getParentAvatar(node, key);
         }
 
         string memory thisAvatar = versionable_texts[recordVersions[node]][node][key];
@@ -43,14 +45,15 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
             super.supportsInterface(_interfaceId);
     }
 
-    function getParentAvatar(bytes32 node, string calldata key) private view returns (string memory) {
-
+    function getParentAvatar(bytes32 node, string calldata key)
+        private
+        view
+        returns (string memory)
+    {
         HandshakeSld sld = HandshakeSld(address(sldContract));
 
         bytes32 parentNode = sld.namehashToParentMap(node);
 
         return text(parentNode, key);
-
-
     }
 }

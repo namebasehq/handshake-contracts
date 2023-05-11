@@ -67,9 +67,9 @@ contract SldMetadataService is IMetadataService {
             ? resolver.text(_namehash, "avatar")
             : "";
 
-            if (bytes(_image).length == 0) {
-                _image = svg(_name);
-            }
+        if (bytes(_image).length == 0) {
+            _image = svg(_name);
+        }
     }
 
     function json(
