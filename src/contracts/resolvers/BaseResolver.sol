@@ -14,6 +14,8 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     // owner => tokenId => delegate
     mapping(address => mapping(uint256 => address)) public delegates;
 
+    event UpdatedDelegate(address indexed _owner, uint256 indexed _tokenId, address _delegate);
+
     constructor(HandshakeNft _tld, HandshakeNft _sld) {
         sldContract = _sld;
         tldContract = _tld;
@@ -42,7 +44,9 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
             "not authorised or owner"
         );
 
-        delegates[getTokenOwner(_id)][_id] = _delegate;
+        address owner = getTokenOwner(_id);
+        emit UpdatedDelegate(owner, _id, _delegate);
+        delegates[owner][_id] = _delegate;
     }
 
     function getTokenOwner(uint256 _id) public view returns (address) {
