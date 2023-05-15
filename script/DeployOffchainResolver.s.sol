@@ -27,9 +27,7 @@ contract DeployOffchainResolverScript is Script {
         // server - 0xdbc6833ead91396143674120548d94be8216a180
         // localhost - 0xcaf98708ff63121055647a7f15a690c338fde6cf
 
-        OffchainResolver offchainResolver = OffchainResolver(
-            0xdbC6833eAd91396143674120548D94Be8216a180
-        );
+        OffchainResolver offchainResolver = new OffchainResolver(url, signers);
         offchainResolver.updateUrl(url);
 
         console.log("Deployed OffchainResolver at address: %s", address(offchainResolver));

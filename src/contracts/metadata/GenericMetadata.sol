@@ -6,12 +6,12 @@ import "contracts/HandshakeSld.sol";
 import "contracts/HandshakeTld.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract SldMetadataService is IMetadataService {
+contract GenericMetadataService is IMetadataService {
     using Strings for uint256;
     HandshakeSld public immutable sld;
     HandshakeTld public immutable tld;
 
-    string public constant BASE_URI = "http://hns.id/metadata/";
+    string public constant BASE_URI = "https://hnst.id/api/metadata/";
 
     constructor(
         HandshakeSld _sld,
