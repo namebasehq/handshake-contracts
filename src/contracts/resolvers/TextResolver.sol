@@ -52,6 +52,8 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
     {
         HandshakeSld sld = HandshakeSld(address(sldContract));
         bytes32 parentNode = sld.namehashToParentMap(node);
-        return text(parentNode, key);
+        IResolver resolver = getResolver(parentNode);
+
+        return resolver.text(parentNode, key);
     }
 }

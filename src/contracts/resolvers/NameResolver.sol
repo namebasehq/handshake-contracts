@@ -134,20 +134,6 @@ abstract contract NameResolver is INameResolver, BaseResolver {
         return "";
     }
 
-    function getResolver(bytes32 node) private view returns (IResolver) {
-        uint256 id = uint256(node);
-
-        if (sldContract.exists(id)) {
-            return sldContract.tokenResolverMap(node);
-        }
-
-        if (tldContract.exists(id)) {
-            return tldContract.tokenResolverMap(node);
-        }
-
-        return IResolver(address(0));
-    }
-
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
         return
             _interfaceId == type(INameResolver).interfaceId ||
