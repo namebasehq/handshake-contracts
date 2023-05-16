@@ -19,8 +19,8 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
             string memory thisAvatar = versionable_texts[recordVersions[node]][node][key];
             return (bytes(thisAvatar).length == 0) ? avatar : thisAvatar;
         }
-       
-        return versionable_texts[recordVersions[node]][node][key];       
+
+        return versionable_texts[recordVersions[node]][node][key];
     }
 
     /**

@@ -8,8 +8,7 @@ import "contracts/GlobalRegistrationRules.sol";
 import "contracts/HandshakeSld.sol";
 import "contracts/HandshakeTld.sol";
 import "contracts/LabelValidator.sol";
-import "contracts/metadata/SldMetadataService.sol";
-import "contracts/metadata/TldMetadataService.sol";
+import "contracts/metadata/GenericMetadata.sol";
 import "contracts/SldCommitIntent.sol";
 import "contracts/SldRegistrationManager.sol";
 import "contracts/DefaultRegistrationStrategy.sol";
@@ -51,35 +50,54 @@ contract DeployScript is Script {
         address ownerWallet;
         address deployerWallet;
 
-        if (block.chainid == vm.envUint("NAMELESS_CHAIN_ID")) {
-            ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
-            deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
-            vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
-            priceOracle = new MockUsdOracle(200000000000);
-        } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID")) {
-            ownerWallet = 0xD3d701a25177767d9515D24bAe33F2Dc7A5D5EeF;
-            deployerWallet = 0xBB21e0D5D40542db1410EE11B909B14A1e816d17;
-            vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
-            priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
-        } else {
-            ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
-            deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-            vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
-            priceOracle = new MockUsdOracle(200000000000);
-        }
-
-        labelValidator = new LabelValidator();
-
-        //priceOracle = new UsdPriceOracle();
-
-        globalRules = new GlobalRegistrationRules();
-
-        commitIntent = new SldCommitIntent();
-
-        //TldClaimManager tldClaimManager = new TldClaimManager();
-
         HandshakeTld tld = new HandshakeTld();
         HandshakeSld sld = new HandshakeSld(tld);
+
+        {
+            string memory baseUri;
+
+            if (block.chainid == vm.envUint("NAMELESS_CHAIN_ID")) {
+                ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
+                deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
+                vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
+                priceOracle = new MockUsdOracle(200000000000);
+            } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID")) {
+                ownerWallet = 0xD3d701a25177767d9515D24bAe33F2Dc7A5D5EeF;
+                deployerWallet = 0xBB21e0D5D40542db1410EE11B909B14A1e816d17;
+                vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
+                priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
+                baseUri = "https://hnst.id/api/metadata/";
+            } else {
+                ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
+                deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+                vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+                priceOracle = new MockUsdOracle(200000000000);
+                baseUri = "http://localhost:3000/api/metadata/";
+            }
+
+            labelValidator = new LabelValidator();
+
+            //priceOracle = new UsdPriceOracle();
+
+            globalRules = new GlobalRegistrationRules();
+
+            commitIntent = new SldCommitIntent();
+
+            //TldClaimManager tldClaimManager = new TldClaimManager();
+
+            tld = new HandshakeTld();
+            sld = new HandshakeSld(tld);
+
+            GenericMetadataService tldMetadata = new GenericMetadataService(sld, tld, baseUri);
+
+            GenericMetadataService sldMetadata = new GenericMetadataService(sld, tld, baseUri);
+
+            console.log("tld metadata", address(tldMetadata));
+            console.log("sld metadata", address(sldMetadata));
+
+            tld.setMetadataContract(tldMetadata);
+            sld.setMetadataContract(sldMetadata);
+        }
 
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
@@ -119,24 +137,18 @@ contract DeployScript is Script {
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
         {
-            TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
-            SldMetadataService sldMetadata = new SldMetadataService(
-                sld,
-                tld,
-                SldRegistrationManager(address(uups2)),
-                "#1f7bac"
-            );
+            // TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
+            // SldMetadataService sldMetadata = new SldMetadataService(
+            //     sld,
+            //     tld,
+            //     SldRegistrationManager(address(uups2)),
+            //     "#1f7bac"
+            // );
 
             SldRegistrationManager(address(uups2)).updateSigner(
                 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
                 true
             );
-
-            console.log("tld metadata", address(tldMetadata));
-            console.log("sld metadata", address(sldMetadata));
-
-            tld.setMetadataContract(tldMetadata);
-            sld.setMetadataContract(sldMetadata);
         }
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
@@ -157,17 +169,15 @@ contract DeployScript is Script {
         delete ownerWallet;
 
         {
-            TldMetadataService otherTldMetadata = new TldMetadataService(tld, "#d90e2d"); //red TLD
-            SldMetadataService otherSldMetadata = new SldMetadataService(
-                sld,
-                tld,
-                SldRegistrationManager(address(uups2)),
-                "#950b96"
-            ); //purple SLD
+            // TldMetadataService otherTldMetadata = new TldMetadataService(tld, "#d90e2d"); //red TLD
+            // SldMetadataService otherSldMetadata = new SldMetadataService(
+            //     sld,
+            //     tld,
+            //     SldRegistrationManager(address(uups2)),
+            //     "#950b96"
+            // ); //purple SLD
             TestingRegistrationStrategy otherStrategy = new TestingRegistrationStrategy();
 
-            console.log("tld alternate metadata", address(otherTldMetadata));
-            console.log("sld alternate metadata", address(otherSldMetadata));
             console.log("alternate strategy", address(otherStrategy));
         }
 

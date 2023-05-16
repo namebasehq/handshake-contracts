@@ -23,13 +23,11 @@ contract DeployMetadataScript is Script {
         HandshakeSld sld = HandshakeSld(0xb36387ab80007123Ef4da0d1677C22b94e00f60e);
         HandshakeTld tld = HandshakeTld(0xa2B3d56f91f1c4Aeff12aFD913904E851220B26C);
 
-
-
         vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
 
-        GenericMetadataService sldMD = new GenericMetadataService(sld, tld);
+        GenericMetadataService sldMD = new GenericMetadataService(sld, tld, "");
 
-        console.log( msg.sender);
+        console.log(msg.sender);
         sld.setMetadataContract(sldMD);
         //tld.setMetadataContract(sldMD);
 

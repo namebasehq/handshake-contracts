@@ -173,12 +173,7 @@ contract MockSldRegistrationManager is
 
         uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
 
-        distributePrimaryFunds(
-            msg.sender,
-            tldOwner,
-            priceInWei,
-            (weiValue * minDevContribution) / 1 ether
-        );
+        distributePrimaryFunds(msg.sender, tldOwner, priceInWei);
 
         require(
             commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
@@ -250,7 +245,7 @@ contract MockSldRegistrationManager is
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
-        distributePrimaryFunds(msg.sender, tldOwner, priceInWei, minDevContribution);
+        distributePrimaryFunds(msg.sender, tldOwner, priceInWei);
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }

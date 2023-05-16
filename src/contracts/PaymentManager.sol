@@ -24,19 +24,10 @@ abstract contract PaymentManager {
      * @param _tldOwner The owner of the TLD
      * @param _funds The amount of funds to be distributed
      */
-    function distributePrimaryFunds(
-        address _sldOwner,
-        address _tldOwner,
-        uint256 _funds,
-        uint256 _minContribution
-    ) internal {
+    function distributePrimaryFunds(address _sldOwner, address _tldOwner, uint256 _funds) internal {
         require(msg.value >= _funds, "not enough ether");
 
         uint256 handshakeShare = (_funds * percentCommission) / 100;
-
-        if (handshakeShare < _minContribution) {
-            handshakeShare = _minContribution;
-        }
 
         require(_funds > handshakeShare, "not enough funds to pay commission");
 

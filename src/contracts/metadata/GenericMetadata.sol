@@ -11,24 +11,20 @@ contract GenericMetadataService is IMetadataService {
     HandshakeSld public immutable sld;
     HandshakeTld public immutable tld;
 
-    string public constant BASE_URI = "https://hnst.id/api/metadata/";
+    string public BASE_URI;
 
-    constructor(
-        HandshakeSld _sld,
-        HandshakeTld _tld
-    ) {
+    constructor(HandshakeSld _sld, HandshakeTld _tld, string memory _baseUri) {
         sld = _sld;
         tld = _tld;
+        BASE_URI = _baseUri;
     }
 
     function tokenURI(bytes32 _namehash) external view returns (string memory) {
-
         uint256 id = uint256(_namehash);
 
         if (sld.exists(id) || tld.exists(id)) {
             return string(abi.encodePacked(BASE_URI, id.toString()));
-        }
-        else {
+        } else {
             return "";
         }
     }

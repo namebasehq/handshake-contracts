@@ -39,7 +39,7 @@ contract TestGlobalRegistrationRules is Test {
             registrationLength,
             dollarPrice
         );
-
+        console.log("result", result);
         assertTrue(result, "should be able to register with single dollar");
     }
 
@@ -60,14 +60,13 @@ contract TestGlobalRegistrationRules is Test {
         assertTrue(result, "should be able to register with 365 days");
     }
 
-    function testClaimWithLessThan365Days_fail() public {
+    function testClaimWithLessThan365Days_success() public {
         address buyingAddress = address(0x11);
         bytes32 parentNamehash = 0x0;
         string memory label = "testing";
         uint256 registrationLength = 364;
-        uint256 dollarPrice = type(uint256).max;
+        uint256 dollarPrice = 100 ether;
 
-        vm.expectRevert(abi.encodePacked("less than 365 days registration"));
         bool result = rules.canRegister(
             buyingAddress,
             parentNamehash,
@@ -76,7 +75,26 @@ contract TestGlobalRegistrationRules is Test {
             dollarPrice
         );
 
-        assertFalse(result, "should not be able to register with less than 365 days");
+        assertTrue(result, "should be able to register with less than 365 days");
+    }
+
+    function testClaimWithLessThan1Days_fail() public {
+        address buyingAddress = address(0x11);
+        bytes32 parentNamehash = 0x0;
+        string memory label = "testing";
+        uint256 registrationLength = 0;
+        uint256 dollarPrice = type(uint256).max;
+
+        vm.expectRevert(abi.encodePacked("less than min days registration"));
+        bool result = rules.canRegister(
+            buyingAddress,
+            parentNamehash,
+            label,
+            registrationLength,
+            dollarPrice
+        );
+
+        assertFalse(result, "should not be able to register with less than 1 days");
     }
 
     function testClaimWithMultipleYearsBelowDollarAverage_fail() public {

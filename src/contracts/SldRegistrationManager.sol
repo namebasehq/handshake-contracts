@@ -277,12 +277,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
 
-        distributePrimaryFunds(
-            msg.sender,
-            tld.ownerOf(uint256(_parentNamehash)),
-            priceInWei,
-            (weiValue * minDevContribution) / 1 ether
-        );
+        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
     }
 
     function setAddressDiscounts(
@@ -355,12 +350,7 @@ contract SldRegistrationManager is
 
         uint256 priceInWei = (weiValueOfDollar * priceInDollars) / 1 ether;
 
-        distributePrimaryFunds(
-            msg.sender,
-            tldOwner,
-            priceInWei,
-            (weiValueOfDollar * minDevContribution) / 1 ether
-        );
+        distributePrimaryFunds(msg.sender, tldOwner, priceInWei);
 
         emit RenewSld(_parentNamehash, _label, detail.RegistrationTime + detail.RegistrationLength);
     }

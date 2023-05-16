@@ -15,7 +15,7 @@ contract PaymentManagerForTesting is PaymentManager {
         external
         payable
     {
-        distributePrimaryFunds(_sldOwner, _tldOwner, _funds, 0);
+        distributePrimaryFunds(_sldOwner, _tldOwner, _funds);
     }
 }
 
