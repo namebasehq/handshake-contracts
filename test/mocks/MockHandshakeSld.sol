@@ -19,6 +19,8 @@ contract MockHandshakeSld is IHandshakeSld {
         return idToAddressToApproved[_id][msg.sender];
     }
 
+    function burnSld(bytes32 _namehash) external {}
+
     function isApprovedOrOwner(address spender, uint256 tokenId)
         public
         view

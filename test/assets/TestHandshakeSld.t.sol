@@ -101,6 +101,40 @@ contract TestHandshakeSld is Test {
         sld.registerSld(to, tldNamehash, label);
     }
 
+    function testMintSldThenBurnFromNotRegistryAddress_fail() public {
+        address to = address(0x123456789);
+        bytes32 tldNamehash = bytes32(uint256(0x224466));
+        string memory label = "hiya";
+
+        vm.prank(address(manager));
+        sld.registerSld(to, tldNamehash, label);
+
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
+        vm.startPrank(address(0x66666));
+        vm.expectRevert("not authorised");
+        sld.burnSld(sldNamehash);
+    }
+
+    function testMintSldThenBurn_() public {
+        address to = address(0x123456789);
+        bytes32 tldNamehash = bytes32(uint256(0x224466));
+        string memory label = "hiya";
+
+        vm.startPrank(address(manager));
+        sld.registerSld(to, tldNamehash, label);
+
+        bytes32 sldNamehash = Namehash.getNamehash(tldNamehash, label);
+
+        addSldRegistrationHistory(sldNamehash, 100);
+
+        assertEq(sld.ownerOf(uint256(sldNamehash)), to, "token owner correct");
+
+        sld.burnSld(sldNamehash);
+
+        vm.expectRevert("ERC721: invalid token ID");
+        sld.ownerOf(uint256(sldNamehash));
+    }
+
     function testMintDuplicateSld_fail() public {
         vm.startPrank(address(manager));
 

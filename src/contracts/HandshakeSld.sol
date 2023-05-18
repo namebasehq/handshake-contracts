@@ -56,6 +56,13 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         emit ResolverSet(sldNamehash, address(defaultResolver));
     }
 
+    function burnSld(bytes32 _namehash) external isRegistrationManager {
+        _burn(uint256(_namehash));
+        delete namehashToLabelMap[_namehash];
+        delete namehashToParentMap[_namehash];
+        delete tokenResolverMap[_namehash];
+    }
+
     /**
      * @notice Register and mint SLD NFT
      * @dev This function is custom owner/approved checking function.

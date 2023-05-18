@@ -162,6 +162,38 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         );
     }
 
+    function testPurchaseSldToOtherAddressThenBurn() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+
+        address recipient = address(0xbadbad);
+
+        address sendingAddress = address(0x420);
+        hoax(sendingAddress, 2 ether);
+        vm.expectCall(
+            address(manager.sld()),
+            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
+        );
+        vm.startPrank(sendingAddress);
+        manager.registerWithCommit{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        bytes32 subhash = Namehash.getNamehash(parentNamehash, label);
+        vm.expectCall(address(manager.sld()), abi.encodeCall(manager.sld().burnSld, (subhash)));
+        manager.sld().burnSld(subhash);
+    }
+
     function testPurchaseSldInvalidCommitIntent() public {
         setUpLabelValidator();
         setUpGlobalStrategy(true, true, 1 ether);

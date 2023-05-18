@@ -15,6 +15,7 @@ import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
 import "structs/EIP712Domain.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -301,6 +302,16 @@ contract SldRegistrationManager is
                 ++i;
             }
         }
+    }
+
+    function burnSld(string calldata _label, bytes32 _parentNamehash) external {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        require(!canRegister(sldNamehash), "invalid domain");
+        require(sld.ownerOf(uint256(sldNamehash)) == msg.sender, "only owner can burn");
+
+        delete sldRegistrationHistory[sldNamehash];
+
+        sld.burnSld(sldNamehash);
     }
 
     /**

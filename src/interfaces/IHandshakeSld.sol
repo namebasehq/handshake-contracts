@@ -28,4 +28,6 @@ interface IHandshakeSld {
     function parent(bytes32) external view returns (string memory _parentName);
 
     function namehashToLabelMap(bytes32 _childNamehash) external view returns (string memory);
+
+    function burnSld(bytes32 _namehash) external;
 }
