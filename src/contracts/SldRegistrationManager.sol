@@ -51,15 +51,17 @@ contract SldRegistrationManager is
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
 
-    ICommitIntent public commitIntent;
+    uint256 public gracePeriod;
 
-    uint256 public minDevContribution;
+    ICommitIntent public commitIntent;
 
     event DiscountSet(
         bytes32 indexed _tokenNamehash,
         address indexed _claimant,
         SldDiscountSettings _discount
     );
+
+    event NewGracePeriod(uint256 _newGracePeriod);
 
     constructor() {
         _disableInitializers();
@@ -95,7 +97,7 @@ contract SldRegistrationManager is
         feeWalletPayoutAddress = _payoutWallet;
         usdOracle = _oracle;
         labelValidator = _validator;
-        minDevContribution = 0.2 ether; // $0.20
+        gracePeriod = 30 days;
         _transferOwnership(_owner);
 
         DOMAIN_SEPARATOR = hashDomain();
@@ -368,7 +370,8 @@ contract SldRegistrationManager is
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
         SldRegistrationDetail memory detail = sldRegistrationHistory[_namehash];
-        return (detail.RegistrationTime + detail.RegistrationLength) < block.timestamp;
+        return
+            (detail.RegistrationTime + detail.RegistrationLength + gracePeriod) < block.timestamp;
     }
 
     /**
@@ -382,6 +385,11 @@ contract SldRegistrationManager is
         emit NewLabelValidator(address(_validator));
     }
 
+    function updateGracePeriod(uint256 _gracePeriodInSeconds) public onlyOwner {
+        gracePeriod = _gracePeriodInSeconds;
+        emit NewGracePeriod(_gracePeriodInSeconds);
+    }
+
     /**
      * @notice Update the handshake payment address that primary funds are sent to
      * @dev This function can only be run by the contract owner
@@ -390,15 +398,6 @@ contract SldRegistrationManager is
     function updatePaymentAddress(address _addr) public onlyOwner {
         require(_addr != address(0), "cannot set to zero address");
         feeWalletPayoutAddress = _addr;
-    }
-
-    /**
-     * @notice Update the minimum dev fee per tx
-     * @dev This function can only be run by the contract owner
-     * @param _minFeeInWei Minimum fee in wei to set
-     */
-    function updateMinDevFee(uint256 _minFeeInWei) public onlyOwner {
-        minDevContribution = _minFeeInWei;
     }
 
     /**

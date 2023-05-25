@@ -19,6 +19,11 @@ import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
 
 contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationManagerBase {
+    function setUp() public override {
+        vm.warp(365 days);
+        super.setUp();
+    }
+
     function testUpdateLabelValidatorFromOwner_success() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
@@ -174,22 +179,19 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         assertEq(manager.percentCommission(), currentValue, "percent set");
     }
 
-    function testSetMinDevPayoutFromContractOwner_pass() public {
-        uint256 minPayout = 1 ether;
-
-        manager.updateMinDevFee(minPayout);
-
-        assertEq(manager.minDevContribution(), minPayout, "min payout not set");
-    }
-
-    function testSetMinDevPayoutFromNotContractOwner_fail() public {
-        uint256 minPayout = 1 ether;
-        uint256 currentValue = manager.minDevContribution();
+    function testSetGracePeriodFromNotContractOwner_fail() public {
+        uint256 grace = 6666;
 
         vm.prank(address(0x12234));
         vm.expectRevert("Ownable: caller is not the owner");
-        manager.updateMinDevFee(minPayout);
+        manager.updateGracePeriod(grace);
+    }
 
-        assertEq(manager.minDevContribution(), currentValue, "min payout set");
+    function testSetGracePeriodFromContractOwner_pass() public {
+        uint256 grace = 5;
+
+        manager.updateGracePeriod(grace);
+
+        assertEq(manager.gracePeriod(), grace, "grace period not set");
     }
 }

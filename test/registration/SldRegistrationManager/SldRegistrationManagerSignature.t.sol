@@ -21,6 +21,11 @@ import "./SldRegistrationManagerBase.t.sol";
 contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManagerBase {
     uint256 internal privateKey = 0xb0b;
 
+    function setUp() public override {
+        vm.warp(365 days);
+        super.setUp();
+    }
+
     function testRegisterSldWithValidSignature() public {
         address sendingAddress = address(0x420);
         bytes32 parentNamehash = bytes32(uint256(0x55446677));

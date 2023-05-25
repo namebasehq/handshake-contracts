@@ -19,6 +19,11 @@ import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
 
 contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBase {
+    function setUp() public override {
+        vm.warp(365 days);
+        super.setUp();
+    }
+
     function testRenewSldFromSldOwner_pass() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
@@ -244,11 +249,78 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
             recipient
         );
 
-        vm.warp(block.timestamp + (registrationLength * 86400) + 1);
+        vm.warp(block.timestamp + (registrationLength * 86400) + 1 + 30 days);
 
         vm.prank(address(0x420));
         vm.expectRevert("invalid domain");
         manager.renewSld(label, parentNamehash, registrationLength);
+    }
+
+    function testRenewExpiredSldInGracePeriod() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+
+        address recipient = address(0x5555);
+
+        hoax(address(0x420), 20 ether);
+        manager.registerWithCommit{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        vm.warp(block.timestamp + (registrationLength * 86400) - 1 + 30 days);
+
+        vm.prank(address(0x420));
+        manager.renewSld{value: 3 ether}(label, parentNamehash, registrationLength);
+    }
+
+    function testRegisterExpiredSldInGracePeriod() public {
+        ILabelValidator validator = new MockLabelValidator(true);
+        manager.updateLabelValidator(validator);
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x4));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string memory label = "yo";
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 500;
+
+        address recipient = address(0x5555);
+
+        hoax(address(0x420), 20 ether);
+        manager.registerWithCommit{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
+
+        vm.warp(block.timestamp + (registrationLength * 86400) - 1 + 30 days);
+
+        hoax(address(0x420), 20 ether);
+        vm.expectRevert("domain already registered");
+        manager.registerWithCommit{value: 2 ether}(
+            label,
+            secret,
+            registrationLength,
+            parentNamehash,
+            recipient
+        );
     }
 
     function testRenewDomainLessThan365Days() public {

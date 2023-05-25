@@ -21,7 +21,7 @@ contract DeployOffchainResolverScript is Script {
         signers[0] = 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f;
         // 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f
         // string memory url = "http://localhost:3001/api/ccip-gateway/{sender}/{data}.json";
-        string memory url = "https://hnst.id/api/ccip-gateway?sender={sender}&data={data}";
+        string memory url = "http://localhost:3000/api/ccip-gateway?sender={sender}&data={data}";
         vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
 
         // server - 0xdbc6833ead91396143674120548d94be8216a180

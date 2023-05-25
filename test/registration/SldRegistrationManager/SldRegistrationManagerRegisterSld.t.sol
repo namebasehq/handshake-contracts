@@ -21,6 +21,11 @@ import "./SldRegistrationManagerBase.t.sol";
 contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManagerBase {
     using stdStorage for StdStorage;
 
+    function setUp() public override {
+        vm.warp(365 days);
+        super.setUp();
+    }
+
     function testPurchaseSldLabelValidatorReturnFalse_fail() public {
         ILabelValidator validator = new MockLabelValidator(false);
         manager.updateLabelValidator(validator);
@@ -85,7 +90,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
             recipient
         );
 
-        vm.warp(block.timestamp + (registrationLength * 86400) + 1);
+        vm.warp(block.timestamp + (registrationLength * 86400) + 30 days + 1);
 
         vm.prank(address(0x420));
         manager.registerWithCommit{value: 2 ether}(
@@ -377,7 +382,6 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         vm.prank(tldOwner);
         tld.register(tldOwner, "yoyo");
 
-        vm.warp(6688);
         uint256 registrationTimestamp = block.timestamp;
 
         hoax(claimant, 2 ether + 1);
@@ -453,8 +457,6 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(tldOwner);
         tld.register(tldOwner, "yoyo");
-
-        vm.warp(6688);
 
         hoax(claimant, 1 ether);
         manager.registerWithCommit{value: 1 ether}(

@@ -35,7 +35,7 @@ contract TestSldRegistrationManagerBase is Test {
 
     receive() external payable {}
 
-    function setUp() public {
+    function setUp() public virtual {
         labelValidator = new MockLabelValidator(true);
         sld = new MockHandshakeSld();
         tld = new MockHandshakeTld();

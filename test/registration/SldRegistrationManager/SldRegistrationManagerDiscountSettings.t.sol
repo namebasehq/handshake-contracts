@@ -19,6 +19,11 @@ import "mocks/MockUsdOracle.sol";
 import "./SldRegistrationManagerBase.t.sol";
 
 contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationManagerBase {
+    function setUp() public override {
+        vm.warp(365 days);
+        super.setUp();
+    }
+
     function testSetup50PercentReductionForAddressFromOwner_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
