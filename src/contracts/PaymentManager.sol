@@ -34,8 +34,6 @@ abstract contract PaymentManager {
         uint256 primary = _funds - handshakeShare;
         uint256 excess = msg.value - _funds;
 
-        emit PaymentSent(address(0), _funds);
-
         bool isSent;
 
         // send any surplus funds back to the SLD owner
