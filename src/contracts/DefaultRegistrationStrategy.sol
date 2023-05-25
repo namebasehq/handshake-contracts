@@ -8,6 +8,7 @@ import "src/utils/Multicallable.sol";
 
 contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable {
     ISldRegistrationManager public immutable registrationManager;
+    IHandshakeTld public immutable tld;
 
     mapping(bytes32 => address) public reservedNames;
     mapping(bytes32 => uint256) public premiumNames;
@@ -19,6 +20,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
 
     constructor(ISldRegistrationManager _manager) {
         registrationManager = _manager;
+        tld = _manager.tld();
     }
 
     function setPremiumName(
@@ -46,8 +48,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
 
         uint256 currentPrice = type(uint256).max;
         for (uint256 i; i < arrayLength; ) {
-            require(_prices[i] <= currentPrice, "must be less than or equal to previous length");
-            currentPrice = _prices[i];
+            uint256 price = _prices[i];
+            require(price <= currentPrice, "must be less than or equal to previous length");
+            currentPrice = price;
 
             unchecked {
                 ++i;
@@ -141,7 +144,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         uint256 _registrationLength,
         bool _isRenewal
     ) public view returns (uint256) {
-        require(_registrationLength > 364, "minimum reg is 1 year");
+        require(_registrationLength > 0, "minimum reg is 1 day");
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
         require(
@@ -201,10 +204,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {
-        require(
-            registrationManager.tld().isApprovedOrOwner(msg.sender, uint256(_namehash)),
-            "not approved or owner"
-        );
+        require(tld.isApprovedOrOwner(msg.sender, uint256(_namehash)), "not approved or owner");
 
         _;
     }
