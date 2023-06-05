@@ -27,6 +27,9 @@ contract DeployScript is Script {
     IPriceOracle priceOracle;
     GlobalRegistrationRules globalRules;
 
+            HandshakeTld tld;
+        HandshakeSld sld;
+
     function setUp() public {}
 
     function run() public {
@@ -50,8 +53,7 @@ contract DeployScript is Script {
         address ownerWallet;
         address deployerWallet;
 
-        HandshakeTld tld = new HandshakeTld();
-        HandshakeSld sld = new HandshakeSld(tld);
+
 
         {
             string memory baseUri;
@@ -62,9 +64,9 @@ contract DeployScript is Script {
                 vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
                 priceOracle = new MockUsdOracle(200000000000);
             } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID")) {
-                ownerWallet = 0xD3d701a25177767d9515D24bAe33F2Dc7A5D5EeF;
-                deployerWallet = 0xBB21e0D5D40542db1410EE11B909B14A1e816d17;
-                vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
+                ownerWallet =0xeCb53F05b58AC856B2fb85925c691Fdef3a8CD9F  ;
+                deployerWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
+                vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
                 priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
                 baseUri = "https://hnst.id/api/metadata/";
             } else {
@@ -75,18 +77,14 @@ contract DeployScript is Script {
                 baseUri = "http://localhost:3000/api/metadata/";
             }
 
-            labelValidator = new LabelValidator();
+        tld = new HandshakeTld();
+        sld = new HandshakeSld(tld);
 
-            //priceOracle = new UsdPriceOracle();
+            labelValidator = new LabelValidator();
 
             globalRules = new GlobalRegistrationRules();
 
             commitIntent = new SldCommitIntent();
-
-            //TldClaimManager tldClaimManager = new TldClaimManager();
-
-            tld = new HandshakeTld();
-            sld = new HandshakeSld(tld);
 
             GenericMetadataService tldMetadata = new GenericMetadataService(sld, tld, baseUri);
 
@@ -94,6 +92,8 @@ contract DeployScript is Script {
 
             console.log("tld metadata", address(tldMetadata));
             console.log("sld metadata", address(sldMetadata));
+
+            console.log('owner', tld.owner());
 
             tld.setMetadataContract(tldMetadata);
             sld.setMetadataContract(sldMetadata);
@@ -136,20 +136,14 @@ contract DeployScript is Script {
 
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
-        {
-            // TldMetadataService tldMetadata = new TldMetadataService(tld, "#000000");
-            // SldMetadataService sldMetadata = new SldMetadataService(
-            //     sld,
-            //     tld,
-            //     SldRegistrationManager(address(uups2)),
-            //     "#1f7bac"
-            // );
-
+    
+            console.log('owner', SldRegistrationManager(address(uups2)).owner());
+            console.log('msg.sender', msg.sender);
             SldRegistrationManager(address(uups2)).updateSigner(
                 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
                 true
             );
-        }
+
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
@@ -167,19 +161,6 @@ contract DeployScript is Script {
         SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
         delete ownerWallet;
-
-        {
-            // TldMetadataService otherTldMetadata = new TldMetadataService(tld, "#d90e2d"); //red TLD
-            // SldMetadataService otherSldMetadata = new SldMetadataService(
-            //     sld,
-            //     tld,
-            //     SldRegistrationManager(address(uups2)),
-            //     "#950b96"
-            // ); //purple SLD
-            TestingRegistrationStrategy otherStrategy = new TestingRegistrationStrategy();
-
-            console.log("alternate strategy", address(otherStrategy));
-        }
 
         vm.stopBroadcast();
 

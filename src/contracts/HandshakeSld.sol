@@ -49,7 +49,7 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
             _burn(uint256(sldNamehash));
         }
         _mint(_to, uint256(sldNamehash));
-        
+
         namehashToParentMap[sldNamehash] = _tldNamehash;
         namehashToLabelMap[sldNamehash] = _label;
 

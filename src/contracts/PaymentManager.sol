@@ -40,9 +40,9 @@ abstract contract PaymentManager {
         if (excess > 0) {
             (isSent, ) = payable(_sldOwner).call{value: excess, gas: 30_000}("");
 
-            if (isSent) {
-                emit PaymentSent(_sldOwner, excess);
-            }
+            // if (isSent) {
+            //     emit PaymentSent(_sldOwner, excess);
+            // }
         }
 
         // if there is a failure to send ether then the funds will just get sent to the handshake wallet
@@ -56,9 +56,7 @@ abstract contract PaymentManager {
 
         uint256 remaining = address(this).balance;
         if (remaining > 0) {
-            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining, gas: 30_000}(
-                ""
-            );
+            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining}("");
             emit PaymentSent(feeWalletPayoutAddress, remaining);
 
             // revert if the transfer failed and funds sat in the contract

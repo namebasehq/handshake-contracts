@@ -18,6 +18,7 @@ gas_reports = ["HandshakeNft"
 , "DNSResolver"
 , "NameResolver"
 , "TextResolver"]
+optimizer-runs = 10_000
 
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
