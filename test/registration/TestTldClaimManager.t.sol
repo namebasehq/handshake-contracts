@@ -345,4 +345,17 @@ contract TestTldClaimManager is Test {
         assertEq(allowed_address.balance, 2 ether);
         assertEq(manager.handshakeWalletPayoutAddress().balance, 1 ether);
     }
+
+    function testRunInitAgain_expect_revert() public {
+        vm.expectRevert("Initializable: contract is already initialized");
+        manager.init(
+            labelValidator,
+            address(this),
+            nft,
+            strategy,
+            IPriceOracle(address(0)),
+            0,
+            address(0)
+        );
+    }
 }

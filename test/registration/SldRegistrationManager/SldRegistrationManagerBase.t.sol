@@ -87,4 +87,19 @@ contract TestSldRegistrationManagerBase is Test {
     function setUpRegistrationStrategy(bytes32 _parentNamehash) internal {
         sld.setMockRegistrationStrategy(_parentNamehash, mockStrategy);
     }
+
+    function testRunInitFunctionAgain_expectFail() public {
+        MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
+        vm.expectRevert("Initializable: contract is already initialized");
+        manager.init(
+            tld,
+            sld,
+            commitIntent,
+            oracle,
+            labelValidator,
+            globalStrategy,
+            address(this),
+            address(this)
+        );
+    }
 }

@@ -27,8 +27,8 @@ contract DeployScript is Script {
     IPriceOracle priceOracle;
     GlobalRegistrationRules globalRules;
 
-            HandshakeTld tld;
-        HandshakeSld sld;
+    HandshakeTld tld;
+    HandshakeSld sld;
 
     function setUp() public {}
 
@@ -53,8 +53,6 @@ contract DeployScript is Script {
         address ownerWallet;
         address deployerWallet;
 
-
-
         {
             string memory baseUri;
 
@@ -63,8 +61,8 @@ contract DeployScript is Script {
                 deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
                 vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
                 priceOracle = new MockUsdOracle(200000000000);
-            } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID")) {
-                ownerWallet =0xeCb53F05b58AC856B2fb85925c691Fdef3a8CD9F  ;
+            } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID") || block.chainid == 5) {
+                ownerWallet = 0xeCb53F05b58AC856B2fb85925c691Fdef3a8CD9F;
                 deployerWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
                 vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
                 priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
@@ -72,13 +70,15 @@ contract DeployScript is Script {
             } else {
                 ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
                 deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-                vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+                vm.startBroadcast(vm.envUint("LOCAL_PRIVATE_KEY"));
                 priceOracle = new MockUsdOracle(200000000000);
                 baseUri = "http://localhost:3000/api/metadata/";
+
+                console.log("here we go");
             }
 
-        tld = new HandshakeTld();
-        sld = new HandshakeSld(tld);
+            tld = new HandshakeTld();
+            sld = new HandshakeSld(tld);
 
             labelValidator = new LabelValidator();
 
@@ -93,7 +93,7 @@ contract DeployScript is Script {
             console.log("tld metadata", address(tldMetadata));
             console.log("sld metadata", address(sldMetadata));
 
-            console.log('owner', tld.owner());
+            console.log("owner", tld.owner());
 
             tld.setMetadataContract(tldMetadata);
             sld.setMetadataContract(sldMetadata);
@@ -136,14 +136,12 @@ contract DeployScript is Script {
 
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
-    
-            console.log('owner', SldRegistrationManager(address(uups2)).owner());
-            console.log('msg.sender', msg.sender);
-            SldRegistrationManager(address(uups2)).updateSigner(
-                0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
-                true
-            );
-
+        console.log("owner", SldRegistrationManager(address(uups2)).owner());
+        console.log("msg.sender", msg.sender);
+        SldRegistrationManager(address(uups2)).updateSigner(
+            0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
+            true
+        );
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
