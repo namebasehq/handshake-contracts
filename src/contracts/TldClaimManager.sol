@@ -93,24 +93,28 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      */
     function claimTld(string calldata _domain, address _addr) public payable {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
-        uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
 
         require(canClaim(msg.sender, namehash), "not eligible to claim");
-        require(msg.value >= expectedEther, "not enough ether");
 
-        handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
+        if (mintPriceInDollars > 0 || msg.value > 0) {
+            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) /
+                1 ether;
+            require(msg.value >= expectedEther, "not enough ether");
 
-        (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+            (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
-        require(result, "transfer failed");
-        // refund any extra ether
-        if (expectedEther < msg.value) {
-            unchecked {
-                // we already do a check that msg.value must be >= expectedEther
-                (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
-                require(result, "transfer failed");
+            require(result, "transfer failed");
+            // refund any extra ether
+            if (expectedEther < msg.value) {
+                unchecked {
+                    // we already do a check that msg.value must be >= expectedEther
+                    (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
+                    require(result, "transfer failed");
+                }
             }
         }
+
+        handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
         delete tldClaimantMap[namehash];
         emit TldClaimed(msg.sender, uint256(namehash), _domain);

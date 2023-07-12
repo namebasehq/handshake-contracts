@@ -20,7 +20,7 @@ contract DeployOffchainResolverScript is Script {
         address[] memory signers = new address[](1);
         signers[0] = 0x21de772D9b440D1E8D973bD24c8e7a8FBc0f6d86;
         // 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f
-        
+
         // string memory url = "http://localhost:3001/api/ccip-gateway/{sender}/{data}.json";
         //string memory url = "http://localhost:3000/api/ccip-gateway?sender={sender}&data={data}";
         string memory url = "http://localhost:8080?sender={sender}&data={data}.json";

@@ -25,13 +25,13 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetup50PercentReductionForAddressFromOwner_pass() public {
-        string memory label = "foo";
+        string memory label = "label";
         uint256 registrationLength = 365;
-        bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
+        bytes32 parentNamehash = Namehash.getTldNamehash("tld");
 
         uint256 annualCost = 2000 ether; //should be $4000 total
 
-        tld.register(address(this), "yoyo");
+        tld.register(address(this), "tld");
 
         ISldRegistrationStrategy strategy2 = new MockRegistrationStrategy(annualCost);
 

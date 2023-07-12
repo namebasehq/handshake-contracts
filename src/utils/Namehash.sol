@@ -6,7 +6,6 @@ import "utils/BytesUtils.sol";
 library Namehash {
     using BytesUtils for bytes;
 
-    // TODO: use BytesUtils version?
     function getLabelhash(string memory _label) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_label));
     }

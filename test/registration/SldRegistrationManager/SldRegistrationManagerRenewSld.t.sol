@@ -139,7 +139,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
     }
 
-    //TODO: what's the expected behaviour (pass i think)
     function testRenewSldFromNotSldOwner_pass() public {
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);

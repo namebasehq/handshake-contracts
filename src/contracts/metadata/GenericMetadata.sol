@@ -35,7 +35,7 @@ contract GenericMetadataService is IMetadataService {
 
     /**
      * @notice Returns the token URI for a given namehash.
-     * @dev If the namehash exists in the SLD or TLD contracts, it returns the concatenation 
+     * @dev If the namehash exists in the SLD or TLD contracts, it returns the concatenation
      *      of the base URI and the string representation of the namehash.
      *      Otherwise, it returns an empty string.
      * @param _namehash The namehash of the domain.
