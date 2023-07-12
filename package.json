@@ -1,8 +1,8 @@
 {
-  "name": "handshake-slds",
-  "version": "0.0.1",
+  "name": "handshake-contracts",
+  "version": "1.0.0",
   "description": "Handshake Decentralized SLDs",
-  "repository": "https://github.com/namebasehq/handshake-slds",
+  "repository": "https://github.com/namebasehq/handshake-contracts",
   "scripts": {
     "build": "forge build",
     "test": "forge test",
