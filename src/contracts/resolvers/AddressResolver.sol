@@ -31,9 +31,7 @@ abstract contract AddressResolver is IAddressResolver, IAddrResolver, BaseResolv
 
     function addr(bytes32 _node, uint256 _coinType) public view returns (bytes memory) {
         address owner = ownerOf(_node);
-        bytes memory addr1 = versionable_addresses[recordVersions[_node]][_node][owner][
-            _coinType
-        ];
+        bytes memory addr1 = versionable_addresses[recordVersions[_node]][_node][owner][_coinType];
 
         if (keccak256(addr1) == keccak256(bytes("")) && defaultCoinTypes[_coinType]) {
             return abi.encodePacked(owner);

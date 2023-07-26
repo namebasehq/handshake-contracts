@@ -358,4 +358,45 @@ contract TestTldClaimManager is Test {
             address(0)
         );
     }
+
+    function testBurnTLD_fromTldClaimManager() public {
+        address allowed_address = address(0x134567);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+
+        manager.claimTld("badass", allowed_address);
+        vm.stopPrank();
+        uint256 tokenId = uint256(Namehash.getTldNamehash(domains[0]));
+
+        vm.prank(address(manager));
+        nft.burnTld(tokenId);
+    }
+
+    function testBurnTLD_fromNotTldClaimManager_expect_revert() public {
+        address allowed_address = address(0x134567);
+        manager.updateAllowedTldManager(allowed_address, true);
+        manager.setHandshakeTldContract(nft);
+        string[] memory domains = new string[](1);
+        address[] memory addresses = new address[](1);
+        domains[0] = "badass";
+        addresses[0] = allowed_address;
+        vm.startPrank(allowed_address);
+        manager.addTldAndClaimant(addresses, domains);
+
+        manager.claimTld("badass", allowed_address);
+        vm.stopPrank();
+        uint256 tokenId = uint256(Namehash.getTldNamehash(domains[0]));
+
+        address owner = nft.ownerOf(tokenId);
+
+        vm.prank(owner);
+        vm.expectRevert("not authorised");
+        nft.burnTld(tokenId);
+    }
 }

@@ -41,12 +41,34 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         royaltyPayoutAmount = _amount;
     }
 
+    /**
+     * @dev Method to burn a token by ID.
+     * Only callable by the TLD claim manager.
+     * @notice This functionality not implemented in the claim manager
+     * contract yet. But will likely be a 2 step auth that requires signed
+     * message from a namebase wallet and also the burn transaction to be
+     * initiated by the token owner.
+     * @param _tokenId The ID of the token to be burned.
+     */
+    function burnTld(uint256 _tokenId) external isClaimManager {
+        super._burn(_tokenId);
+    }
+
+    /**
+     * @dev Method to register a domain with a resolver.
+     * Only callable by the TldClaimManager contract.
+     * If the namehash has expired, it will be burned and a new token will be minted.
+     * The resolver is then set to the default resolver.
+     *
+     * @param _addr The address that will be assigned the new token.
+     * @param _domain The domain being registered.
+     * @param _strategy The registration strategy being employed.
+     */
     function registerWithResolver(
         address _addr,
         string calldata _domain,
         ISldRegistrationStrategy _strategy
-    ) external {
-        require(address(claimManager) == msg.sender, "not authorised");
+    ) external isClaimManager {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
 
         if (hasExpired(namehash)) {
@@ -117,8 +139,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
 
     /**
      * @notice Check the owner of a specified token.
-     * @dev This function returns back the owner of an NFT. Will revert if the token does
-     *      not exist or has expired. Return back the contract owner if the TLD has expired
+     * @dev This function returns back the owner of an NFT. Return back the contract owner if the TLD has expired
      * @param _tokenId The token ID of the SLD NFT to be checked
      * @return _addr Owner of NFT
      */
@@ -128,7 +149,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         override(HandshakeNft, IHandshakeTld)
         returns (address _addr)
     {
-        if (hasExpired(bytes32(_tokenId))) {
+        uint256 tldExpiry = expiry(bytes32(_tokenId));
+        require(tldExpiry > 0, "Query for non-existent token");
+
+        if (hasExpired(bytes32(_tokenId), tldExpiry)) {
             return owner();
         }
 
@@ -136,10 +160,15 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     }
 
     function hasExpired(bytes32 _namehash) internal view override returns (bool) {
+        uint256 tldExpiry = expiry(_namehash);
+        return hasExpired(_namehash, tldExpiry);
+    }
+
+    function hasExpired(bytes32 _namehash, uint256 _expiry) private view returns (bool) {
         if (!_exists(uint256(_namehash))) {
             return false;
         }
-        return block.timestamp > expiry(_namehash);
+        return uint256(block.timestamp) > _expiry;
     }
 
     function isApprovedOrOwner(address _operator, uint256 _id)
@@ -149,5 +178,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         returns (bool)
     {
         return _isApprovedOrOwner(_operator, _id);
+    }
+
+    modifier isClaimManager() {
+        require(address(claimManager) == msg.sender, "not authorised");
+        _;
     }
 }
