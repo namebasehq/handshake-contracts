@@ -374,8 +374,13 @@ contract TestTldClaimManager is Test {
         vm.stopPrank();
         uint256 tokenId = uint256(Namehash.getTldNamehash(domains[0]));
 
+        assertEq(nft.ownerOf(tokenId), allowed_address);
+
         vm.prank(address(manager));
         nft.burnTld(tokenId);
+
+        vm.expectRevert("ERC721: invalid token ID");
+        nft.ownerOf(tokenId);
     }
 
     function testBurnTLD_fromNotTldClaimManager_expect_revert() public {

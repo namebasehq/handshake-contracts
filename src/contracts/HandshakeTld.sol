@@ -51,7 +51,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
      * @param _tokenId The ID of the token to be burned.
      */
     function burnTld(uint256 _tokenId) external isClaimManager {
-        super._burn(_tokenId);
+        _burn(_tokenId);
     }
 
     /**

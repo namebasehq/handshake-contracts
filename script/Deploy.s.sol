@@ -73,8 +73,6 @@ contract DeployScript is Script {
                 vm.startBroadcast(vm.envUint("LOCAL_PRIVATE_KEY"));
                 priceOracle = new MockUsdOracle(200000000000);
                 baseUri = "http://localhost:3000/api/metadata/";
-
-                console.log("here we go");
             }
 
             tld = new HandshakeTld();
