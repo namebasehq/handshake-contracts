@@ -329,7 +329,6 @@ contract SldRegistrationManager is
         external
         payable
     {
-        // no-one gonna need to extend domain more than 100 years
         require(_registrationLength < 36500, "must be less than 100 years");
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 

@@ -5,6 +5,7 @@ import "interfaces/IGlobalRegistrationRules.sol";
 
 contract GlobalRegistrationRules is IGlobalRegistrationRules {
     uint256 private constant MIN_REGISTRATION_DAYS = 1;
+    uint256 private constant MIN_RENEWAL_DAYS = 1;
     uint256 private constant DAYS_IN_A_YEAR = 365;
     uint256 public constant minimumDollarPrice = 1 ether;
 
@@ -30,7 +31,7 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _renewalLength,
         uint256 _dollarCost
     ) external pure returns (bool) {
-        require(_renewalLength >= DAYS_IN_A_YEAR, "less than 365 days renewal");
+        require(_renewalLength >= MIN_RENEWAL_DAYS, "less than 365 days renewal");
         require(
             ((_dollarCost * DAYS_IN_A_YEAR) / _renewalLength) >= minimumDollarPrice,
             "min price $1/year"
