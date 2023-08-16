@@ -42,9 +42,9 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     }
 
     /**
-     * @dev Method to burn a token by ID.
+     * @notice Method to burn a token by ID.
      * Only callable by the TLD claim manager.
-     * @notice This functionality not implemented in the claim manager
+     * @dev This functionality not implemented in the claim manager
      * contract yet. But will likely be a 2 step auth that requires signed
      * message from a namebase wallet and also the burn transaction to be
      * initiated by the token owner.
@@ -55,7 +55,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     }
 
     /**
-     * @dev Method to register a domain with a resolver.
+     * @notice Method to register a domain with a resolver.
      * Only callable by the TldClaimManager contract.
      * If the namehash has expired, it will be burned and a new token will be minted.
      * The resolver is then set to the default resolver.
@@ -117,13 +117,13 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
     }
 
     /**
-     * Returns information about the royalty payouts for the contract
+     * @notice Returns information about the royalty payouts for the contract. Implements the on-chain royalty payment standard defined in EIP-2981
      *
      * @param salePrice The price of the item being sold
      * @return receiver The address to receive the royalty payment and the amount to be paid
      * @return royaltyAmount The amount of the royalty payment
      *
-     * Implements the on-chain royalty payment standard defined in EIP-2981
+     *
      */
     function royaltyInfo(uint256, uint256 salePrice)
         external

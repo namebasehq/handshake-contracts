@@ -30,10 +30,26 @@ contract DeployScript is Script {
     HandshakeTld tld;
     HandshakeSld sld;
 
+    // https://docs.chain.link/data-feeds/price-feeds/addresses/?network=optimism
+    address private constant ORACLE_ADDRESS = 0x13e3Ee699D1909E989722E753853AE30b17e08c5;
+
+    // This will the the owner of the contracts that can run admin functions
+    address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+
+    // This is the proxy owner for TldClaimManager and SldRegistrationManager. This address
+    // must be different to the CONTRACT_OWNER as the proxy owner can only run admin functions
+    // on the proxy contract and not the implementation contract.
+    address private constant PROXY_OWNER = 0xfF778cbb3f5192a3e848aA7D7dB2DeB2a4944821;
+
+    string private constant BASE_URI = "https://hnst.id/api/metadata/";
+
     function setUp() public {}
 
     function run() public {
         /*
+            INSTRUCTIONS TO RUN LOCAL DEPLOYMENT
+            -----------------------------------
+
             Add the below to .env file.
 
             DEPLOYER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
@@ -50,30 +66,9 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
 
-        address ownerWallet;
-        address deployerWallet;
-
         {
-            string memory baseUri;
-
-            if (block.chainid == vm.envUint("NAMELESS_CHAIN_ID")) {
-                ownerWallet = 0x4559b1771b1d7C1846d91a91335273C3a28f9395;
-                deployerWallet = 0x930efAd00Bbd2f22431eE3d9816D8246C0D45826;
-                vm.startBroadcast(vm.envUint("NAMELESS_DEPLOYER_PRIVATE_KEY"));
-                priceOracle = new MockUsdOracle(200000000000);
-            } else if (block.chainid == vm.envUint("GOERLI_CHAIN_ID") || block.chainid == 5) {
-                ownerWallet = 0xeCb53F05b58AC856B2fb85925c691Fdef3a8CD9F;
-                deployerWallet = 0x91769843CEc84Adcf7A48DF9DBd9694A39f44b42;
-                vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
-                priceOracle = new UsdPriceOracle(0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8);
-                baseUri = "https://hnst.id/api/metadata/";
-            } else {
-                ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
-                deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-                vm.startBroadcast(vm.envUint("LOCAL_PRIVATE_KEY"));
-                priceOracle = new MockUsdOracle(200000000000);
-                baseUri = "http://localhost:3000/api/metadata/";
-            }
+            vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+            priceOracle = new UsdPriceOracle(ORACLE_ADDRESS);
 
             tld = new HandshakeTld();
             sld = new HandshakeSld(tld);
@@ -84,22 +79,20 @@ contract DeployScript is Script {
 
             commitIntent = new SldCommitIntent();
 
-            GenericMetadataService tldMetadata = new GenericMetadataService(sld, tld, baseUri);
+            GenericMetadataService genericMetadata = new GenericMetadataService(sld, tld, BASE_URI);
 
-            GenericMetadataService sldMetadata = new GenericMetadataService(sld, tld, baseUri);
-
-            console.log("tld metadata", address(tldMetadata));
-            console.log("sld metadata", address(sldMetadata));
+            console.log("tld metadata", address(genericMetadata));
+            console.log("sld metadata", address(genericMetadata));
 
             console.log("owner", tld.owner());
 
-            tld.setMetadataContract(tldMetadata);
-            sld.setMetadataContract(sldMetadata);
+            tld.setMetadataContract(genericMetadata);
+            sld.setMetadataContract(genericMetadata);
         }
 
         TransparentUpgradeableProxy uups2 = new TransparentUpgradeableProxy(
             address(new SldRegistrationManager()),
-            deployerWallet,
+            PROXY_OWNER,
             abi.encodeWithSelector(
                 SldRegistrationManager.init.selector,
                 tld,
@@ -108,8 +101,8 @@ contract DeployScript is Script {
                 priceOracle,
                 labelValidator,
                 globalRules,
-                ownerWallet,
-                ownerWallet
+                CONTRACT_OWNER,
+                CONTRACT_OWNER
             )
         );
 
@@ -119,16 +112,16 @@ contract DeployScript is Script {
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(new TldClaimManager()),
-            deployerWallet,
+            PROXY_OWNER,
             abi.encodeWithSelector(
                 TldClaimManager.init.selector,
                 labelValidator,
-                ownerWallet,
+                CONTRACT_OWNER,
                 tld,
                 strategy,
                 priceOracle,
                 100 ether,
-                ownerWallet
+                CONTRACT_OWNER
             )
         );
 
@@ -149,14 +142,14 @@ contract DeployScript is Script {
         sld.setDefaultResolver(IResolver(address(resolver)));
         tld.setDefaultResolver(IResolver(address(resolver)));
 
-        //registrationManager.transferOwnership(ownerWallet);
-        sld.transferOwnership(ownerWallet);
-        tld.transferOwnership(ownerWallet);
-        commitIntent.transferOwnership(ownerWallet);
+        //registrationManager.transferOwnership(CONTRACT_OWNER);
+        sld.transferOwnership(CONTRACT_OWNER);
+        tld.transferOwnership(CONTRACT_OWNER);
+        commitIntent.transferOwnership(CONTRACT_OWNER);
 
         SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
-        delete ownerWallet;
+        delete CONTRACT_OWNER;
 
         vm.stopBroadcast();
 

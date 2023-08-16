@@ -149,7 +149,7 @@ abstract contract HandshakeNft is ERC721, Ownable {
     }
 
     /**
-     * @notice modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
+     * @dev modifier version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes expiration into consideration instead of ERC721.ownerOf(tokenId);
      * @param tokenId uint256 ID of the token to be transferred
      */
     modifier onlyApprovedOrOwner(uint256 tokenId) {
