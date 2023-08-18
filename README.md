@@ -117,17 +117,17 @@ forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KE
 
 | Component                 | Address Link                                                                                             |
 |---------------------------|---------------------------------------------------------------------------------------------------------|
-| labelValidator            | [Link](https://optimistic.etherscan.io/address/0x0b26062CB10DA260CC1659C2a4b2fDe6023f4B18)            |
-| priceOracle               | [Link](https://optimistic.etherscan.io/address/0x178767FDEA4D43C8B7086C4B92a2569db930655C)            |
-| globalRules               | [Link](https://optimistic.etherscan.io/address/0xe2E4d33f5E2cd7c9b74cedfcbF8Bd6C3A239e2c9)            |
-| commitIntent              | [Link](https://optimistic.etherscan.io/address/0x84EE3763E5F2faB55E8d7197632Aa234159C2f5f)            |
-| tld                       | [Link](https://optimistic.etherscan.io/address/0x01eBCf32e4b5da0167eaacEA1050B2be63122B6f)            |
-| sld                       | [Link](https://optimistic.etherscan.io/address/0x7963bfA8F8f914b9776ac6259a8C39965d26f42F)            |
-| metadata                  | [Link](https://optimistic.etherscan.io/address/0x93Cea80D190eB1401b15e3dbBE3d0392D32e3FCf)            |
-| tldClaimManager           | [Link](https://optimistic.etherscan.io/address/0x9209397263427413817Afc6957A434cF62C02c68)            |
-| sldRegistrationManager    | [Link](https://optimistic.etherscan.io/address/0xfda87cc032cd641ac192027353e5b25261dfe6b3)            |
-| defaultRegistrationStrategy | [Link](https://optimistic.etherscan.io/address/0x0F1143972197B63053709794f718e60599Ce4730)         |
-| resolver                  | [Link](https://optimistic.etherscan.io/address/0xDDa56f06D80f3D8E3E35159701A63753f39c3BCB)            |
+| labelValidator            | [0x0b26062CB10DA260CC1659C2a4b2fDe6023f4B18](https://optimistic.etherscan.io/address/0x0b26062CB10DA260CC1659C2a4b2fDe6023f4B18)            |
+| priceOracle               | [0x178767FDEA4D43C8B7086C4B92a2569db930655C](https://optimistic.etherscan.io/address/0x178767FDEA4D43C8B7086C4B92a2569db930655C)            |
+| globalRules               | [0xe2E4d33f5E2cd7c9b74cedfcbF8Bd6C3A239e2c9](https://optimistic.etherscan.io/address/0xe2E4d33f5E2cd7c9b74cedfcbF8Bd6C3A239e2c9)            |
+| commitIntent              | [0x84EE3763E5F2faB55E8d7197632Aa234159C2f5f](https://optimistic.etherscan.io/address/0x84EE3763E5F2faB55E8d7197632Aa234159C2f5f)            |
+| tld                       | [0x01eBCf32e4b5da0167eaacEA1050B2be63122B6f](https://optimistic.etherscan.io/address/0x01eBCf32e4b5da0167eaacEA1050B2be63122B6f)            |
+| sld                       | [0x7963bfA8F8f914b9776ac6259a8C39965d26f42F](https://optimistic.etherscan.io/address/0x7963bfA8F8f914b9776ac6259a8C39965d26f42F)            |
+| metadata                  | [0x93Cea80D190eB1401b15e3dbBE3d0392D32e3FCf](https://optimistic.etherscan.io/address/0x93Cea80D190eB1401b15e3dbBE3d0392D32e3FCf)            |
+| tldClaimManager           | [0x9209397263427413817Afc6957A434cF62C02c68](https://optimistic.etherscan.io/address/0x9209397263427413817Afc6957A434cF62C02c68)            |
+| sldRegistrationManager    | [0xfda87cc032cd641ac192027353e5b25261dfe6b3](https://optimistic.etherscan.io/address/0xfda87cc032cd641ac192027353e5b25261dfe6b3)            |
+| defaultRegistrationStrategy | [0x0F1143972197B63053709794f718e60599Ce4730](https://optimistic.etherscan.io/address/0x0F1143972197B63053709794f718e60599Ce4730)         |
+| resolver                  | [0xDDa56f06D80f3D8E3E35159701A63753f39c3BCB](https://optimistic.etherscan.io/address/0xDDa56f06D80f3D8E3E35159701A63753f39c3BCB)            |
 
 
 
