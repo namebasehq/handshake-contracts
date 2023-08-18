@@ -40,49 +40,66 @@ forge remappings
 npm run prettier
 ```
 
-## Deployment
+<br>
+<br>
+
+# Deployment
 
 Before deploying the smart contracts, ensure you've set up the necessary environment variables in an `.env` file.
 
-### Environment Variables in `.env` file
+## Environment Variables
 
 Your `.env` file should contain the following:
 
-- DEPLOYER_PRIVATE_KEY=your_private_key
-- RPC_URL=your_rpc_url
-- ETHERSCAN_API_KEY=your_etherscan_api_key
+```env
+DEPLOYER_PRIVATE_KEY=your_private_key
+RPC_URL=your_rpc_url
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
 
 **Note**: Ensure your `.env` file is ignored in `.gitignore` to prevent accidentally sharing sensitive information.
 
 Before running the deployment script, source the `.env` file:
 
+```sh
 source .env
+```
 
-### Updating Deployment Constants
+## Deployment Constants
 
 Before running the deployment script, you need to update certain constants in the `script/Deploy.s.sol` file to match your specific requirements.
 
-### Constants to Update:
+**`ORACLE_ADDRESS`**
 
-1. **ORACLE_ADDRESS**: This is the address of the Chainlink Oracle. Update it based on the desired network. For instance, the given default is for Optimism. You can refer to the [Chainlink documentation](https://docs.chain.link/data-feeds/price-feeds/addresses/?network=optimism) for different network addresses.
+This is the address of the Chainlink Oracle. Update it based on the desired network. For instance, the given default is for Optimism. You can refer to the [Chainlink documentation](https://docs.chain.link/data-feeds/price-feeds/addresses/?network=optimism) for different network addresses.
 
+```solidity
 address private constant ORACLE_ADDRESS = 0x13e3Ee699D1909E989722E753853AE30b17e08c5;
+```
 
-2. **CONTRACT_OWNER**: This address will be the owner of the contracts, possessing the ability to run administrative functions.
+**`CONTRACT_OWNER`**
 
+This address will be the owner of the contracts, possessing the ability to run administrative functions.
+
+```solidity
 address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+```
 
-3. **PROXY_OWNER**: This is the proxy owner for `TldClaimManager` and `SldRegistrationManager`. This address must differ from the `CONTRACT_OWNER` as the proxy owner can only run admin functions on the proxy contract and not the implementation contract.
+**`PROXY_OWNER`**
 
+This is the proxy owner for `TldClaimManager` and `SldRegistrationManager`. This address must differ from the `CONTRACT_OWNER` as the proxy owner can only run admin functions on the proxy contract and not the implementation contract.
+
+```solidity
 address private constant PROXY_OWNER = 0xfF778cbb3f5192a3e848aA7D7dB2DeB2a4944821;
+```
 
 Make sure to replace the default addresses with your desired addresses before running the deployment script.
 
 
-### Deployment Command
+## Deployment Command
 
 With the environment variables set up, deploy your smart contracts using:
-```bash
+```sh
 forge script script/Deploy.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL  --etherscan-api-key $ETHERSCAN_API_KEY --verify --retries 10 --delay 10 --optimizer-runs 10000 --broadcast -vv
 ```
 
