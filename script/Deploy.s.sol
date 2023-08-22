@@ -149,7 +149,6 @@ contract DeployScript is Script {
 
         SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
-        delete CONTRACT_OWNER;
 
         vm.stopBroadcast();
 
