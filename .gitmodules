@@ -4,3 +4,6 @@
 [submodule "lib/foundry-upgrades"]
 	path = lib/foundry-upgrades
 	url = https://github.com/odyslam/foundry-upgrades
+[submodule "lib/evmgateway"]
+	path = lib/evmgateway
+	url = https://github.com/ensdomains/evmgateway
