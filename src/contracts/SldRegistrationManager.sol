@@ -98,6 +98,7 @@ contract SldRegistrationManager is
         usdOracle = _oracle;
         labelValidator = _validator;
         gracePeriod = 30 days;
+        ValidSigner[0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f] = true;
         _transferOwnership(_owner);
 
         DOMAIN_SEPARATOR = hashDomain();
