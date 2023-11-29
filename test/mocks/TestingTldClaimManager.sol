@@ -1,3 +1,5 @@
+pragma solidity ^0.8.17;
+
 import "contracts/TldClaimManager.sol";
 
 contract TestingTldClaimManager is TldClaimManager {

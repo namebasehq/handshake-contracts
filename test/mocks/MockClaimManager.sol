@@ -17,7 +17,7 @@ contract MockClaimManager is ITldClaimManager {
 
     function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external {}
 
-    function tldExpiry(bytes32 _node) external view returns (uint256) {
+    function tldExpiry(bytes32) external view returns (uint256) {
         console.log("tldExpiry");
         return type(uint64).max;
     }

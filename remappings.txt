@@ -3,6 +3,8 @@
 @openzeppelin/=node_modules/@openzeppelin/
 @ensdomains/buffer/contracts/=node_modules/@ensdomains/buffer/contracts/
 @ensdomains/ens-contracts/contracts/=node_modules/@ensdomains/ens-contracts/contracts/
+@ensdomains/evm-verifier/contracts/=lib/evmgateway/evm-verifier/contracts/
+@op-verifier=lib/evmgateway/op-verifier/contracts
 solmate/=lib/solmate/src/
 forge-std/=lib/forge-std/src/
 contracts/=src/contracts/

@@ -98,7 +98,6 @@ contract TestTldClaimManager is Test {
 
     function testAddWalletAndClaimExpiredTldFromOriginalClaimWallet_expectFail() public {
         address allowed_address = address(0x134567);
-        address new_owner = address(0x666);
         manager.updateAllowedTldManager(allowed_address, true);
         manager.setHandshakeTldContract(nft);
         string[] memory domains = new string[](1);
@@ -120,7 +119,6 @@ contract TestTldClaimManager is Test {
 
     function testAddWalletAndClaimExpiredTransferAfterExpiry_expectfail() public {
         address allowed_address = address(0x134567);
-        address new_owner = address(0x666);
         manager.updateAllowedTldManager(allowed_address, true);
         manager.setHandshakeTldContract(nft);
         string[] memory domains = new string[](1);
@@ -179,7 +177,6 @@ contract TestTldClaimManager is Test {
 
     function testAddWalletAndClaimExpiredTld_expectSuccess() public {
         address allowed_address = address(0x134567);
-        address new_owner = address(0x666);
         manager.updateAllowedTldManager(allowed_address, true);
         manager.setHandshakeTldContract(nft);
         string[] memory domains = new string[](1);
