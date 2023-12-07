@@ -71,7 +71,7 @@ contract DeployTestScript is Script {
             vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
             priceOracle = new MockUsdOracle(200000000000); // $2000 per eth
 
-             tld = new HandshakeTld();
+            tld = new HandshakeTld();
             sld = new HandshakeSld(tld);
 
             labelValidator = new LabelValidator();
@@ -130,7 +130,7 @@ contract DeployTestScript is Script {
 
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
-       // console.log("owner", SldRegistrationManager(address(uups2)).owner());
+        // console.log("owner", SldRegistrationManager(address(uups2)).owner());
         console.log("msg.sender", msg.sender);
         // SldRegistrationManager(address(uups2)).updateSigner(
         //     0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
@@ -152,7 +152,6 @@ contract DeployTestScript is Script {
 
         //SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
-
         vm.stopBroadcast();
 
         console.log("labelValidator", address(labelValidator));
@@ -167,5 +166,4 @@ contract DeployTestScript is Script {
         console.log("defaultRegistrationStrategy", address(strategy));
         console.log("resolver", address(resolver));
     }
-    }
-
+}

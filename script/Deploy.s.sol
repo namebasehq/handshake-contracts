@@ -149,7 +149,6 @@ contract DeployScript is Script {
 
         SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
 
-
         vm.stopBroadcast();
 
         console.log("labelValidator", address(labelValidator));

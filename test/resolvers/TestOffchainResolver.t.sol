@@ -80,6 +80,6 @@ contract TestOffchainResolver is Test {
         signers[0] = address(0x1337);
         string memory url = "https:/testing.com/{sender}/{data}.json";
 
-        resolver = new OffchainResolver(url, signers);
+        resolver = new OffchainResolver(url, signers, address(0), address(0));
     }
 }
