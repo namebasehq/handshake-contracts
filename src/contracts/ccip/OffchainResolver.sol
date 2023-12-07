@@ -6,12 +6,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
 import {IENS, INameWrapper} from "./EnsInterfaces.sol";
+import {ITextResolver} from "src/interfaces/resolvers/ITextResolver.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
+contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver {
     string public url;
     mapping(address => bool) public signers;
 
@@ -49,10 +50,15 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
      */
     mapping(address => mapping(bytes32 => mapping(address => bool))) private _tokenApprovals;
 
+    mapping(bytes32 => bool) public allowedEnsNodes;
+    bool public anyEnsNodeAllowed;
+
     // mainnet - 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85
     address public immutable ENS_ADDRESS;
 
     address public immutable NAMEWRAPPER_ADDRESS;
+
+    mapping(bytes32 => mapping(string => string)) public text;
 
     error OffchainLookup(
         address sender,
@@ -102,6 +108,18 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         override
         returns (bytes memory)
     {
+        bytes32 ensNode;
+
+        // Using assembly to extract the ENS node from 'data'
+        assembly {
+            // Skip the first 4 bytes (function selector), then read the next 32 bytes
+            ensNode := calldataload(add(data.offset, 4))
+        }
+
+        if (!allowedEnsNodes[ensNode] && !anyEnsNodeAllowed) {
+            revert Unauthorized();
+        }
+
         bytes memory callData = abi.encodeWithSelector(
             IExtendedResolver.resolve.selector,
             name,
@@ -118,6 +136,10 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
             OffchainResolver.resolveWithProof.selector,
             callData
         );
+    }
+
+    function updateAllowedEns(bytes32 _node, bool _isAllowed) external onlyOwner {
+        allowedEnsNodes[_node] = _isAllowed;
     }
 
     function updateSigners(address[] calldata _signers, bool[] calldata _isSigner)
@@ -152,8 +174,25 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         return result;
     }
 
+    /**
+     * Sets the text data associated with an ENS node and key.
+     * May only be called by the owner of that node in the ENS registry.
+     * @param node The node to update.
+     * @param key The key to set.
+     * @param value The text data value to set.
+     */
+    function setText(bytes32 node, string calldata key, string calldata value)
+        public
+        virtual
+        authorised(node)
+    {
+        text[node][key] = value;
+        emit TextChanged(node, key, key, value);
+    }
+
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return
+            interfaceID == type(ITextResolver).interfaceId ||
             interfaceID == type(IExtendedResolver).interfaceId ||
             interfaceID == type(IERC165).interfaceId;
     }
@@ -185,6 +224,10 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
             revert SelfApproval();
         }
 
+        if (!allowedEnsNodes[node] && !anyEnsNodeAllowed) {
+            revert Unauthorized();
+        }
+
         _tokenApprovals[msg.sender][node][delegate] = approved;
         emit Approved(msg.sender, node, delegate, approved);
     }
@@ -201,7 +244,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     modifier authorised(bytes32 node) {
-        if (!isAuthorised(node)) {
+        if (!isAuthorised(node) && (!anyEnsNodeAllowed || !allowedEnsNodes[node])) {
             revert Unauthorized();
         }
         _;
