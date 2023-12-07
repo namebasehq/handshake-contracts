@@ -7,12 +7,13 @@ import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
 import {IENS, INameWrapper} from "./EnsInterfaces.sol";
 import {ITextResolver} from "src/interfaces/resolvers/ITextResolver.sol";
+import "src/utils/Multicallable.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver {
+contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver, Multicallable {
     string public url;
     mapping(address => bool) public signers;
 
@@ -53,9 +54,14 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver 
     mapping(bytes32 => bool) public allowedEnsNodes;
     bool public anyEnsNodeAllowed;
 
-    // mainnet - 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85
+    // mainnet - 0x253553366Da8546fC250F225fe3d25d0C782303b
+    // goerli - 0xCc5e7dB10E65EED1BBD105359e7268aa660f6734
+    // sepolia - 0xFED6a969AaA60E4961FCD3EBF1A2e8913ac65B72
     address public immutable ENS_ADDRESS;
 
+    // mainnet - 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401
+    // goerli - 0x114D4603199df73e7D157787f8778E21fCd13066
+    // sepolia - 0x0635513f179D50A207757E05759CbD106d7dFcE8
     address public immutable NAMEWRAPPER_ADDRESS;
 
     mapping(bytes32 => mapping(string => string)) public text;
@@ -190,11 +196,17 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver 
         emit TextChanged(node, key, key, value);
     }
 
-    function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
+    function supportsInterface(bytes4 interfaceID)
+        public
+        view
+        override(IERC165, Multicallable)
+        returns (bool)
+    {
         return
             interfaceID == type(ITextResolver).interfaceId ||
             interfaceID == type(IExtendedResolver).interfaceId ||
-            interfaceID == type(IERC165).interfaceId;
+            interfaceID == type(IERC165).interfaceId ||
+            super.supportsInterface(interfaceID);
     }
 
     /**

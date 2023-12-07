@@ -32,18 +32,15 @@ contract TestOffchainResolver is Test {
         resolver.updateUrl(newUrl);
     }
 
-    function testSetAllowedEnsFromNotOwner() public{
-
+    function testSetAllowedEnsFromNotOwner() public {
         bytes32 node = bytes32(uint256(0x1337));
 
         vm.prank(address(0x44));
         vm.expectRevert("Ownable: caller is not the owner");
         resolver.updateAllowedEns(node, true);
-
     }
 
-    function testSetAllowedEnsFromOwner() public{
-
+    function testSetAllowedEnsFromOwner() public {
         bytes32 node = bytes32(uint256(0x1337));
 
         resolver.updateAllowedEns(node, true);
@@ -51,9 +48,7 @@ contract TestOffchainResolver is Test {
 
         resolver.updateAllowedEns(node, false);
         assertFalse(resolver.allowedEnsNodes(node));
-
     }
-
 
     function testSetSignerFromOwner() public {
         address[] memory signers = new address[](1);
