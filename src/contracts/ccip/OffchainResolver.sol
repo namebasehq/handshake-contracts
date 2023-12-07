@@ -114,17 +114,6 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver,
         override
         returns (bytes memory)
     {
-        bytes32 ensNode;
-
-        // Using assembly to extract the ENS node from 'data'
-        assembly {
-            // Skip the first 4 bytes (function selector), then read the next 32 bytes
-            ensNode := calldataload(add(data.offset, 4))
-        }
-
-        if (!allowedEnsNodes[ensNode] && !anyEnsNodeAllowed) {
-            revert Unauthorized();
-        }
 
         bytes memory callData = abi.encodeWithSelector(
             IExtendedResolver.resolve.selector,
@@ -146,6 +135,11 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable, ITextResolver,
 
     function updateAllowedEns(bytes32 _node, bool _isAllowed) external onlyOwner {
         allowedEnsNodes[_node] = _isAllowed;
+    }
+
+    // this is just a global switch to allow any ENS node to be configured
+    function setAnyEnsNodeAllowed(bool _isAllowed) external onlyOwner {
+        anyEnsNodeAllowed = _isAllowed;
     }
 
     function updateSigners(address[] calldata _signers, bool[] calldata _isSigner)
