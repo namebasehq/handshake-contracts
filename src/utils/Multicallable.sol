@@ -5,10 +5,10 @@ import "interfaces/resolvers/IMulticallable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract Multicallable is IMulticallable, ERC165 {
-    function _multicall(bytes32 nodehash, bytes[] calldata data)
-        internal
-        returns (bytes[] memory results)
-    {
+    function _multicall(
+        bytes32 nodehash,
+        bytes[] calldata data
+    ) internal returns (bytes[] memory results) {
         uint256 arrayLength = data.length;
         results = new bytes[](arrayLength);
 
@@ -31,10 +31,10 @@ abstract contract Multicallable is IMulticallable, ERC165 {
     // This function provides an extra security check when called
     // from priviledged contracts (such as EthRegistrarController)
     // that can set records on behalf of the node owners
-    function multicallWithNodeCheck(bytes32 nodehash, bytes[] calldata data)
-        external
-        returns (bytes[] memory results)
-    {
+    function multicallWithNodeCheck(
+        bytes32 nodehash,
+        bytes[] calldata data
+    ) external returns (bytes[] memory results) {
         return _multicall(nodehash, data);
     }
 

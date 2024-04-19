@@ -31,11 +31,10 @@ library SignatureVerifier {
      * @return signer: The address that signed this message.
      * @return result: The `result` decoded from `response`.
      */
-    function verify(bytes calldata request, bytes calldata response)
-        internal
-        view
-        returns (address, bytes memory)
-    {
+    function verify(
+        bytes calldata request,
+        bytes calldata response
+    ) internal view returns (address, bytes memory) {
         (bytes memory result, uint64 expires, bytes memory sig) = abi.decode(
             response,
             (bytes, uint64, bytes)

@@ -32,17 +32,19 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         emit PremiumNameSet(_parentNamehash, _priceInDollarsPerYear, _label);
     }
 
-    function setReservedName(bytes32 _parentNamehash, string calldata _label, address _claimant)
-        private
-    {
+    function setReservedName(
+        bytes32 _parentNamehash,
+        string calldata _label,
+        address _claimant
+    ) private {
         reservedNames[Namehash.getNamehash(_parentNamehash, _label)] = _claimant;
         emit ReservedNameSet(_parentNamehash, _claimant, _label);
     }
 
-    function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
-        public
-        isApprovedOrTokenOwner(_parentNamehash)
-    {
+    function setLengthCost(
+        bytes32 _parentNamehash,
+        uint256[] calldata _prices
+    ) public isApprovedOrTokenOwner(_parentNamehash) {
         uint256 arrayLength = _prices.length;
         require(arrayLength < 11, "max 10 characters");
 
@@ -60,10 +62,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         lengthCost[_parentNamehash] = _prices;
     }
 
-    function setMultiYearDiscount(bytes32 _parentNamehash, uint256[] calldata _discounts)
-        public
-        isApprovedOrTokenOwner(_parentNamehash)
-    {
+    function setMultiYearDiscount(
+        bytes32 _parentNamehash,
+        uint256[] calldata _discounts
+    ) public isApprovedOrTokenOwner(_parentNamehash) {
         uint256 arrayLength = _discounts.length;
         require(arrayLength < 11, "cannot set more than 10 year discount");
 
@@ -83,11 +85,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         multiYearDiscount[_parentNamehash] = _discounts;
     }
 
-    function getLengthCost(bytes32 _parentNamehash, uint256 _length)
-        private
-        view
-        returns (uint256)
-    {
+    function getLengthCost(
+        bytes32 _parentNamehash,
+        uint256 _length
+    ) private view returns (uint256) {
         uint256[] storage prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
         require(priceCount > 0, "no length prices are set");
@@ -129,10 +130,10 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         }
     }
 
-    function setIsEnabled(bytes32 _parentNamehash, bool _isEnabled)
-        external
-        isApprovedOrTokenOwner(_parentNamehash)
-    {
+    function setIsEnabled(
+        bytes32 _parentNamehash,
+        bool _isEnabled
+    ) external isApprovedOrTokenOwner(_parentNamehash) {
         isEnabled[_parentNamehash] = _isEnabled;
         emit EnabledSet(_parentNamehash, _isEnabled);
     }
@@ -191,12 +192,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         }
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(IERC165, Multicallable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(IERC165, Multicallable) returns (bool) {
         return
             interfaceId == this.isEnabled.selector ||
             interfaceId == this.getPriceInDollars.selector ||

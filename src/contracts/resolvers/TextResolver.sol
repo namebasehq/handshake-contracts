@@ -30,11 +30,11 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
      * @param key The key to set.
      * @param value The text data value to set.
      */
-    function setText(bytes32 node, string calldata key, string calldata value)
-        public
-        virtual
-        authorised(node)
-    {
+    function setText(
+        bytes32 node,
+        string calldata key,
+        string calldata value
+    ) public virtual authorised(node) {
         versionable_texts[recordVersions[node]][node][key] = value;
         emit TextChanged(node, key, key, value);
     }
@@ -45,11 +45,10 @@ abstract contract TextResolver is ITextResolver, BaseResolver {
             super.supportsInterface(_interfaceId);
     }
 
-    function getParentAvatar(bytes32 node, string calldata key)
-        private
-        view
-        returns (string memory)
-    {
+    function getParentAvatar(
+        bytes32 node,
+        string calldata key
+    ) private view returns (string memory) {
         HandshakeSld sld = HandshakeSld(address(sldContract));
         bytes32 parentNode = sld.namehashToParentMap(node);
         IResolver resolver = getResolver(parentNode);

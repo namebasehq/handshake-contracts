@@ -40,11 +40,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
         defaultResolver = _resolver;
     }
 
-    function setResolver(bytes32 _namehash, IResolver _resolver)
-        public
-        virtual
-        onlyApprovedOrOwner(uint256(_namehash))
-    {
+    function setResolver(
+        bytes32 _namehash,
+        IResolver _resolver
+    ) public virtual onlyApprovedOrOwner(uint256(_namehash)) {
         tokenResolverMap[_namehash] = _resolver;
         emit ResolverSet(_namehash, address(_resolver));
     }
@@ -68,12 +67,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to be transferred
      * @return bool whether spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
-    function _isApprovedOrOwner(address spender, uint256 tokenId)
-        internal
-        view
-        override
-        returns (bool)
-    {
+    function _isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) internal view override returns (bool) {
         if (_exists(tokenId)) {
             address owner = ownerOf(tokenId);
 
@@ -92,12 +89,10 @@ abstract contract HandshakeNft is ERC721, Ownable {
      *
      * @return bool whether the spender is approved for the given token ID, is an operator of the owner, or is the owner of the token
      */
-    function isApprovedOrOwner(address spender, uint256 tokenId)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    function isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) public view virtual returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
@@ -122,11 +117,12 @@ abstract contract HandshakeNft is ERC721, Ownable {
         super.transferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
-        public
-        virtual
-        override
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual override {
         require(!hasExpired(bytes32(tokenId)), "cannot transfer expired token");
         super.safeTransferFrom(from, to, tokenId, data);
     }

@@ -89,11 +89,11 @@ abstract contract NameResolver is INameResolver, BaseResolver {
      * @param _key The key to query.
      * @param _coinType The coin type to query.
      */
-    function getText(address _addr, string calldata _key, uint256 _coinType)
-        external
-        view
-        returns (string memory)
-    {
+    function getText(
+        address _addr,
+        string calldata _key,
+        uint256 _coinType
+    ) external view returns (string memory) {
         string memory reverseName = nameMap[_addr];
         IResolver resolver;
 

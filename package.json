@@ -11,7 +11,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.4.2",
     "@ensdomains/buffer": "github:ensdomains/buffer",
-    "@ensdomains/ens-contracts": "github:ensdomains/ens-contracts",
+    "@ensdomains/ens-contracts": "github:ensdomains/ens-contracts#staging",
     "@openzeppelin/contracts": "^4.7.0",
     "@openzeppelin/contracts-upgradeable": "^4.8.0-rc.1"
   },

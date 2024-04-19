@@ -21,12 +21,10 @@ contract MockHandshakeSld is IHandshakeSld {
 
     function burnSld(bytes32 _namehash) external {}
 
-    function isApprovedOrOwner(address spender, uint256 tokenId)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) public view override returns (bool) {
         return idToAddressToApproved[tokenId][spender];
     }
 
@@ -42,17 +40,13 @@ contract MockHandshakeSld is IHandshakeSld {
 
     function registerSld(address _to, bytes32 _tldNamehash, string calldata _label) external {}
 
-    function registrationStrategy(bytes32 _sldNamehash)
-        external
-        view
-        returns (ISldRegistrationStrategy)
-    {}
+    function registrationStrategy(
+        bytes32 _sldNamehash
+    ) external view returns (ISldRegistrationStrategy) {}
 
-    function getRegistrationStrategy(bytes32 _parentNamehash)
-        public
-        view
-        returns (ISldRegistrationStrategy)
-    {
+    function getRegistrationStrategy(
+        bytes32 _parentNamehash
+    ) public view returns (ISldRegistrationStrategy) {
         return mockRegistrationStrategy[_parentNamehash];
     }
 

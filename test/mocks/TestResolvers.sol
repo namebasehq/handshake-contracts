@@ -23,12 +23,9 @@ contract TestingNameResolver is NameResolver, AddressResolver {
 
     function incrementVersion(bytes32 _nodehash) public override(BaseResolver, AddressResolver) {}
 
-    function supportsInterface(bytes4 _interfaceId)
-        public
-        view
-        override(AddressResolver, NameResolver)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 _interfaceId
+    ) public view override(AddressResolver, NameResolver) returns (bool) {
         return super.supportsInterface(_interfaceId);
     }
 }

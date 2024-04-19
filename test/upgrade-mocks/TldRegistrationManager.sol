@@ -128,10 +128,10 @@ contract MockTldClaimManager is
      * @param _addr Addresses of the wallets allowed to claim
      * @param _domain string representation of the domains that will be claimed
      */
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
-        external
-        onlyAuthorisedTldManager
-    {
+    function addTldAndClaimant(
+        address[] calldata _addr,
+        string[] calldata _domain
+    ) external onlyAuthorisedTldManager {
         require(
             _addr.length == _domain.length,
             "address and domain list should be the same length"

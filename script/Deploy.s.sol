@@ -68,6 +68,7 @@ contract DeployScript is Script {
 
         {
             vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+            console.log('msg.sender', msg.sender);
             priceOracle = new UsdPriceOracle(ORACLE_ADDRESS);
 
             tld = new HandshakeTld();
@@ -148,7 +149,6 @@ contract DeployScript is Script {
         commitIntent.transferOwnership(CONTRACT_OWNER);
 
         SldRegistrationManager(address(uups2)).updatePaymentPercent(5);
-
 
         vm.stopBroadcast();
 

@@ -166,11 +166,10 @@ contract DeployCreate2Script is Script {
 
     // }
 
-    function getCodeAndArgs(bytes memory code, bytes memory args)
-        private
-        pure
-        returns (bytes memory)
-    {
+    function getCodeAndArgs(
+        bytes memory code,
+        bytes memory args
+    ) private pure returns (bytes memory) {
         return abi.encodePacked(code, args);
     }
 }

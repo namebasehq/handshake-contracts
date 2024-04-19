@@ -11,10 +11,9 @@ contract MockBaseResolver is BaseResolver {
         incrementVersion(_nodehash);
     }
 
-    function incrementVersionPublicAuthorisedMethod(bytes32 _nodehash)
-        public
-        authorised(_nodehash)
-    {
+    function incrementVersionPublicAuthorisedMethod(
+        bytes32 _nodehash
+    ) public authorised(_nodehash) {
         incrementVersion(_nodehash);
     }
 }

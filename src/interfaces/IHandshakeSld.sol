@@ -11,15 +11,13 @@ interface IHandshakeSld {
 
     function ownerOf(uint256 _id) external view returns (address);
 
-    function getRegistrationStrategy(bytes32 _parentNamehash)
-        external
-        view
-        returns (ISldRegistrationStrategy);
+    function getRegistrationStrategy(
+        bytes32 _parentNamehash
+    ) external view returns (ISldRegistrationStrategy);
 
-    function namehashToParentMap(bytes32 _childNamehash)
-        external
-        view
-        returns (bytes32 _parentNamehash);
+    function namehashToParentMap(
+        bytes32 _childNamehash
+    ) external view returns (bytes32 _parentNamehash);
 
     function name(bytes32 _sldNamehash) external view returns (string memory _fullDomain);
 

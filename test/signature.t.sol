@@ -44,11 +44,11 @@ contract SignatureTests is Test {
         checkSignatureValid(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, sd, v, r, s);
     }
 
-    function getRegistrationHash(address buyer, bytes32 subdomainHash, uint256 nonce)
-        public
-        view
-        returns (bytes32)
-    {
+    function getRegistrationHash(
+        address buyer,
+        bytes32 subdomainHash,
+        uint256 nonce
+    ) public view returns (bytes32) {
         console.log("data hashed");
         console.logBytes32(keccak256(abi.encodePacked(buyer, subdomainHash, nonce)));
         return

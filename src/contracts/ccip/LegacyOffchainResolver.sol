@@ -55,12 +55,10 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-    function resolve(bytes calldata name, bytes calldata data)
-        external
-        view
-        override
-        returns (bytes memory)
-    {
+    function resolve(
+        bytes calldata name,
+        bytes calldata data
+    ) external view override returns (bytes memory) {
         bytes memory callData = abi.encodeWithSelector(
             IExtendedResolver.resolve.selector,
             name,
@@ -79,10 +77,10 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         );
     }
 
-    function updateSigners(address[] calldata _signers, bool[] calldata _isSigner)
-        external
-        onlyOwner
-    {
+    function updateSigners(
+        address[] calldata _signers,
+        bool[] calldata _isSigner
+    ) external onlyOwner {
         for (uint256 i = 0; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
             emit NewSigners(_signers[i], _isSigner[i]);
@@ -97,11 +95,10 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData)
-        external
-        view
-        returns (bytes memory)
-    {
+    function resolveWithProof(
+        bytes calldata response,
+        bytes calldata extraData
+    ) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
         require(signers[signer], "SignatureVerifier: Invalid sigature");

@@ -219,10 +219,11 @@ contract MockSldRegistrationManager is
      * @param _parentNamehash bytes32 representation of the top level domain
      * @param _registrationLength Number of days for registration length
      */
-    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
-        external
-        payable
-    {
+    function renewSld(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable {
         // no-one gonna need to extend domain more than 100 years, and we do unchecked matth
         // inside the price function
         require(_registrationLength < 36500, "must be less than 100 years");
@@ -323,11 +324,9 @@ contract MockSldRegistrationManager is
      * @param _sldNamehash bytes32 representation of the SLD
      * @return _history An array containing the 10 year prices that were locked in when the domain was first registered
      */
-    function getTenYearGuarenteedPricing(bytes32 _sldNamehash)
-        external
-        view
-        returns (uint80[10] memory _history)
-    {
+    function getTenYearGuarenteedPricing(
+        bytes32 _sldNamehash
+    ) external view returns (uint80[10] memory _history) {
         _history = pricesAtRegistration[_sldNamehash];
     }
 
@@ -505,11 +504,11 @@ contract MockSldRegistrationManager is
         }
     }
 
-    function getCurrentDiscount(bytes32 _parentNamehash, address _addr, bool _isRegistration)
-        private
-        view
-        returns (uint256)
-    {
+    function getCurrentDiscount(
+        bytes32 _parentNamehash,
+        address _addr,
+        bool _isRegistration
+    ) private view returns (uint256) {
         uint256 discount = 0;
 
         SldDiscountSettings memory discountSetting = addressDiscounts[_parentNamehash][_addr];

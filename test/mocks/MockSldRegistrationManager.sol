@@ -56,10 +56,11 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         bytes32 s
     ) external payable {}
 
-    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
-        external
-        payable
-    {}
+    function renewSld(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable {}
 
     function getRenewalPricePerDay(
         address, //msg.sender
@@ -107,10 +108,11 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
         bytes32 s
     ) external payable {}
 
-    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
-        external
-        payable
-    {}
+    function renewSld(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable {}
 
     function getRenewalPricePerDay(
         address _addr,
@@ -119,21 +121,20 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
         uint256 _registrationLength
     ) external view returns (uint256) {}
 
-    function sldRegistrationHistory(bytes32 _sldNamehash)
-        external
-        view
-        returns (uint80, uint80, uint96)
-    {}
+    function sldRegistrationHistory(
+        bytes32 _sldNamehash
+    ) external view returns (uint80, uint80, uint96) {}
 
     function setRenewalPrice(uint256 _renewalPrice) external {
         renewalPrice = _renewalPrice;
     }
 
-    function getRenewalPrice(address, bytes32, string calldata, uint256)
-        external
-        view
-        returns (uint256 _price)
-    {
+    function getRenewalPrice(
+        address,
+        bytes32,
+        string calldata,
+        uint256
+    ) external view returns (uint256 _price) {
         return renewalPrice;
     }
 

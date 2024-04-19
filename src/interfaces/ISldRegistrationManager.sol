@@ -23,9 +23,11 @@ interface ISldRegistrationManager {
         bytes32 s
     ) external payable;
 
-    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength)
-        external
-        payable;
+    function renewSld(
+        string calldata _label,
+        bytes32 _parentNamehash,
+        uint80 _registrationLength
+    ) external payable;
 
     function getRenewalPricePerDay(
         address _addr,
@@ -34,10 +36,9 @@ interface ISldRegistrationManager {
         uint256 _registrationLength
     ) external view returns (uint256);
 
-    function sldRegistrationHistory(bytes32 _sldNamehash)
-        external
-        view
-        returns (uint80, uint80, uint96);
+    function sldRegistrationHistory(
+        bytes32 _sldNamehash
+    ) external view returns (uint80, uint80, uint96);
 
     function tld() external view returns (IHandshakeTld);
 
@@ -50,10 +51,10 @@ interface ISldRegistrationManager {
 
     function globalStrategy() external view returns (IGlobalRegistrationRules);
 
-    function pricesAtRegistration(bytes32 _sldNamehash, uint256 _index)
-        external
-        view
-        returns (uint80);
+    function pricesAtRegistration(
+        bytes32 _sldNamehash,
+        uint256 _index
+    ) external view returns (uint80);
 
     event RegisterSld(
         bytes32 indexed _tldNamehash,

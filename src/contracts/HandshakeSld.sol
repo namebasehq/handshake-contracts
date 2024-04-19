@@ -40,10 +40,11 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _tldNamehash The bytes32 representation of the TLD
      * @param _label The label of the SLD
      */
-    function registerSld(address _to, bytes32 _tldNamehash, string calldata _label)
-        external
-        isRegistrationManager
-    {
+    function registerSld(
+        address _to,
+        bytes32 _tldNamehash,
+        string calldata _label
+    ) external isRegistrationManager {
         bytes32 sldNamehash = Namehash.getNamehash(_tldNamehash, _label);
         if (hasExpired(sldNamehash)) {
             _burn(uint256(sldNamehash));
@@ -71,12 +72,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _tokenId The token ID of the SLD NFT to be checked
      * @return _allowed Is the address the owner or on the accepted list
      */
-    function isApprovedOrOwner(address _operator, uint256 _tokenId)
-        public
-        view
-        override(HandshakeNft, IHandshakeSld)
-        returns (bool _allowed)
-    {
+    function isApprovedOrOwner(
+        address _operator,
+        uint256 _tokenId
+    ) public view override(HandshakeNft, IHandshakeSld) returns (bool _allowed) {
         _allowed = HandshakeNft.isApprovedOrOwner(_operator, _tokenId);
     }
 
@@ -87,12 +86,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _tokenId The token ID of the SLD NFT to be checked
      * @return _addr Owner of NFT
      */
-    function ownerOf(uint256 _tokenId)
-        public
-        view
-        override(HandshakeNft, IHandshakeSld)
-        returns (address _addr)
-    {
+    function ownerOf(
+        uint256 _tokenId
+    ) public view override(HandshakeNft, IHandshakeSld) returns (address _addr) {
         require(!hasExpired(bytes32(_tokenId)), "sld expired");
         _addr = HandshakeNft.ownerOf(_tokenId);
     }
@@ -113,11 +109,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _parentNamehash Bytes32 representation of the top level domain
      * @return _strategy Linked registration strategy to the top level domain
      */
-    function getRegistrationStrategy(bytes32 _parentNamehash)
-        public
-        view
-        returns (ISldRegistrationStrategy _strategy)
-    {
+    function getRegistrationStrategy(
+        bytes32 _parentNamehash
+    ) public view returns (ISldRegistrationStrategy _strategy) {
         _strategy = handshakeTldContract.registrationStrategy(_parentNamehash);
     }
 
@@ -132,10 +126,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _id uint256 representation of the top level domain
      * @param _amount Percentage to be set. Should be between 1-10%.
      */
-    function setRoyaltyPayoutAmount(uint256 _id, uint256 _amount)
-        public
-        onlyParentApprovedOrOwner(_id)
-    {
+    function setRoyaltyPayoutAmount(
+        uint256 _id,
+        uint256 _amount
+    ) public onlyParentApprovedOrOwner(_id) {
         require(_amount <= 10, "10% maximum royalty on SLD");
         royaltyPayoutAmountMap[bytes32(_id)] = _amount;
         emit RoyaltyPayoutAmountSet(bytes32(_id), _amount);
@@ -149,10 +143,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _id uint256 representation of the top level domain
      * @param _addr Address to be set for the on-chain royalties to be sent to.
      */
-    function setRoyaltyPayoutAddress(uint256 _id, address _addr)
-        public
-        onlyParentApprovedOrOwner(_id)
-    {
+    function setRoyaltyPayoutAddress(
+        uint256 _id,
+        address _addr
+    ) public onlyParentApprovedOrOwner(_id) {
         require(_addr != address(0), "cannot set to zero address");
         royaltyPayoutAddressMap[bytes32(_id)][handshakeTldContract.ownerOf(_id)] = _addr;
         emit RoyaltyPayoutAddressSet(bytes32(_id), _addr);
@@ -236,12 +230,9 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param _sldNamehash bytes32 representation of the sub domain
      * @return _fullDomain
      */
-    function name(bytes32 _sldNamehash)
-        external
-        view
-        override(HandshakeNft, IHandshakeSld)
-        returns (string memory _fullDomain)
-    {
+    function name(
+        bytes32 _sldNamehash
+    ) external view override(HandshakeNft, IHandshakeSld) returns (string memory _fullDomain) {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
         require(tldNamehash != 0x0, "domain does not exist");
         string memory tldLabel = handshakeTldContract.namehashToLabelMap(tldNamehash);
@@ -250,24 +241,18 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
         _fullDomain = string(abi.encodePacked(sldLabel, ".", tldLabel));
     }
 
-    function parent(bytes32 _sldNamehash)
-        external
-        view
-        override(HandshakeNft, IHandshakeSld)
-        returns (string memory _parentName)
-    {
+    function parent(
+        bytes32 _sldNamehash
+    ) external view override(HandshakeNft, IHandshakeSld) returns (string memory _parentName) {
         bytes32 tldNamehash = namehashToParentMap[_sldNamehash];
         require(tldNamehash != 0x0, "domain does not exist");
 
         _parentName = handshakeTldContract.namehashToLabelMap(tldNamehash);
     }
 
-    function expiry(bytes32 _namehash)
-        public
-        view
-        override(HandshakeNft, IHandshakeSld)
-        returns (uint256 _expiry)
-    {
+    function expiry(
+        bytes32 _namehash
+    ) public view override(HandshakeNft, IHandshakeSld) returns (uint256 _expiry) {
         (uint80 regTime, uint96 regLength, ) = registrationManager.sldRegistrationHistory(
             _namehash
         );
@@ -285,11 +270,10 @@ contract HandshakeSld is HandshakeNft, IHandshakeSld {
      * @param tokenId uint256 representation of the SLD
      * @param salePrice this does not link to any specific currency
      */
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
-        external
-        view
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(
+        uint256 tokenId,
+        uint256 salePrice
+    ) external view returns (address receiver, uint256 royaltyAmount) {
         bytes32 parentNamehash = namehashToParentMap[bytes32(tokenId)];
         uint256 parentId = uint256(parentNamehash);
 

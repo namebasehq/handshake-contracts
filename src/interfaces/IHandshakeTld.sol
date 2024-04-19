@@ -24,8 +24,7 @@ interface IHandshakeTld {
 
     function setResolver(bytes32 _namehash, IResolver _resolver) external;
 
-    function registrationStrategy(bytes32 _namehash)
-        external
-        view
-        returns (ISldRegistrationStrategy);
+    function registrationStrategy(
+        bytes32 _namehash
+    ) external view returns (ISldRegistrationStrategy);
 }

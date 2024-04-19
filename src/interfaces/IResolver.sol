@@ -22,6 +22,4 @@ interface IResolver is
     IDNSZoneResolver,
     INameResolver,
     ITextResolver
-{
-
-}
+{}

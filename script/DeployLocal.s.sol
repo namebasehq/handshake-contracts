@@ -60,12 +60,11 @@ contract DeployLocalScript is Script {
             if (block.chainid != 31337) {
                 revert("only local chain deployment");
             }
-                ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
-                deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-                vm.startBroadcast(vm.envUint("LOCAL_PRIVATE_KEY"));
-                priceOracle = new MockUsdOracle(200000000000);
-                baseUri = "http://localhost:3000/api/metadata/";
-
+            ownerWallet = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; //second wallet in anvil
+            deployerWallet = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+            vm.startBroadcast(vm.envUint("LOCAL_PRIVATE_KEY"));
+            priceOracle = new MockUsdOracle(200000000000);
+            baseUri = "http://localhost:3000/api/metadata/";
 
             tld = new HandshakeTld();
             sld = new HandshakeSld(tld);

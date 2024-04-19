@@ -349,9 +349,9 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.renewSld{value: 1 ether}(label, parentNamehash, registrationLength);
     }
 
-    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(uint8 _years)
-        public
-    {
+    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(
+        uint8 _years
+    ) public {
         _years = uint8(bound(_years, 1, 25));
 
         setUpLabelValidator();

@@ -7,11 +7,13 @@ import {console} from "forge-std/console.sol";
 contract MockRevertingRegistrationStrategy is ISldRegistrationStrategy {
     function isEnabled(bytes32 _parentNamehash) external view returns (bool) {}
 
-    function getPriceInDollars(address, bytes32, string memory, uint256, bool)
-        external
-        pure
-        returns (uint256)
-    {
+    function getPriceInDollars(
+        address,
+        bytes32,
+        string memory,
+        uint256,
+        bool
+    ) external pure returns (uint256) {
         revert("MockRevertingRegistrationStrategy: revert");
     }
 
@@ -33,11 +35,13 @@ contract MockGasLimitRegistrationStrategy is ISldRegistrationStrategy {
 
     function isEnabled(bytes32 _parentNamehash) external view returns (bool) {}
 
-    function getPriceInDollars(address, bytes32, string memory, uint256, bool)
-        external
-        view
-        returns (uint256)
-    {
+    function getPriceInDollars(
+        address,
+        bytes32,
+        string memory,
+        uint256,
+        bool
+    ) external view returns (uint256) {
         //loop until certain gas limit is reached
         uint256 gasLeft = gasleft();
         uint256 target;
