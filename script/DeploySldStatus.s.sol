@@ -19,12 +19,9 @@ contract DeploySldStatusScript is Script {
     function setUp() public {}
 
     function run() public {
-      // vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+        // vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
-
-        SldStatus status = SldStatus(
-            0x93f7F30736709cC6Df4b46C58f5C27A54F8EB6ed
-        );
+        SldStatus status = SldStatus(0x93f7F30736709cC6Df4b46C58f5C27A54F8EB6ed);
 
         bytes32 hns = 0xfb667b5dbbd33e7c0717051928f3b5eb9f4c4de9e1f1c14c71774773504711ca;
         bytes32 wallet = 0x1e3f482b3363eb4710dae2cb2183128e272eafbe137f686851c1caea32502230;

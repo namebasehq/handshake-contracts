@@ -82,7 +82,6 @@ contract SldStatus {
 
         bool publicRegistrationOpen = strategy.isEnabled(_parentHash);
 
-
         uint256 premiumPrice = strategy.premiumNames(sldHash);
         address reservedAddress = strategy.reservedNames(sldHash);
         uint256 priceInCents = registrationPrice / 10 ** 16;

@@ -68,7 +68,7 @@ contract DeployScript is Script {
 
         {
             vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
-            console.log('msg.sender', msg.sender);
+            console.log("msg.sender", msg.sender);
             priceOracle = new UsdPriceOracle(ORACLE_ADDRESS);
 
             tld = new HandshakeTld();
