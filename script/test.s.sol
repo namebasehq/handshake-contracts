@@ -6,7 +6,7 @@ import "contracts/SldRegistrationManager.sol";
 
 // 0x529B2b5B576c27769Ae0aB811F1655012f756C00
 
-// forge script script/test.s.sol:TestScript --private-key $GOERLI_DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --broadcast -vv
+// forge script script/test.s.sol:TestScript --private-key $GOERLI_DEPLOYER_PRIVATE_KEY --rpc-url $RPC_URL --etherscan-api-key $ETHERSCAN_API_KEY --verify --retries 10 --delay 10  --broadcast -vv
 
 contract TestScript is Script {
     function run() public {
