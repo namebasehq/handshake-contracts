@@ -65,6 +65,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
     );
 
     error Unauthorized();
+    error InvalidSignature();
 
     constructor(string memory _url, address[] memory _signers, address _ens) {
         url = _url;
@@ -135,7 +136,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
         external
         onlyOwner
     {
-        for (uint256 i = 0; i < _signers.length; i++) {
+        for (uint256 i; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
             emit NewSigners(_signers[i], _isSigner[i]);
         }
@@ -156,7 +157,9 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
     {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
-        require(signers[signer], "SignatureVerifier: Invalid sigature");
+        if(!signers[signer]) {
+            revert InvalidSignature();
+        }
 
         return result;
     }
@@ -164,6 +167,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return
             interfaceID == type(IExtendedResolver).interfaceId ||
+            interfaceID == type(ITextResolver).interfaceId ||
             interfaceID == type(IERC165).interfaceId;
     }
 }
