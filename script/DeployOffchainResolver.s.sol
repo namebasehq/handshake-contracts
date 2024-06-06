@@ -41,9 +41,11 @@ contract DeployOffchainResolverScript is Script {
         address[] memory signers = new address[](1);
 
         signers[0] = 0x9b6435E0E73d40F8A64fE5094e4ea462a54a078B;
+
+        address ens = address(0x1);
   
         // Deploy the off-chain resolver
-        OffchainResolver offchainResolver = new OffchainResolver(url, signers);
+        OffchainResolver offchainResolver = new OffchainResolver(url, signers, ens);
 
         console.log("OffchainResolver deployed at: ", address(offchainResolver));
 
