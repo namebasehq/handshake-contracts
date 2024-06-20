@@ -34,7 +34,11 @@ contract DeployScript is Script {
     address private constant ORACLE_ADDRESS = 0x13e3Ee699D1909E989722E753853AE30b17e08c5;
 
     // This will the the owner of the contracts that can run admin functions
-    address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+    //address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+
+    // localhost
+    address private constant CONTRACT_OWNER = 0xd3846142b49498A9FF08cf3CD8E1208669Fdbe0B;
+
 
     // This is the proxy owner for TldClaimManager and SldRegistrationManager. This address
     // must be different to the CONTRACT_OWNER as the proxy owner can only run admin functions
@@ -85,7 +89,6 @@ contract DeployScript is Script {
             console.log("tld metadata", address(genericMetadata));
             console.log("sld metadata", address(genericMetadata));
 
-            console.log("owner", tld.owner());
 
             tld.setMetadataContract(genericMetadata);
             sld.setMetadataContract(genericMetadata);
@@ -128,16 +131,17 @@ contract DeployScript is Script {
 
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
-        console.log("owner", SldRegistrationManager(address(uups2)).owner());
-        console.log("msg.sender", msg.sender);
         SldRegistrationManager(address(uups2)).updateSigner(
             0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
             true
         );
 
+
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
         DefaultResolver resolver = new DefaultResolver(tld, sld);
+
+        
 
         //transfer ownership of ownable contracts
         sld.setDefaultResolver(IResolver(address(resolver)));
