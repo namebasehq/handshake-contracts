@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import "src/interfaces/resolvers/ITextResolver.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable {
+contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
 
     ENS public immutable ens;
 
@@ -24,7 +23,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
      */
     mapping(bytes32=>mapping(address=>mapping(address=>bool))) public authorisations;
 
-    mapping(bytes32=>mapping(string=>string)) public text;
+    mapping(bytes32=>mapping(string=>string)) public tldText;
 
     event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
 
@@ -46,6 +45,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
     }
 
     function isAuthorised(bytes32 node) internal view returns(bool) {
+  
         address owner = ens.owner(node);
         return owner == msg.sender || authorisations[node][owner][msg.sender];
     }
@@ -55,6 +55,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
 
     event NewSigners(address indexed signer, bool isSigner);
     event UpdateUrl(string url);
+    event TldTextChanged(bytes32 indexed node, string indexed indexedKey, string key, string value);
 
     error OffchainLookup(
         address sender,
@@ -93,13 +94,21 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
         return SignatureVerifier.makeSignatureHash(target, expires, request, result);
     }
 
+    /// @notice Sets text records for the specified TLD node.
+    /// @dev Emits a `TldTextChanged` event upon successful update.
+    /// Only the owner or authorized user of the TLD node can call this function.
+    /// @param node The TLD node identifier as a bytes32 value.
+    /// @param key The key of the text record to set.
+    /// @param value The value to set for the specified text record key.
+    /// @custom:security This function should only be accessible by the TLD owner or an approved entity.
     function setText(bytes32 node, string calldata key, string calldata value) external {
+
         if(!isAuthorised(node)) {
             revert Unauthorized();
         }
         
-        text[node][key] = value;
-        emit TextChanged(node, key, key, value);
+        tldText[node][key] = value;
+        emit TldTextChanged(node, key, key, value);
     }
 
     /**
@@ -167,7 +176,6 @@ contract OffchainResolver is IExtendedResolver, IERC165, ITextResolver, Ownable 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return
             interfaceID == type(IExtendedResolver).interfaceId ||
-            interfaceID == type(ITextResolver).interfaceId ||
             interfaceID == type(IERC165).interfaceId;
     }
 }
