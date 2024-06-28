@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -14,6 +15,7 @@ import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
 
     ENS public immutable ens;
+    INameWrapper public nameWrapper;
 
     /**
      * A mapping of authorisations. An address that is authorised for a name
@@ -44,9 +46,12 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         emit AuthorisationChanged(node, msg.sender, target, _isAuthorised);
     }
 
-    function isAuthorised(bytes32 node) internal view returns(bool) {
-  
+    function isAuthorised(bytes32 node) internal view returns (bool) {
+
         address owner = ens.owner(node);
+        if (owner == address(nameWrapper)) {
+            owner = nameWrapper.ownerOf(uint256(node));
+        }
         return owner == msg.sender || authorisations[node][owner][msg.sender];
     }
 
@@ -68,11 +73,12 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     error Unauthorized();
     error InvalidSignature();
 
-    constructor(string memory _url, address[] memory _signers, address _ens) {
+    constructor(string memory _url, address[] memory _signers, address _ens, address _wrapper) {
         url = _url;
         emit UpdateUrl(_url);
 
         ens = ENS(_ens);
+        nameWrapper = INameWrapper(_wrapper);
 
         uint256 arrayLength = _signers.length;
         for (uint256 i; i < arrayLength; ) {
