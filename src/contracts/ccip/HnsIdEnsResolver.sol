@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,7 +12,7 @@ import "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
+contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     ENS public immutable ens;
     INameWrapper public nameWrapper;
@@ -23,9 +23,9 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
      * the set of authorisations.
      * (node, owner, caller) => isAuthorised
      */
-    mapping(bytes32=>mapping(address=>mapping(address=>bool))) public authorisations;
+    mapping(bytes32 => mapping(address => mapping(address => bool))) public authorisations;
 
-    mapping(bytes32=>mapping(string=>string)) public tldText;
+    mapping(string => string) public tldMappings;
 
     event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
 
@@ -47,7 +47,6 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     function isAuthorised(bytes32 node) internal view returns (bool) {
-
         address owner = ens.owner(node);
         if (owner == address(nameWrapper)) {
             owner = nameWrapper.ownerOf(uint256(node));
@@ -60,7 +59,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
 
     event NewSigners(address indexed signer, bool isSigner);
     event UpdateUrl(string url);
-    event TldTextChanged(bytes32 indexed node, string indexed indexedKey, string key, string value);
+    event TldChanged(bytes32 indexed node, string indexed indexedEns, string indexed indexedTld, string ens, string tld);
 
     error OffchainLookup(
         address sender,
@@ -101,21 +100,18 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     /// @notice Sets text records for the specified TLD node.
-    /// @dev Emits a `TldTextChanged` event upon successful update.
-    /// Only the owner or authorized user of the TLD node can call this function.
-    /// @param node The TLD node identifier as a bytes32 value.
-    /// @param key The key of the text record to set.
-    /// @param value The value to set for the specified text record key.
-    /// @custom:security This function should only be accessible by the TLD owner or an approved entity.
-    function setText(bytes32 node, string calldata key, string calldata value) external {
+    function setText(string calldata _ens, string calldata _tld) external {
 
-        if(!isAuthorised(node)) {
+        bytes32 node = getDomainNamehash(_ens);
+
+        if (!isAuthorised(node)) {
             revert Unauthorized();
         }
-        
-        tldText[node][key] = value;
-        emit TldTextChanged(node, key, key, value);
+
+        tldMappings[_ens] = _tld;
+        emit TldChanged(node, _ens, _tld, _ens, _tld);
     }
+
 
     /**
      * Resolves a name, as specified by ENSIP 10 (wildcard).
@@ -135,7 +131,7 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
             data
         );
         string[] memory urls = new string[](1);
-        urls[0] = url;
+        urls[0] = getUrl(name);
 
         // revert with the OffchainLookup error, which will be caught by the client
         revert OffchainLookup(
@@ -162,6 +158,15 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
         emit UpdateUrl(_url);
     }
 
+    function getUrl(bytes calldata name) public view returns (string memory) {
+        string memory ensName = hexToText(name);
+        string memory tld = tldMappings[ensName];
+
+        require(bytes(tld).length > 0, "TLD not found");
+
+        return string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+    }
+
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      */
@@ -172,16 +177,129 @@ contract OffchainResolver is IExtendedResolver, IERC165, Ownable {
     {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
-        if(!signers[signer]) {
+        if (!signers[signer]) {
             revert InvalidSignature();
         }
 
         return result;
     }
 
+ function hexToText(bytes memory hexBytes) private pure returns (string memory) {
+    uint start = 0;
+    // Find the first line break (0x0a)
+    for (uint i = 0; i < hexBytes.length; i++) {
+        if (hexBytes[i] == 0x0a) {
+            start = i + 1;
+            break;
+        }
+    }
+
+    // Initialize the final bytes array
+    bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
+    uint tempIndex = 0;
+
+    for (uint i = start; i < hexBytes.length; i++) {
+        if (hexBytes[i] == 0x00) {
+            break; // Ignore termination byte and stop processing
+        } else if (hexBytes[i] == 0x03) {
+            tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
+        } else {
+            tempBytes[tempIndex] = hexBytes[i];
+        }
+        tempIndex++;
+    }
+
+    // Create the final bytes array with the exact length of valid characters
+    bytes memory strBytes = new bytes(tempIndex);
+    for (uint j = 0; j < tempIndex; j++) {
+        strBytes[j] = tempBytes[j];
+    }
+
+    return string(strBytes);
+}
+
+
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return
             interfaceID == type(IExtendedResolver).interfaceId ||
             interfaceID == type(IERC165).interfaceId;
+    }
+
+    // Namehash functions
+    function getLabelhash(string memory _label) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_label));
+    }
+
+    function getNamehash(bytes32 _parentHash, string memory _label) private pure returns (bytes32) {
+        bytes32 labelhash = keccak256(abi.encodePacked(_label));
+        return keccak256(abi.encodePacked(_parentHash, labelhash));
+    }
+
+    function getTldNamehash(string memory _label) private pure returns (bytes32) {
+        return getNamehash(bytes32(0), _label);
+    }
+
+    function getDomainNamehash(string memory _domain) private pure returns (bytes32) {
+        bytes memory bytesDomain = bytes(_domain);
+        uint256 length = bytesDomain.length;
+        bytes32 node = 0;
+        uint8 labelLength = 0;
+
+        // use unchecked to save gas since we check for an underflow
+        // and we check for the length before the loop
+        unchecked {
+            for (uint256 i = length - 1; i >= 0; i--) {
+                if (bytesDomain[i] == ".") {
+                    node = keccak256(
+                        abi.encodePacked(node, keccak(bytesDomain, i + 1, labelLength))
+                    );
+                    labelLength = 0;
+                } else {
+                    labelLength += 1;
+                }
+                if (i == 0) {
+                    break;
+                }
+            }
+        }
+
+        node = keccak256(abi.encodePacked(node, keccak(bytesDomain, 0, labelLength)));
+
+        return node;
+    }
+
+    // BytesUtils functions
+    function keccak(
+        bytes memory self,
+        uint256 offset,
+        uint256 len
+    ) internal pure returns (bytes32 ret) {
+        require(offset + len <= self.length);
+        assembly {
+            ret := keccak256(add(add(self, 32), offset), len)
+        }
+    }
+
+    function namehash(bytes memory self, uint256 offset) internal pure returns (bytes32) {
+        (bytes32 labelhash, uint256 newOffset) = readLabel(self, offset);
+        if (labelhash == bytes32(0)) {
+            require(offset == self.length - 1, "namehash: Junk at end of name");
+            return bytes32(0);
+        }
+        return keccak256(abi.encodePacked(namehash(self, newOffset), labelhash));
+    }
+
+    function readLabel(
+        bytes memory self,
+        uint256 idx
+    ) internal pure returns (bytes32 labelhash, uint256 newIdx) {
+        require(idx < self.length, "readLabel: Index out of bounds");
+        uint256 len = uint256(uint8(self[idx]));
+        if (len > 0) {
+            labelhash = keccak(self, idx + 1, len);
+        } else {
+            labelhash = bytes32(0);
+        }
+        newIdx = idx + len + 1;
     }
 }

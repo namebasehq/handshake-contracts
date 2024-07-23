@@ -11,7 +11,9 @@ contract DeployOffchainResolverScript is Script {
       
     }
 
-    // forge script script/DeployOffchainResolver.s.sol:DeployOffchainResolverScript --private-key $GOERLI_DEPLOYER_PRIVATE_KEY --rpc-url $GOERLI_L1_RPC_URL --broadcast -vv
+    
+
+    // forge script script/DeployOffchainResolver.s.sol:DeployOffchainResolverScript --private-key $GOERLI_DEPLOYER_PRIVATE_KEY --rpc-url $GOERLI_L1_RPC_URL --etherscan-api-key $ETHERSCAN_L1_API_KEY --verify --retries 10 --delay 10 --broadcast -vv
     function run() public {
         vm.startBroadcast(vm.envUint("GOERLI_DEPLOYER_PRIVATE_KEY"));
 
@@ -30,7 +32,7 @@ contract DeployOffchainResolverScript is Script {
             ens = address(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e); // Mainnet ENS address
             namewrapper = 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401;
         } else if (chainId == 11155111) { // Sepolia
-            url = "https://hnst.id/api/gateway/ccip?sender={sender}&data={data}";
+            url = "https://hns-id-git-ccip-sam-namebase.vercel.app/api/";
             signers[0] = 0xdEC45E28975FF38ACBb37Af9Eaa64493c3aDa126;
             ens = address(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e); // sepolia address the same
             namewrapper = 0x0635513f179D50A207757E05759CbD106d7dFcE8;
