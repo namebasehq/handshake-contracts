@@ -138,7 +138,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
             address(this),
             urls,
             callData,
-            OffchainResolver.resolveWithProof.selector,
+            HnsIdEnsResolver.resolveWithProof.selector,
             callData
         );
     }
