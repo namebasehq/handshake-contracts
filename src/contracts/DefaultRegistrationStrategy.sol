@@ -147,7 +147,6 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
     ) public view returns (uint256) {
         require(_registrationLength > 0, "minimum reg is 1 day");
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
-        
 
         require(
             reservedNames[namehash] == address(0) ||

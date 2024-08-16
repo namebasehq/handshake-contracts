@@ -13,7 +13,6 @@ import "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
  * Callers must implement EIP 3668 and ENSIP 10.
  */
 contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
-
     ENS public immutable ens;
     INameWrapper public nameWrapper;
 
@@ -27,7 +26,12 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     mapping(string => string) public tldMappings;
 
-    event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
+    event AuthorisationChanged(
+        bytes32 indexed node,
+        address indexed owner,
+        address indexed target,
+        bool isAuthorised
+    );
 
     /**
      * @dev Sets or clears an authorisation.
@@ -59,7 +63,13 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     event NewSigners(address indexed signer, bool isSigner);
     event UpdateUrl(string url);
-    event TldChanged(bytes32 indexed node, string indexed indexedEns, string indexed indexedTld, string ens, string tld);
+    event TldChanged(
+        bytes32 indexed node,
+        string indexed indexedEns,
+        string indexed indexedTld,
+        string ens,
+        string tld
+    );
 
     error OffchainLookup(
         address sender,
@@ -101,7 +111,6 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     /// @notice Sets text records for the specified TLD node.
     function setText(string calldata _ens, string calldata _tld) external {
-
         bytes32 node = getDomainNamehash(_ens);
 
         if (!isAuthorised(node)) {
@@ -112,19 +121,16 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         emit TldChanged(node, _ens, _tld, _ens, _tld);
     }
 
-
     /**
      * Resolves a name, as specified by ENSIP 10 (wildcard).
      * @param name The DNS-encoded name to resolve.
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-    function resolve(bytes calldata name, bytes calldata data)
-        external
-        view
-        override
-        returns (bytes memory)
-    {
+    function resolve(
+        bytes calldata name,
+        bytes calldata data
+    ) external view override returns (bytes memory) {
         bytes memory callData = abi.encodeWithSelector(
             IExtendedResolver.resolve.selector,
             name,
@@ -143,10 +149,10 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         );
     }
 
-    function updateSigners(address[] calldata _signers, bool[] calldata _isSigner)
-        external
-        onlyOwner
-    {
+    function updateSigners(
+        address[] calldata _signers,
+        bool[] calldata _isSigner
+    ) external onlyOwner {
         for (uint256 i; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
             emit NewSigners(_signers[i], _isSigner[i]);
@@ -164,17 +170,17 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         require(bytes(tld).length > 0, "TLD not found");
 
-        return string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+        return
+            string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
     }
 
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData)
-        external
-        view
-        returns (bytes memory)
-    {
+    function resolveWithProof(
+        bytes calldata response,
+        bytes calldata extraData
+    ) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
         if (!signers[signer]) {
@@ -184,40 +190,39 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         return result;
     }
 
- function hexToText(bytes memory hexBytes) private pure returns (string memory) {
-    uint start = 0;
-    // Find the first line break (0x0a)
-    for (uint i = 0; i < hexBytes.length; i++) {
-        if (hexBytes[i] == 0x0a) {
-            start = i + 1;
-            break;
+    function hexToText(bytes memory hexBytes) private pure returns (string memory) {
+        uint start = 0;
+        // Find the first line break (0x0a)
+        for (uint i = 0; i < hexBytes.length; i++) {
+            if (hexBytes[i] == 0x0a) {
+                start = i + 1;
+                break;
+            }
         }
-    }
 
-    // Initialize the final bytes array
-    bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-    uint tempIndex = 0;
+        // Initialize the final bytes array
+        bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
+        uint tempIndex = 0;
 
-    for (uint i = start; i < hexBytes.length; i++) {
-        if (hexBytes[i] == 0x00) {
-            break; // Ignore termination byte and stop processing
-        } else if (hexBytes[i] == 0x03) {
-            tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
-        } else {
-            tempBytes[tempIndex] = hexBytes[i];
+        for (uint i = start; i < hexBytes.length; i++) {
+            if (hexBytes[i] == 0x00) {
+                break; // Ignore termination byte and stop processing
+            } else if (hexBytes[i] == 0x03) {
+                tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
+            } else {
+                tempBytes[tempIndex] = hexBytes[i];
+            }
+            tempIndex++;
         }
-        tempIndex++;
+
+        // Create the final bytes array with the exact length of valid characters
+        bytes memory strBytes = new bytes(tempIndex);
+        for (uint j = 0; j < tempIndex; j++) {
+            strBytes[j] = tempBytes[j];
+        }
+
+        return string(strBytes);
     }
-
-    // Create the final bytes array with the exact length of valid characters
-    bytes memory strBytes = new bytes(tempIndex);
-    for (uint j = 0; j < tempIndex; j++) {
-        strBytes[j] = tempBytes[j];
-    }
-
-    return string(strBytes);
-}
-
 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return

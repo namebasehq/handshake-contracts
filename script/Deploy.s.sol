@@ -39,7 +39,6 @@ contract DeployScript is Script {
     // localhost
     address private constant CONTRACT_OWNER = 0xd3846142b49498A9FF08cf3CD8E1208669Fdbe0B;
 
-
     // This is the proxy owner for TldClaimManager and SldRegistrationManager. This address
     // must be different to the CONTRACT_OWNER as the proxy owner can only run admin functions
     // on the proxy contract and not the implementation contract.
@@ -89,7 +88,6 @@ contract DeployScript is Script {
             console.log("tld metadata", address(genericMetadata));
             console.log("sld metadata", address(genericMetadata));
 
-
             tld.setMetadataContract(genericMetadata);
             sld.setMetadataContract(genericMetadata);
         }
@@ -136,12 +134,9 @@ contract DeployScript is Script {
             true
         );
 
-
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 
         DefaultResolver resolver = new DefaultResolver(tld, sld);
-
-        
 
         //transfer ownership of ownable contracts
         sld.setDefaultResolver(IResolver(address(resolver)));

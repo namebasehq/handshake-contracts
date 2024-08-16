@@ -16,38 +16,37 @@ contract TestTests is Test {
         console.log(stringVal); // Should print "testing789.eth"
     }
 
- function hexToText(bytes memory hexBytes) public pure returns (string memory) {
-    uint start = 0;
-    // Find the first line break (0x0a)
-    for (uint i = 0; i < hexBytes.length; i++) {
-        if (hexBytes[i] == 0x0a) {
-            start = i + 1;
-            break;
+    function hexToText(bytes memory hexBytes) public pure returns (string memory) {
+        uint start = 0;
+        // Find the first line break (0x0a)
+        for (uint i = 0; i < hexBytes.length; i++) {
+            if (hexBytes[i] == 0x0a) {
+                start = i + 1;
+                break;
+            }
         }
-    }
 
-    // Initialize the final bytes array
-    bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-    uint tempIndex = 0;
+        // Initialize the final bytes array
+        bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
+        uint tempIndex = 0;
 
-    for (uint i = start; i < hexBytes.length; i++) {
-        if (hexBytes[i] == 0x00) {
-            break; // Ignore termination byte and stop processing
-        } else if (hexBytes[i] == 0x03) {
-            tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
-        } else {
-            tempBytes[tempIndex] = hexBytes[i];
+        for (uint i = start; i < hexBytes.length; i++) {
+            if (hexBytes[i] == 0x00) {
+                break; // Ignore termination byte and stop processing
+            } else if (hexBytes[i] == 0x03) {
+                tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
+            } else {
+                tempBytes[tempIndex] = hexBytes[i];
+            }
+            tempIndex++;
         }
-        tempIndex++;
+
+        // Create the final bytes array with the exact length of valid characters
+        bytes memory strBytes = new bytes(tempIndex);
+        for (uint j = 0; j < tempIndex; j++) {
+            strBytes[j] = tempBytes[j];
+        }
+
+        return string(strBytes);
     }
-
-    // Create the final bytes array with the exact length of valid characters
-    bytes memory strBytes = new bytes(tempIndex);
-    for (uint j = 0; j < tempIndex; j++) {
-        strBytes[j] = tempBytes[j];
-    }
-
-    return string(strBytes);
-}
-
 }
