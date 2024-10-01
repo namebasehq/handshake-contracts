@@ -15,7 +15,6 @@ import "./HasLabelValidator.sol";
 import "structs/SldDiscountSettings.sol";
 import "structs/EIP712Domain.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "forge-std/console.sol";
 
 /**
  * Registration manager for second level domains
@@ -163,6 +162,7 @@ contract SldRegistrationManager is
         bytes32 subdomainHash
     ) public view returns (bytes32) {
         uint256 nonce = subdomainRegistrationNonce[subdomainHash];
+
         return
             keccak256(
                 abi.encodePacked(
