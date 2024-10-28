@@ -24,7 +24,6 @@ contract DeployWrappedHandshake is Script {
 
         console.log("Deployer address:", vm.addr(deployerPrivateKey));
 
-
         // Deploy the WrappedHandshake contract with 6 decimals
         WrappedHandshake token = new WrappedHandshake(DECIMALS);
 

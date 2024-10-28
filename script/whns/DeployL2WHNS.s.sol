@@ -32,13 +32,11 @@ contract DeployWrappedHandshake is Script {
         } else if (block.chainid == OPTIMISM_MAINNET_CHAIN_ID) {
             REMOTE_L1_TOKEN = address(0x439388F8B8Fb3C1bcDcB58b6d1a75607FEEaEF36);
             L2_STANDARD_BRIDGE = 0x4200000000000000000000000000000000000010;
-
         } else {
             revert UnsupportedChain(block.chainid);
         }
 
         WrappedHandshake whns = new WrappedHandshake(L2_STANDARD_BRIDGE, REMOTE_L1_TOKEN);
-
 
         vm.stopBroadcast();
     }

@@ -1,4 +1,3 @@
-
 /*
 
                         @@@@@@@@@@                                  
@@ -59,8 +58,6 @@ contract WrappedHandshake is ERC20, IERC165, IOptimismMintableERC20, ILegacyMint
     address public BRIDGE;
     uint8 private DECIMALS;
 
-
-
     error OnlyBridge();
 
     /// @notice Ensures only the bridge contract can call specific functions.
@@ -70,7 +67,6 @@ contract WrappedHandshake is ERC20, IERC165, IOptimismMintableERC20, ILegacyMint
         }
         _;
     }
-
 
     /// @dev Constructor to disable initializers in the implementation contract.
     ///      This prevents the implementation from being initialized directly.
