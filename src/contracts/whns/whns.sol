@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: MIT
-<<<<<<< HEAD
 pragma solidity 0.8.28;
-=======
-pragma solidity 0.8.17;
->>>>>>> main
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-<<<<<<< HEAD
 /*
 
                         @@@@@@@@@@                                  
@@ -54,8 +49,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 */
 
-=======
->>>>>>> main
 contract WrappedHandshake is ERC20, Ownable {
     uint8 private _decimals;
 
