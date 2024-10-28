@@ -127,7 +127,14 @@ contract DeployScript is Script {
 
         tld.setTldClaimManager(TldClaimManager(address(uups)));
 
+<<<<<<< HEAD
         SldRegistrationManager(address(uups2)).updateSigner(0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f, true);
+=======
+        SldRegistrationManager(address(uups2)).updateSigner(
+            0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
+            true
+        );
+>>>>>>> main
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 

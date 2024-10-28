@@ -140,9 +140,20 @@ contract SldRegistrationManager is
     function getRegistrationHash(address buyer, bytes32 subdomainHash) public view returns (bytes32) {
         uint256 nonce = subdomainRegistrationNonce[subdomainHash];
 
+<<<<<<< HEAD
         return keccak256(
             abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encodePacked(buyer, subdomainHash, nonce)))
         );
+=======
+        return
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    DOMAIN_SEPARATOR,
+                    keccak256(abi.encodePacked(buyer, subdomainHash, nonce))
+                )
+            );
+>>>>>>> main
     }
 
     function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
