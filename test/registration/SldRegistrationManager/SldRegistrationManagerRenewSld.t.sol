@@ -42,20 +42,13 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 50 ether);
 
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
 
         (
             uint80 actualRegistrationTime,
             uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
-
         ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
@@ -85,13 +78,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 50 ether);
 
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(tld.expiry(parentNamehash) + 100);
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
@@ -99,7 +86,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         (
             uint80 actualRegistrationTime,
             uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
-
         ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
@@ -127,13 +113,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 50 ether);
 
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.expectRevert("cannot renew");
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
@@ -157,13 +137,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         startHoax(address(0x420), 30 ether);
 
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
         vm.stopPrank();
 
         uint256 registrationTimestamp = block.timestamp;
@@ -176,7 +150,6 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         (
             uint80 actualRegistrationTime,
             uint80 actualRegistrationLength, //uint96 actualRegistrationPrice
-
         ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         console.log("registration time", actualRegistrationTime);
@@ -207,13 +180,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         startHoax(address(0x420), 20 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400));
 
@@ -240,13 +207,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400) + 1 + 30 days);
 
@@ -271,13 +232,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400) - 1 + 30 days);
 
@@ -301,25 +256,13 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400) - 1 + 30 days);
 
         hoax(address(0x420), 20 ether);
         vm.expectRevert("domain already registered");
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testRenewDomainLessThan365Days() public {
@@ -338,37 +281,19 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address recipient = address(0x5555);
 
         hoax(address(0x420), 20 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         manager.renewSld{value: 1 ether}(label, parentNamehash, registrationLength);
     }
 
-    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(
-        uint8 _years
-    ) public {
+    function testRenewSldCheaperPriceInUpdatedRegistrationRules_useCheaperPrice(uint8 _years) public {
         _years = uint8(bound(_years, 1, 25));
 
         setUpLabelValidator();
         setUpGlobalStrategy(true, true, 1 ether);
 
-        uint128[10] memory prices = [
-            uint128(10 ether),
-            9 ether,
-            8 ether,
-            7 ether,
-            6 ether,
-            5 ether,
-            4 ether,
-            3 ether,
-            2 ether,
-            1.5 ether
-        ];
+        uint128[10] memory prices =
+            [uint128(10 ether), 9 ether, 8 ether, 7 ether, 6 ether, 5 ether, 4 ether, 3 ether, 2 ether, 1.5 ether];
 
         uint128[15] memory cheapestPrices = [
             uint128(3 ether),
@@ -411,17 +336,10 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         sld.setNamehashToParentMap(sldNamehash, parentNamehash);
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            msg.sender,
-            parentNamehash,
-            "yo",
-            _years * 365
-        ) / (_years * 365);
+        uint256 renewalPrice = manager.getRenewalPrice(msg.sender, parentNamehash, "yo", _years * 365) / (_years * 365);
 
         // get the index of the cheapest price per year
-        uint256 index = _years - 1 >= cheapestPrices.length
-            ? cheapestPrices.length - 1
-            : _years - 1;
+        uint256 index = _years - 1 >= cheapestPrices.length ? cheapestPrices.length - 1 : _years - 1;
 
         assertEq(renewalPrice, cheapestPrices[index] / 365, "price incorrect");
     }
@@ -430,18 +348,8 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         setUpLabelValidator();
         setUpGlobalStrategy(true, true, 1 ether);
 
-        uint128[10] memory prices = [
-            uint128(10 ether),
-            9 ether,
-            8 ether,
-            7 ether,
-            6 ether,
-            5 ether,
-            4 ether,
-            3 ether,
-            2 ether,
-            1 ether
-        ];
+        uint128[10] memory prices =
+            [uint128(10 ether), 9 ether, 8 ether, 7 ether, 6 ether, 5 ether, 4 ether, 3 ether, 2 ether, 1 ether];
 
         string memory label = "yo";
         bytes32 secret = 0x0;
@@ -462,30 +370,18 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 10.11 ether);
         vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
+            address(manager.sld()), abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
 
         vm.startPrank(sendingAddress);
-        manager.registerWithCommit{value: 10.11 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 10.11 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         // funds should be returned to msg.sender
         assertEq(sendingAddress.balance, 0.11 ether, "balance not correct");
 
         //assert
         for (uint256 i; i < 10; i++) {
-            uint256 actual = manager.getRenewalPricePerDay(
-                msg.sender,
-                parentNamehash,
-                label,
-                (i + 1) * 365
-            );
+            uint256 actual = manager.getRenewalPricePerDay(msg.sender, parentNamehash, label, (i + 1) * 365);
 
             uint256 expected = prices[i] / 365;
 
@@ -528,32 +424,15 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = 1 ether;
         assertEq(price, expected, "price should be $1");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be $1");
     }
@@ -591,11 +470,7 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
         uint256 price = manager.getRegistrationPrice{gas: 2000000}(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
+            address(strategy), addr, parentNamehash, label, registrationLength
         );
 
         assertEq(price, 1 ether, "price should be $1");
@@ -633,13 +508,8 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength * 2
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength * 2);
 
         assertEq(price, 2 ether, "price should be $2");
     }
@@ -677,36 +547,17 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy2),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy2), addr, parentNamehash, label, registrationLength);
 
         assertEq(price, annualCost, "price should be $2000");
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
-        sld.setMockRegistrationStrategy(
-            parentNamehash,
-            ISldRegistrationStrategy(address(0x888888))
-        );
+        sld.setMockRegistrationStrategy(parentNamehash, ISldRegistrationStrategy(address(0x888888)));
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, 1 ether, "renewal price should be $1");
     }
@@ -750,31 +601,14 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, minPrice * 1 ether, "price should be min price");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, minPrice * 1 ether, "renewal price should min price");
 
@@ -784,22 +618,10 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         label = "bar";
 
-        price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, minPrice * 1 ether, "price should be min price");
 

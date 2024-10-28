@@ -23,33 +23,25 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         tld = _manager.tld();
     }
 
-    function setPremiumName(
-        bytes32 _parentNamehash,
-        string calldata _label,
-        uint256 _priceInDollarsPerYear
-    ) private {
+    function setPremiumName(bytes32 _parentNamehash, string calldata _label, uint256 _priceInDollarsPerYear) private {
         premiumNames[Namehash.getNamehash(_parentNamehash, _label)] = _priceInDollarsPerYear;
         emit PremiumNameSet(_parentNamehash, _priceInDollarsPerYear, _label);
     }
 
-    function setReservedName(
-        bytes32 _parentNamehash,
-        string calldata _label,
-        address _claimant
-    ) private {
+    function setReservedName(bytes32 _parentNamehash, string calldata _label, address _claimant) private {
         reservedNames[Namehash.getNamehash(_parentNamehash, _label)] = _claimant;
         emit ReservedNameSet(_parentNamehash, _claimant, _label);
     }
 
-    function setLengthCost(
-        bytes32 _parentNamehash,
-        uint256[] calldata _prices
-    ) public isApprovedOrTokenOwner(_parentNamehash) {
+    function setLengthCost(bytes32 _parentNamehash, uint256[] calldata _prices)
+        public
+        isApprovedOrTokenOwner(_parentNamehash)
+    {
         uint256 arrayLength = _prices.length;
         require(arrayLength < 11, "max 10 characters");
 
         uint256 currentPrice = type(uint256).max;
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             uint256 price = _prices[i];
             require(price <= currentPrice, "must be less than or equal to previous length");
             currentPrice = price;
@@ -62,16 +54,16 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         lengthCost[_parentNamehash] = _prices;
     }
 
-    function setMultiYearDiscount(
-        bytes32 _parentNamehash,
-        uint256[] calldata _discounts
-    ) public isApprovedOrTokenOwner(_parentNamehash) {
+    function setMultiYearDiscount(bytes32 _parentNamehash, uint256[] calldata _discounts)
+        public
+        isApprovedOrTokenOwner(_parentNamehash)
+    {
         uint256 arrayLength = _discounts.length;
         require(arrayLength < 11, "cannot set more than 10 year discount");
 
         uint256 currentDiscount;
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             require(_discounts[i] >= currentDiscount, "must be more or equal to previous year");
             currentDiscount = _discounts[i];
 
@@ -85,10 +77,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         multiYearDiscount[_parentNamehash] = _discounts;
     }
 
-    function getLengthCost(
-        bytes32 _parentNamehash,
-        uint256 _length
-    ) private view returns (uint256) {
+    function getLengthCost(bytes32 _parentNamehash, uint256 _length) private view returns (uint256) {
         uint256[] storage prices = lengthCost[_parentNamehash];
         uint256 priceCount = prices.length;
         require(priceCount > 0, "no length prices are set");
@@ -104,7 +93,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         uint256 arrayLength = _labels.length;
         require(arrayLength == _priceInDollarsPerYear.length, "array lengths do not match");
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             setPremiumName(_parentNamehash, _labels[i], _priceInDollarsPerYear[i]);
 
             unchecked {
@@ -113,15 +102,14 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         }
     }
 
-    function setReservedNames(
-        bytes32 _parentNamehash,
-        string[] calldata _labels,
-        address[] calldata _claimants
-    ) public isApprovedOrTokenOwner(_parentNamehash) {
+    function setReservedNames(bytes32 _parentNamehash, string[] calldata _labels, address[] calldata _claimants)
+        public
+        isApprovedOrTokenOwner(_parentNamehash)
+    {
         uint256 arrayLength = _labels.length;
         require(arrayLength == _claimants.length, "array lengths do not match");
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             setReservedName(_parentNamehash, _labels[i], _claimants[i]);
 
             unchecked {
@@ -130,10 +118,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         }
     }
 
-    function setIsEnabled(
-        bytes32 _parentNamehash,
-        bool _isEnabled
-    ) external isApprovedOrTokenOwner(_parentNamehash) {
+    function setIsEnabled(bytes32 _parentNamehash, bool _isEnabled) external isApprovedOrTokenOwner(_parentNamehash) {
         isEnabled[_parentNamehash] = _isEnabled;
         emit EnabledSet(_parentNamehash, _isEnabled);
     }
@@ -149,14 +134,11 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         bytes32 namehash = Namehash.getNamehash(_parentNamehash, _label);
 
         require(
-            reservedNames[namehash] == address(0) ||
-                reservedNames[namehash] == _buyingAddress ||
-                _isRenewal,
+            reservedNames[namehash] == address(0) || reservedNames[namehash] == _buyingAddress || _isRenewal,
             "reserved name"
         );
 
-        uint256 minPrice = (_registrationLength *
-            registrationManager.globalStrategy().minimumDollarPrice());
+        uint256 minPrice = (_registrationLength * registrationManager.globalStrategy().minimumDollarPrice());
 
         uint256 calculatedPrice;
         uint256 annualPrice = premiumNames[namehash];
@@ -165,8 +147,7 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
             //if it's a premium name then just use the annual rate on it.
             calculatedPrice = (annualPrice * 1 ether * _registrationLength);
         } else {
-            uint256 totalPrice = (getLengthCost(_parentNamehash, bytes(_label).length) *
-                _registrationLength);
+            uint256 totalPrice = (getLengthCost(_parentNamehash, bytes(_label).length) * _registrationLength);
             uint256 discount = getDiscount(_parentNamehash, _registrationLength / 365);
             calculatedPrice = (totalPrice * (100 - discount)) / 100;
         }
@@ -192,13 +173,9 @@ contract DefaultRegistrationStrategy is ISldRegistrationStrategy, Multicallable 
         }
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(IERC165, Multicallable) returns (bool) {
-        return
-            interfaceId == this.isEnabled.selector ||
-            interfaceId == this.getPriceInDollars.selector ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override(IERC165, Multicallable) returns (bool) {
+        return interfaceId == this.isEnabled.selector || interfaceId == this.getPriceInDollars.selector
+            || super.supportsInterface(interfaceId);
     }
 
     modifier isApprovedOrTokenOwner(bytes32 _namehash) {

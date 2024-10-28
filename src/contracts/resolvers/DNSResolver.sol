@@ -19,14 +19,12 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, BaseResol
 
     // The records themselves.  Stored as binary RRSETs
     // node => version => name => resource => data
-    mapping(uint256 => mapping(bytes32 => mapping(bytes32 => mapping(uint16 => bytes))))
-        private versionable_records;
+    mapping(uint256 => mapping(bytes32 => mapping(bytes32 => mapping(uint16 => bytes)))) private versionable_records;
 
     // Count of number of entries for a given name.  Required for DNS resolvers
     // when resolving wildcards.
     // node => version => name => number of records
-    mapping(uint256 => mapping(bytes32 => mapping(bytes32 => uint16)))
-        private versionable_nameEntriesCount;
+    mapping(uint256 => mapping(bytes32 => mapping(bytes32 => uint16))) private versionable_nameEntriesCount;
 
     /**
      * Set one or more DNS records.  Records are supplied in wire-format.
@@ -64,16 +62,7 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, BaseResol
             } else {
                 bytes memory newName = iter.name();
                 if (resource != iter.dnstype || !name.equals(newName)) {
-                    setDNSRRSet(
-                        node,
-                        name,
-                        resource,
-                        data,
-                        offset,
-                        iter.offset - offset,
-                        value.length == 0,
-                        version
-                    );
+                    setDNSRRSet(node, name, resource, data, offset, iter.offset - offset, value.length == 0, version);
                     resource = iter.dnstype;
                     offset = iter.offset;
                     name = newName;
@@ -83,16 +72,7 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, BaseResol
             }
         }
         if (name.length > 0) {
-            setDNSRRSet(
-                node,
-                name,
-                resource,
-                data,
-                offset,
-                data.length - offset,
-                value.length == 0,
-                version
-            );
+            setDNSRRSet(node, name, resource, data, offset, data.length - offset, value.length == 0, version);
         }
     }
 
@@ -103,11 +83,13 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, BaseResol
      * @param resource the ID of the resource as per https://en.wikipedia.org/wiki/List_of_DNS_record_types
      * @return the DNS record in wire format if present, otherwise empty
      */
-    function dnsRecord(
-        bytes32 node,
-        bytes32 name,
-        uint16 resource
-    ) public view virtual override returns (bytes memory) {
+    function dnsRecord(bytes32 node, bytes32 name, uint16 resource)
+        public
+        view
+        virtual
+        override
+        returns (bytes memory)
+    {
         return versionable_records[recordVersions[node]][node][name][resource];
     }
 
@@ -143,10 +125,8 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, BaseResol
     }
 
     function supportsInterface(bytes4 interfaceID) public view virtual override returns (bool) {
-        return
-            interfaceID == type(IDNSRecordResolver).interfaceId ||
-            interfaceID == type(IDNSZoneResolver).interfaceId ||
-            super.supportsInterface(interfaceID);
+        return interfaceID == type(IDNSRecordResolver).interfaceId || interfaceID == type(IDNSZoneResolver).interfaceId
+            || super.supportsInterface(interfaceID);
     }
 
     function setDNSRRSet(

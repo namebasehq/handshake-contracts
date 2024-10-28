@@ -26,14 +26,11 @@ contract TestHandshakeSld is Test {
     error MissingRegistrationStrategy();
 
     // test
-    bytes32 constant TEST_TLD_NAMEHASH =
-        0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
-    bytes32 constant TEST_sld_NAMEHASH =
-        0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    bytes32 constant TEST_sld_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
     // test.test.test
-    bytes32 constant TEST_SUB_NAMEHASH =
-        0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     using stdStorage for StdStorage;
 
@@ -47,10 +44,7 @@ contract TestHandshakeSld is Test {
         metadata = new MockMetadataService("base_uri");
         labelValidator = new MockLabelValidator(true);
         tld = new MockHandshakeTld();
-        manager = new MockSldRegistrationManager(
-            tld,
-            new MockGlobalRegistrationStrategy(true, true, 1 ether)
-        );
+        manager = new MockSldRegistrationManager(tld, new MockGlobalRegistrationStrategy(true, true, 1 ether));
         sld = new HandshakeSld(tld);
         sld.setRegistrationManager(manager);
         sld.setMetadataContract(metadata);
@@ -59,13 +53,7 @@ contract TestHandshakeSld is Test {
     function addSldRegistrationHistory(bytes32 _sldNamehash, uint256 _registrationLength) private {
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            _sldNamehash,
-            uint80(block.timestamp),
-            uint80(_registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(_sldNamehash, uint80(block.timestamp), uint80(_registrationLength), uint96(0), arr);
     }
 
     function testSetRegistrationManagerFromNotOwner_fail() public {
@@ -179,23 +167,13 @@ contract TestHandshakeSld is Test {
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         tld.register(address(manager), uint256(tldNamehash));
 
         sld.registerSld(to, tldNamehash, label);
 
-        assertEq(
-            sld.namehashToParentMap(sldNamehash),
-            tldNamehash,
-            "namehash for parent incorrect"
-        );
+        assertEq(sld.namehashToParentMap(sldNamehash), tldNamehash, "namehash for parent incorrect");
     }
 
     function testSetRoyaltyPaymentAddressForTldFromTldOwnerAddress() public {
@@ -223,7 +201,7 @@ contract TestHandshakeSld is Test {
 
         vm.prank(tldOwner);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
+        (address _addr,) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
         vm.stopPrank();
     }
@@ -249,7 +227,7 @@ contract TestHandshakeSld is Test {
         // test.test
         uint256 expectedsldId = uint256(sldNamehash);
 
-        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
+        (address _addr,) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, tldOwner);
         vm.stopPrank();
     }
@@ -282,12 +260,12 @@ contract TestHandshakeSld is Test {
 
         vm.startPrank(tldOwner);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
+        (address _addr,) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
         tld.safeTransferFrom(tldOwner, newTldOwner, tldId);
         vm.stopPrank();
 
-        (_addr, ) = sld.royaltyInfo(expectedsldId, 100);
+        (_addr,) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, newTldOwner);
     }
 
@@ -321,7 +299,7 @@ contract TestHandshakeSld is Test {
         tld.setApprovalForAll(approvedAddress, true);
         vm.startPrank(approvedAddress);
         sld.setRoyaltyPayoutAddress(tldId, payoutAddress);
-        (address _addr, ) = sld.royaltyInfo(expectedsldId, 100);
+        (address _addr,) = sld.royaltyInfo(expectedsldId, 100);
         assertEq(_addr, payoutAddress);
         vm.stopPrank();
     }
@@ -539,13 +517,7 @@ contract TestHandshakeSld is Test {
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
 
@@ -571,13 +543,7 @@ contract TestHandshakeSld is Test {
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
 
@@ -604,13 +570,7 @@ contract TestHandshakeSld is Test {
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
 
@@ -649,13 +609,7 @@ contract TestHandshakeSld is Test {
         uint256 registrationLength = 100 days;
         uint128[10] memory arr;
 
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         stdstore.target(address(sld)).sig("registrationManager()").checked_write(address(manager));
 
@@ -668,13 +622,7 @@ contract TestHandshakeSld is Test {
         sld.registerSld(to2, tldNamehash, label);
 
         //simulate updating the registration history details
-        manager.addSldDetail(
-            sldNamehash,
-            uint80(block.timestamp),
-            uint80(registrationLength),
-            uint96(0),
-            arr
-        );
+        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to2, "owner of token not correct");
         assertEq(sld.balanceOf(to), 0, "owner 1 should have zero balance");
@@ -716,11 +664,7 @@ contract TestHandshakeSld is Test {
 
         sld.registerSld(to, tldNamehash, label);
 
-        assertEq(
-            address(sld.tokenResolverMap(sldNamehash)),
-            address(resolver),
-            "resolver address incorrect"
-        );
+        assertEq(address(sld.tokenResolverMap(sldNamehash)), address(resolver), "resolver address incorrect");
     }
 
     function testMintSldCheckResolverSetDefaultChangedOldResolverDoesNotChange_success() public {
@@ -749,15 +693,7 @@ contract TestHandshakeSld is Test {
         vm.prank(address(manager));
         sld.registerSld(to, tldNamehash, label2);
 
-        assertEq(
-            address(sld.tokenResolverMap(sldNamehash)),
-            address(resolver),
-            "resolver 1 address incorrect"
-        );
-        assertEq(
-            address(sld.tokenResolverMap(sldNamehash2)),
-            address(resolver2),
-            "resolver 2 address incorrect"
-        );
+        assertEq(address(sld.tokenResolverMap(sldNamehash)), address(resolver), "resolver 1 address incorrect");
+        assertEq(address(sld.tokenResolverMap(sldNamehash2)), address(resolver2), "resolver 2 address incorrect");
     }
 }

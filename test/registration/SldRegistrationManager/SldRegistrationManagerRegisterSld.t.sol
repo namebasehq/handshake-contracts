@@ -82,24 +82,12 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         hoax(address(0x420), 4 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400) + 30 days + 1);
 
         vm.prank(address(0x420));
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testMintSldFromAuthorisedWalletRepurchaseWhenStillActive_fail() public {
@@ -118,25 +106,13 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address recipient = address(0x5555);
 
         hoax(address(0x420), 4 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         vm.warp(block.timestamp + (registrationLength * 86400) - 10);
 
         vm.prank(address(0x420));
         vm.expectRevert("domain already registered");
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testPurchaseSldToOtherAddress() public {
@@ -154,17 +130,10 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
+            address(manager.sld()), abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
         vm.prank(sendingAddress);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testPurchaseSldToOtherAddressThenBurn() public {
@@ -182,17 +151,10 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
+            address(manager.sld()), abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
         vm.startPrank(sendingAddress);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
         bytes32 subhash = Namehash.getNamehash(parentNamehash, label);
         vm.expectCall(address(manager.sld()), abi.encodeCall(manager.sld().burnSld, (subhash)));
@@ -218,13 +180,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectRevert("No valid commit intent");
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testPurchaseSldRegistrationDisabled_fail() public {
@@ -244,13 +200,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 2 ether);
         vm.expectRevert("registration strategy disabled");
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     // owner of TLD should be able to register if the public registration is disabled
@@ -270,13 +220,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         stdstore.target(address(mockStrategy)).sig("isEnabledBool()").checked_write(false);
 
         hoax(owner, 2 ether);
-        manager.registerWithCommit{value: 2 ether}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
     }
 
     function testMintSingleDomainWithNoPriceStrategy_fail() public {
@@ -317,33 +261,19 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         hoax(sendingAddress, 20 ether);
 
         vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
+            address(manager.sld()), abi.encodeCall(manager.sld().registerSld, (recipient, parentNamehash, label))
         );
 
         vm.startPrank(sendingAddress);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         bytes32 sldNamehash = Namehash.getNamehash(parentNamehash, label);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength,
-            uint96 actualRegistrationPrice
-        ) = manager.sldRegistrationHistory(sldNamehash);
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, uint96 actualRegistrationPrice) =
+            manager.sldRegistrationHistory(sldNamehash);
 
         assertEq(actualRegistrationTime, block.timestamp, "registration time incorrect");
-        assertEq(
-            actualRegistrationLength,
-            registrationLength * 1 days,
-            "registration length incorrect"
-        );
+        assertEq(actualRegistrationLength, registrationLength * 1 days, "registration length incorrect");
         assertEq(actualRegistrationPrice, 1 ether, "registration price incorrect");
 
         uint80[10] memory pricing = manager.getTenYearGuarenteedPricing(sldNamehash);
@@ -396,7 +326,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         bytes32 namehash = Namehash.getNamehash(parentNamehash, label);
 
-        (, uint80 RegistrationLength, ) = manager.sldRegistrationHistory(namehash);
+        (, uint80 RegistrationLength,) = manager.sldRegistrationHistory(namehash);
 
         uint80 newRegLength = 400;
 
@@ -412,20 +342,13 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         (
             uint80 NewRegistrationTime,
             uint80 NewRegistrationLength, //uint96NewRegistrationPrice
-
         ) = manager.sldRegistrationHistory(namehash);
 
         assertEq(
-            NewRegistrationLength,
-            RegistrationLength + (newRegLength * 86400),
-            "new registrationLength not correct"
+            NewRegistrationLength, RegistrationLength + (newRegLength * 86400), "new registrationLength not correct"
         );
 
-        assertEq(
-            NewRegistrationTime,
-            registrationTimestamp,
-            "original registration time incorrect"
-        );
+        assertEq(NewRegistrationTime, registrationTimestamp, "original registration time incorrect");
     }
 
     function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {

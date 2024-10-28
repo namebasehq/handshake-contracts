@@ -17,9 +17,9 @@ contract TestTests is Test {
     }
 
     function hexToText(bytes memory hexBytes) public pure returns (string memory) {
-        uint start = 0;
+        uint256 start = 0;
         // Find the first line break (0x0a)
-        for (uint i = 0; i < hexBytes.length; i++) {
+        for (uint256 i = 0; i < hexBytes.length; i++) {
             if (hexBytes[i] == 0x0a) {
                 start = i + 1;
                 break;
@@ -28,9 +28,9 @@ contract TestTests is Test {
 
         // Initialize the final bytes array
         bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-        uint tempIndex = 0;
+        uint256 tempIndex = 0;
 
-        for (uint i = start; i < hexBytes.length; i++) {
+        for (uint256 i = start; i < hexBytes.length; i++) {
             if (hexBytes[i] == 0x00) {
                 break; // Ignore termination byte and stop processing
             } else if (hexBytes[i] == 0x03) {
@@ -43,7 +43,7 @@ contract TestTests is Test {
 
         // Create the final bytes array with the exact length of valid characters
         bytes memory strBytes = new bytes(tempIndex);
-        for (uint j = 0; j < tempIndex; j++) {
+        for (uint256 j = 0; j < tempIndex; j++) {
             strBytes[j] = tempBytes[j];
         }
 

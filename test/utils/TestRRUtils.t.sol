@@ -29,17 +29,13 @@ contract TestRRUtils is Test {
         require(hex"00".labelCount(0) == 0, "labelCount('.') == 0");
         require(hex"016100".labelCount(0) == 1, "labelCount('a.') == 1");
         require(hex"016201610000".labelCount(0) == 2, "labelCount('b.a.') == 2");
-        require(
-            hex"066574686c61620378797a00".labelCount(6 + 1) == 1,
-            "nameLength('(bthlab).xyz.') == 6"
-        );
+        require(hex"066574686c61620378797a00".labelCount(6 + 1) == 1, "nameLength('(bthlab).xyz.') == 6");
     }
 
     function testIterateRRs() public pure {
         // a. IN A 3600 127.0.0.1
         // b.a. IN A 3600 192.168.1.1
-        bytes
-            memory rrs = hex"0161000001000100000e1000047400000101620161000001000100000e100004c0a80101";
+        bytes memory rrs = hex"0161000001000100000e1000047400000101620161000001000100000e100004c0a80101";
         bytes[2] memory names = [bytes(hex"016100"), bytes(hex"0162016100")];
         bytes[2] memory rdatas = [bytes(hex"74000001"), bytes(hex"c0a80101")];
         uint256 i = 0;
@@ -56,35 +52,25 @@ contract TestRRUtils is Test {
 
     function testCheckTypeBitmapTextType() public pure {
         bytes memory tb = hex"0003000080";
-        require(
-            tb.checkTypeBitmap(0, DNSTYPE_TEXT) == true,
-            "A record should exist in type bitmap"
-        );
+        require(tb.checkTypeBitmap(0, DNSTYPE_TEXT) == true, "A record should exist in type bitmap");
     }
 
     function testCheckTypeBitmap() public pure {
         // From https://tools.ietf.org/html/rfc4034#section-4.3
         //    alfa.example.com. 86400 IN NSEC host.example.com. (
         //                               A MX RRSIG NSEC TYPE1234
-        bytes
-            memory tb = hex"FF0006400100000003041b000000000000000000000000000000000000000000000000000020";
+        bytes memory tb = hex"FF0006400100000003041b000000000000000000000000000000000000000000000000000020";
 
         // Exists in bitmap
         require(tb.checkTypeBitmap(1, DNSTYPE_A) == true, "A record should exist in type bitmap");
         // Does not exist, but in a window that is included
-        require(
-            tb.checkTypeBitmap(1, DNSTYPE_CNAME) == false,
-            "CNAME record should not exist in type bitmap"
-        );
+        require(tb.checkTypeBitmap(1, DNSTYPE_CNAME) == false, "CNAME record should not exist in type bitmap");
         // Does not exist, past the end of a window that is included
         require(tb.checkTypeBitmap(1, 64) == false, "Type 64 should not exist in type bitmap");
         // Does not exist, in a window that does not exist
         require(tb.checkTypeBitmap(1, 769) == false, "Type 769 should not exist in type bitmap");
         // Exists in a subsequent window
-        require(
-            tb.checkTypeBitmap(1, DNSTYPE_TYPE1234) == true,
-            "Type 1234 should exist in type bitmap"
-        );
+        require(tb.checkTypeBitmap(1, DNSTYPE_TYPE1234) == true, "Type 1234 should exist in type bitmap");
         // Does not exist, past the end of the bitmap windows
         require(tb.checkTypeBitmap(1, 1281) == false, "Type 1281 should not exist in type bitmap");
     }
@@ -103,26 +89,11 @@ contract TestRRUtils is Test {
         bytes memory ab_c_d = hex"0261620163016400";
         bytes memory a_c_d = hex"01610163016400";
 
-        require(
-            hex"0301616100".compareNames(hex"0302616200") < 0,
-            "label lengths are correctly checked"
-        );
-        require(
-            a_b_c.compareNames(c) > 0,
-            "one name has a difference of >1 label to with the same root name"
-        );
-        require(
-            a_b_c.compareNames(d) < 0,
-            "one name has a difference of >1 label to with different root name"
-        );
-        require(
-            a_b_c.compareNames(a_d_c) < 0,
-            "two names start the same but have differences in later labels"
-        );
-        require(
-            a_b_c.compareNames(b_a_c) > 0,
-            "the first label sorts later, but the first label sorts earlier"
-        );
+        require(hex"0301616100".compareNames(hex"0302616200") < 0, "label lengths are correctly checked");
+        require(a_b_c.compareNames(c) > 0, "one name has a difference of >1 label to with the same root name");
+        require(a_b_c.compareNames(d) < 0, "one name has a difference of >1 label to with different root name");
+        require(a_b_c.compareNames(a_d_c) < 0, "two names start the same but have differences in later labels");
+        require(a_b_c.compareNames(b_a_c) > 0, "the first label sorts later, but the first label sorts earlier");
         require(
             ab_c_d.compareNames(a_c_d) > 0,
             "two names where the first label on one is a prefix of the first label on the other"

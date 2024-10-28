@@ -21,28 +21,16 @@ contract DefaultResolver is
 {
     constructor(HandshakeNft _tld, HandshakeNft _sld) BaseResolver(_tld, _sld) {}
 
-    function supportsInterface(
-        bytes4 _interfaceId
-    )
+    function supportsInterface(bytes4 _interfaceId)
         public
         view
-        override(
-            BaseResolver,
-            Multicallable,
-            AddressResolver,
-            ContentHashResolver,
-            DNSResolver,
-            NameResolver,
-            TextResolver
-        )
+        override(BaseResolver, Multicallable, AddressResolver, ContentHashResolver, DNSResolver, NameResolver, TextResolver)
         returns (bool)
     {
         return super.supportsInterface(_interfaceId);
     }
 
-    function incrementVersion(
-        bytes32 node
-    )
+    function incrementVersion(bytes32 node)
         public
         override(BaseResolver, AddressResolver, ContentHashResolver, DNSResolver)
         authorised(node)

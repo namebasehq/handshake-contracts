@@ -2,5 +2,5 @@
 pragma solidity ^0.8.17;
 
 interface ILabelValidator {
-    function isValidLabel(string calldata _label) external returns (bool);
+    function isValidLabel(string calldata _label) external view returns (bool);
 }

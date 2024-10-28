@@ -58,8 +58,7 @@ contract GenericMetadataService is IMetadataService {
      * @return True if the interface is supported, False otherwise.
      */
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return
-            interfaceID == this.supportsInterface.selector || // ERC165
-            interfaceID == this.tokenURI.selector;
+        return interfaceID == this.supportsInterface.selector // ERC165
+            || interfaceID == this.tokenURI.selector;
     }
 }

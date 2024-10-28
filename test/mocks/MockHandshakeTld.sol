@@ -23,10 +23,7 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
 
     constructor() ERC721("test", "test") {}
 
-    function addRegistrationStrategy(
-        bytes32 _parentNamehash,
-        ISldRegistrationStrategy _strategy
-    ) public {
+    function addRegistrationStrategy(bytes32 _parentNamehash, ISldRegistrationStrategy _strategy) public {
         registrationStrategy[_parentNamehash] = _strategy;
     }
 
@@ -48,15 +45,11 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         _mint(_addr, _id);
     }
 
-    function registerWithResolver(
-        address _addr,
-        string calldata _domain,
-        ISldRegistrationStrategy _strategy
-    ) external {}
+    function registerWithResolver(address _addr, string calldata _domain, ISldRegistrationStrategy _strategy)
+        external
+    {}
 
-    function ownerOf(
-        uint256 _tokenId
-    ) public view override(ERC721, IHandshakeTld) returns (address) {
+    function ownerOf(uint256 _tokenId) public view override(ERC721, IHandshakeTld) returns (address) {
         return ERC721.ownerOf(_tokenId);
     }
 

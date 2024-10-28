@@ -11,11 +11,7 @@ contract PaymentManagerForTesting is PaymentManager {
         feeWalletPayoutAddress = _paymentWallet;
     }
 
-    function payableFunction(
-        address _sldOwner,
-        address _tldOwner,
-        uint256 _funds
-    ) external payable {
+    function payableFunction(address _sldOwner, address _tldOwner, uint256 _funds) external payable {
         distributePrimaryFunds(_sldOwner, _tldOwner, _funds);
     }
 }
@@ -49,11 +45,7 @@ contract TestPaymentManager is Test {
 
         assertEq(address(paymentManager).balance, 0, "balance of contract should be zero");
         assertEq(payoutAddress.balance, onePercent * 5, "payout wallet should get 5% of funds");
-        assertEq(
-            sldOwner.balance,
-            totalFunds - spentFunds,
-            "balance of sldOwner should be returned overspend"
-        );
+        assertEq(sldOwner.balance, totalFunds - spentFunds, "balance of sldOwner should be returned overspend");
         assertEq(tldOwner.balance, onePercent * 95, "tld owner wallet should get 95% of the funds");
     }
 

@@ -13,7 +13,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
     struct CommitData {
         uint96 blockNumber; // 96
         address user; // 160
-        // 1x 256 bit slots
+            // 1x 256 bit slots
     }
 
     mapping(bytes32 => CommitData) public nodeIntentBlockNumber;
@@ -31,18 +31,11 @@ contract SldCommitIntent is ICommitIntent, Ownable {
      * @param _combinedHash keccak256 hash of sld namehash / bytes32 secret / msg.sender
      */
     function commitIntent(bytes32 _combinedHash) public {
-        CommitData memory data = CommitData(
-            uint96(block.number + maxBlockWaitForCommit),
-            msg.sender
-        );
+        CommitData memory data = CommitData(uint96(block.number + maxBlockWaitForCommit), msg.sender);
         nodeIntentBlockNumber[_combinedHash] = data;
     }
 
-    function allowedCommit(
-        bytes32 _namehash,
-        bytes32 _secret,
-        address _addr
-    ) external view returns (bool) {
+    function allowedCommit(bytes32 _namehash, bytes32 _secret, address _addr) external view returns (bool) {
         bytes32 combinedHash = keccak256(abi.encodePacked(_namehash, _secret, _addr));
         CommitData memory data = nodeIntentBlockNumber[combinedHash];
 
@@ -84,7 +77,7 @@ contract SldCommitIntent is ICommitIntent, Ownable {
      */
     function multiCommitIntent(bytes32[] calldata _combinedHashes) external {
         uint256 arrayLength = _combinedHashes.length;
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             commitIntent(_combinedHashes[i]);
 
             //most gas efficient way of looping

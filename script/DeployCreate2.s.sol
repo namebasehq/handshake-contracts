@@ -41,9 +41,7 @@ contract DeployCreate2Script is Script {
         address oracleAddress = 0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8;
 
         bytes32 tld = keccak256(type(HandshakeTld).creationCode);
-        bytes32 priceOracle = keccak256(
-            getCodeAndArgs(type(UsdPriceOracle).creationCode, abi.encode(oracleAddress))
-        );
+        bytes32 priceOracle = keccak256(getCodeAndArgs(type(UsdPriceOracle).creationCode, abi.encode(oracleAddress)));
         bytes32 labelValidator = keccak256(type(LabelValidator).creationCode);
         bytes32 globalRegistrationRules = keccak256(type(GlobalRegistrationRules).creationCode);
         bytes32 commitIntent = keccak256(type(SldCommitIntent).creationCode);
@@ -63,10 +61,7 @@ contract DeployCreate2Script is Script {
         address oracleAddress = 0x57241A37733983F97C4Ab06448F244A1E0Ca0ba8;
 
         bytes memory tld = type(HandshakeTld).creationCode;
-        bytes memory priceOracle = getCodeAndArgs(
-            type(UsdPriceOracle).creationCode,
-            abi.encode(oracleAddress)
-        );
+        bytes memory priceOracle = getCodeAndArgs(type(UsdPriceOracle).creationCode, abi.encode(oracleAddress));
         bytes memory labelValidator = type(LabelValidator).creationCode;
         bytes memory globalRegistrationRules = type(GlobalRegistrationRules).creationCode;
         bytes memory commitIntent = type(SldCommitIntent).creationCode;
@@ -166,10 +161,7 @@ contract DeployCreate2Script is Script {
 
     // }
 
-    function getCodeAndArgs(
-        bytes memory code,
-        bytes memory args
-    ) private pure returns (bytes memory) {
+    function getCodeAndArgs(bytes memory code, bytes memory args) private pure returns (bytes memory) {
         return abi.encodePacked(code, args);
     }
 }

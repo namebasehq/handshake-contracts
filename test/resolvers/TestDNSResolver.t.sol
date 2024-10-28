@@ -11,6 +11,7 @@ import {NameEncoder} from "@ensdomains/ens-contracts/contracts/utils/NameEncoder
 
 contract TestDNSResolver is Test {
     using NameEncoder for string;
+
     TestingDNSResolver resolver;
     MockHandshakeNft tld;
     MockHandshakeNft sld;
@@ -36,8 +37,8 @@ contract TestDNSResolver is Test {
         // b.eth. 3600 IN A 3.4.5.6
         bytes memory b2rec = hex"016203657468000001000100000e10000403040506";
         // eth. 86400 IN SOA ns1.ethdns.xyz. hostmaster.test.eth. 2018061501 15620 1800 1814400 14400
-        bytes
-            memory soarec = hex"03657468000006000100015180003a036e733106657468646e730378797a000a686f73746d6173746572057465737431036574680078492cbd00003d0400000708001baf8000003840";
+        bytes memory soarec =
+            hex"03657468000006000100015180003a036e733106657468646e730378797a000a686f73746d6173746572057465737431036574680078492cbd00003d0400000708001baf8000003840";
         bytes memory rec = abi.encodePacked(arec, b1rec, b2rec, soarec);
 
         vm.prank(owner);
@@ -47,14 +48,11 @@ contract TestDNSResolver is Test {
         string memory bDotEth = "b.eth";
         string memory ethDot = "eth";
 
-        (bytes memory aName, ) = aDotEth.dnsEncodeName();
-        (bytes memory bName, ) = bDotEth.dnsEncodeName();
-        (bytes memory ethName, ) = ethDot.dnsEncodeName();
+        (bytes memory aName,) = aDotEth.dnsEncodeName();
+        (bytes memory bName,) = bDotEth.dnsEncodeName();
+        (bytes memory ethName,) = ethDot.dnsEncodeName();
 
-        assertEq(
-            resolver.dnsRecord(node, keccak256(aName), 1),
-            hex"016103657468000001000100000e10000401020304"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(aName), 1), hex"016103657468000001000100000e10000401020304");
 
         assertEq(
             resolver.dnsRecord(node, keccak256(bName), 1),
@@ -80,8 +78,8 @@ contract TestDNSResolver is Test {
         bytes memory arec = hex"016103657468000001000100000e10000401020304";
 
         // eth. 86400 IN SOA ns1.ethdns.xyz. hostmaster.test.eth. 2018061501 15620 1800 1814400 14400
-        bytes
-            memory soarec = hex"03657468000006000100015180003a036e733106657468646e730378797a000a686f73746d6173746572057465737431036574680078492cbd00003d0400000708001baf8000003840";
+        bytes memory soarec =
+            hex"03657468000006000100015180003a036e733106657468646e730378797a000a686f73746d6173746572057465737431036574680078492cbd00003d0400000708001baf8000003840";
 
         vm.prank(owner);
         resolver.setDNSRecords(node, abi.encodePacked(firstARec, soarec));
@@ -91,22 +89,16 @@ contract TestDNSResolver is Test {
         string memory aDotEth = "a.eth";
         string memory ethDot = "eth";
 
-        (bytes memory aName, ) = aDotEth.dnsEncodeName();
-        (bytes memory ethName, ) = ethDot.dnsEncodeName();
+        (bytes memory aName,) = aDotEth.dnsEncodeName();
+        (bytes memory ethName,) = ethDot.dnsEncodeName();
 
         //original value
-        assertEq(
-            resolver.dnsRecord(node, keccak256(aName), 1),
-            hex"016103657468000001000100000e10000401020306"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(aName), 1), hex"016103657468000001000100000e10000401020306");
 
         vm.prank(owner);
         resolver.setDNSRecords(node, rec);
 
-        assertEq(
-            resolver.dnsRecord(node, keccak256(aName), 1),
-            hex"016103657468000001000100000e10000401020304"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(aName), 1), hex"016103657468000001000100000e10000401020304");
 
         assertEq(
             resolver.dnsRecord(node, keccak256(ethName), 6),
@@ -124,8 +116,8 @@ contract TestDNSResolver is Test {
         string memory cDotEth = "c.eth";
         string memory dDotEth = "d.eth";
 
-        (bytes memory cName, ) = cDotEth.dnsEncodeName();
-        (bytes memory dName, ) = dDotEth.dnsEncodeName();
+        (bytes memory cName,) = cDotEth.dnsEncodeName();
+        (bytes memory dName,) = dDotEth.dnsEncodeName();
 
         // c.eth. 3600 IN A 1.2.3.4
         bytes memory crec = hex"016303657468000001000100000e10000401020304";
@@ -159,16 +151,13 @@ contract TestDNSResolver is Test {
 
         bytes memory erec = hex"016503657468000001000100000e10000401020304";
 
-        (bytes memory eName, ) = eDotEth.dnsEncodeName();
+        (bytes memory eName,) = eDotEth.dnsEncodeName();
 
         vm.startPrank(owner);
         resolver.setDNSRecords(node, erec);
 
         assertTrue(resolver.hasDNSRecords(node, keccak256(eName)));
-        assertEq(
-            resolver.dnsRecord(node, keccak256(eName), 1),
-            hex"016503657468000001000100000e10000401020304"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(eName), 1), hex"016503657468000001000100000e10000401020304");
     }
 
     function testSetSingleRecordFromApprovedAddress() public {
@@ -183,7 +172,7 @@ contract TestDNSResolver is Test {
 
         bytes memory erec = hex"016503657468000001000100000e10000401020304";
 
-        (bytes memory eName, ) = eDotEth.dnsEncodeName();
+        (bytes memory eName,) = eDotEth.dnsEncodeName();
 
         vm.prank(owner);
         sld.setApprovalForAll(approved, true);
@@ -192,10 +181,7 @@ contract TestDNSResolver is Test {
         resolver.setDNSRecords(node, erec);
 
         assertTrue(resolver.hasDNSRecords(node, keccak256(eName)));
-        assertEq(
-            resolver.dnsRecord(node, keccak256(eName), 1),
-            hex"016503657468000001000100000e10000401020304"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(eName), 1), hex"016503657468000001000100000e10000401020304");
 
         vm.prank(owner);
         sld.setApprovalForAll(approved, false);
@@ -297,16 +283,13 @@ contract TestDNSResolver is Test {
 
         bytes memory erec = hex"016503657468000001000100000e10000401020304";
 
-        (bytes memory eName, ) = eDotEth.dnsEncodeName();
+        (bytes memory eName,) = eDotEth.dnsEncodeName();
 
         vm.startPrank(owner);
         resolver.setDNSRecords(node, erec);
 
         assertTrue(resolver.hasDNSRecords(node, keccak256(eName)));
-        assertEq(
-            resolver.dnsRecord(node, keccak256(eName), 1),
-            hex"016503657468000001000100000e10000401020304"
-        );
+        assertEq(resolver.dnsRecord(node, keccak256(eName), 1), hex"016503657468000001000100000e10000401020304");
 
         assertTrue(resolver.hasDNSRecords(node, keccak256(eName)));
 

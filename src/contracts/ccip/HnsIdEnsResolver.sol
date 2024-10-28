@@ -26,12 +26,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     mapping(string => string) public tldMappings;
 
-    event AuthorisationChanged(
-        bytes32 indexed node,
-        address indexed owner,
-        address indexed target,
-        bool isAuthorised
-    );
+    event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
 
     /**
      * @dev Sets or clears an authorisation.
@@ -64,20 +59,10 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     event NewSigners(address indexed signer, bool isSigner);
     event UpdateUrl(string url);
     event TldChanged(
-        bytes32 indexed node,
-        string indexed indexedEns,
-        string indexed indexedTld,
-        string ens,
-        string tld
+        bytes32 indexed node, string indexed indexedEns, string indexed indexedTld, string ens, string tld
     );
 
-    error OffchainLookup(
-        address sender,
-        string[] urls,
-        bytes callData,
-        bytes4 callbackFunction,
-        bytes extraData
-    );
+    error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     error Unauthorized();
     error InvalidSignature();
@@ -90,7 +75,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         nameWrapper = INameWrapper(_wrapper);
 
         uint256 arrayLength = _signers.length;
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             signers[_signers[i]] = true;
             emit NewSigners(_signers[i], true);
 
@@ -100,12 +85,11 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         }
     }
 
-    function makeSignatureHash(
-        address target,
-        uint64 expires,
-        bytes memory request,
-        bytes memory result
-    ) external pure returns (bytes32) {
+    function makeSignatureHash(address target, uint64 expires, bytes memory request, bytes memory result)
+        external
+        pure
+        returns (bytes32)
+    {
         return SignatureVerifier.makeSignatureHash(target, expires, request, result);
     }
 
@@ -127,32 +111,16 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-    function resolve(
-        bytes calldata name,
-        bytes calldata data
-    ) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(
-            IExtendedResolver.resolve.selector,
-            name,
-            data
-        );
+    function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
+        bytes memory callData = abi.encodeWithSelector(IExtendedResolver.resolve.selector, name, data);
         string[] memory urls = new string[](1);
         urls[0] = getUrl(name);
 
         // revert with the OffchainLookup error, which will be caught by the client
-        revert OffchainLookup(
-            address(this),
-            urls,
-            callData,
-            HnsIdEnsResolver.resolveWithProof.selector,
-            callData
-        );
+        revert OffchainLookup(address(this), urls, callData, HnsIdEnsResolver.resolveWithProof.selector, callData);
     }
 
-    function updateSigners(
-        address[] calldata _signers,
-        bool[] calldata _isSigner
-    ) external onlyOwner {
+    function updateSigners(address[] calldata _signers, bool[] calldata _isSigner) external onlyOwner {
         for (uint256 i; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
             emit NewSigners(_signers[i], _isSigner[i]);
@@ -170,17 +138,13 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         require(bytes(tld).length > 0, "TLD not found");
 
-        return
-            string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+        return string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
     }
 
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      */
-    function resolveWithProof(
-        bytes calldata response,
-        bytes calldata extraData
-    ) external view returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
         if (!signers[signer]) {
@@ -191,9 +155,9 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     function hexToText(bytes memory hexBytes) private pure returns (string memory) {
-        uint start = 0;
+        uint256 start = 0;
         // Find the first line break (0x0a)
-        for (uint i = 0; i < hexBytes.length; i++) {
+        for (uint256 i = 0; i < hexBytes.length; i++) {
             if (hexBytes[i] == 0x0a) {
                 start = i + 1;
                 break;
@@ -202,9 +166,9 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         // Initialize the final bytes array
         bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-        uint tempIndex = 0;
+        uint256 tempIndex = 0;
 
-        for (uint i = start; i < hexBytes.length; i++) {
+        for (uint256 i = start; i < hexBytes.length; i++) {
             if (hexBytes[i] == 0x00) {
                 break; // Ignore termination byte and stop processing
             } else if (hexBytes[i] == 0x03) {
@@ -217,7 +181,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         // Create the final bytes array with the exact length of valid characters
         bytes memory strBytes = new bytes(tempIndex);
-        for (uint j = 0; j < tempIndex; j++) {
+        for (uint256 j = 0; j < tempIndex; j++) {
             strBytes[j] = tempBytes[j];
         }
 
@@ -225,9 +189,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
-        return
-            interfaceID == type(IExtendedResolver).interfaceId ||
-            interfaceID == type(IERC165).interfaceId;
+        return interfaceID == type(IExtendedResolver).interfaceId || interfaceID == type(IERC165).interfaceId;
     }
 
     // Namehash functions
@@ -255,9 +217,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         unchecked {
             for (uint256 i = length - 1; i >= 0; i--) {
                 if (bytesDomain[i] == ".") {
-                    node = keccak256(
-                        abi.encodePacked(node, keccak(bytesDomain, i + 1, labelLength))
-                    );
+                    node = keccak256(abi.encodePacked(node, keccak(bytesDomain, i + 1, labelLength)));
                     labelLength = 0;
                 } else {
                     labelLength += 1;
@@ -274,11 +234,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     // BytesUtils functions
-    function keccak(
-        bytes memory self,
-        uint256 offset,
-        uint256 len
-    ) internal pure returns (bytes32 ret) {
+    function keccak(bytes memory self, uint256 offset, uint256 len) internal pure returns (bytes32 ret) {
         require(offset + len <= self.length);
         assembly {
             ret := keccak256(add(add(self, 32), offset), len)
@@ -294,10 +250,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         return keccak256(abi.encodePacked(namehash(self, newOffset), labelhash));
     }
 
-    function readLabel(
-        bytes memory self,
-        uint256 idx
-    ) internal pure returns (bytes32 labelhash, uint256 newIdx) {
+    function readLabel(bytes memory self, uint256 idx) internal pure returns (bytes32 labelhash, uint256 newIdx) {
         require(idx < self.length, "readLabel: Index out of bounds");
         uint256 len = uint256(uint8(self[idx]));
         if (len > 0) {

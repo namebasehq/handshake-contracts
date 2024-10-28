@@ -15,8 +15,7 @@ contract MockMetadataService is IMetadataService {
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return
-            interfaceID == this.supportsInterface.selector || // ERC165
-            interfaceID == this.tokenURI.selector;
+        return interfaceID == this.supportsInterface.selector // ERC165
+            || interfaceID == this.tokenURI.selector;
     }
 }
