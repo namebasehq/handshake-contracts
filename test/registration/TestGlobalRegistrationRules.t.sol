@@ -32,13 +32,7 @@ contract TestGlobalRegistrationRules is Test {
         string memory label = "testing";
         uint256 registrationLength = 365;
         uint256 dollarPrice = 1 ether;
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
         console.log("result", result);
         assertTrue(result, "should be able to register with single dollar");
     }
@@ -49,13 +43,7 @@ contract TestGlobalRegistrationRules is Test {
         string memory label = "testing";
         uint256 registrationLength = 365;
         uint256 dollarPrice = 1000 ether;
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertTrue(result, "should be able to register with 365 days");
     }
@@ -67,13 +55,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = 364;
         uint256 dollarPrice = 100 ether;
 
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertTrue(result, "should be able to register with less than 365 days");
     }
@@ -86,13 +68,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 dollarPrice = type(uint256).max;
 
         vm.expectRevert(abi.encodePacked("less than min days registration"));
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertFalse(result, "should not be able to register with less than 1 days");
     }
@@ -105,13 +81,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 dollarPrice = 99 ether;
 
         vm.expectRevert(abi.encodePacked("min price $1/year"));
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertFalse(result, "should not be able to register with less $1 per year");
     }
@@ -123,13 +93,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 registrationLength = (365 * 100);
         uint256 dollarPrice = 100 ether;
 
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertTrue(result, "should be able to register with $1 per year");
     }
@@ -142,13 +106,7 @@ contract TestGlobalRegistrationRules is Test {
         uint256 dollarPrice = 1.1 ether;
 
         vm.expectRevert(abi.encodePacked("min price $1/year"));
-        bool result = rules.canRegister(
-            buyingAddress,
-            parentNamehash,
-            label,
-            registrationLength,
-            dollarPrice
-        );
+        bool result = rules.canRegister(buyingAddress, parentNamehash, label, registrationLength, dollarPrice);
 
         assertFalse(result, "should fail, less that $1 per year");
     }

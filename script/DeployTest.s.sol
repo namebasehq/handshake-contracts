@@ -109,9 +109,7 @@ contract DeployTestScript is Script {
             )
         );
 
-        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(
-            SldRegistrationManager(address(uups2))
-        );
+        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(SldRegistrationManager(address(uups2)));
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(new TldClaimManager()),

@@ -51,7 +51,7 @@
 //         bytes32 node = keccak256("testnode");
 
 //         ens.mint(uint256(node), address(this));
-        
+
 //         resolver.setText(node, "email", "test@example.com");
 //         assertEq(resolver.tldText(node, "email"), "test@example.com");
 

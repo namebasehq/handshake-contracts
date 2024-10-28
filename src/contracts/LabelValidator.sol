@@ -24,14 +24,14 @@ contract LabelValidator is ILabelValidator {
         if (labelBytes[0] == 0x2D || labelBytes[bytesLength - 1] == 0x2D) return false;
         // double hyphen not allowed at positions 3 & 4, this prevents punycode
         // if (bytesLength > 3 && labelBytes[2] == 0x2D && labelBytes[3] == 0x2D) return false;
-        for (uint256 i; i < bytesLength; ) {
+        for (uint256 i; i < bytesLength;) {
             bytes1 char = labelBytes[i];
             if (
                 // only allow a-z,0-9,-
-                !(char >= 0x30 && char <= 0x39) && // 0-9 numeric
-                !(char >= 0x61 && char <= 0x7A) && // a-z lowercase letters
-                !(char == 0x2D) // - hyphen
-                // !(char == 0x5F) // _ underscore
+                !(char >= 0x30 && char <= 0x39) // 0-9 numeric
+                    && !(char >= 0x61 && char <= 0x7A) // a-z lowercase letters
+                    && !(char == 0x2D) // - hyphen
+                    // !(char == 0x5F) // _ underscore
             ) return false;
             unchecked {
                 ++i;

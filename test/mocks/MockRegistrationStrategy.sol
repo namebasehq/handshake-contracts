@@ -48,11 +48,8 @@ contract MockRegistrationStrategy is ISldRegistrationStrategy {
     }
 
     function supportsInterface(bytes4 interfaceId) public pure override(IERC165) returns (bool) {
-        return
-            interfaceId == this.supportsInterface.selector ||
-            interfaceId == this.isEnabled.selector ||
-            interfaceId == this.getPriceInDollars.selector ||
-            interfaceId == this.addressDiscounts.selector;
+        return interfaceId == this.supportsInterface.selector || interfaceId == this.isEnabled.selector
+            || interfaceId == this.getPriceInDollars.selector || interfaceId == this.addressDiscounts.selector;
     }
 
     function addressDiscounts(bytes32, address) external pure returns (uint256) {

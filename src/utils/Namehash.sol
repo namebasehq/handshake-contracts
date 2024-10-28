@@ -30,9 +30,7 @@ library Namehash {
         unchecked {
             for (uint256 i = length - 1; i >= 0; i--) {
                 if (bytesDomain[i] == ".") {
-                    node = keccak256(
-                        abi.encodePacked(node, bytesDomain.keccak(i + 1, labelLength))
-                    );
+                    node = keccak256(abi.encodePacked(node, bytesDomain.keccak(i + 1, labelLength)));
                     labelLength = 0;
                 } else {
                     labelLength += 1;

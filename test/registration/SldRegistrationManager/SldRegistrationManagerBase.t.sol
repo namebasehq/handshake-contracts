@@ -21,6 +21,7 @@ import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transpa
 
 contract TestSldRegistrationManagerBase is Test {
     SldRegistrationManager internal manager;
+
     using stdStorage for StdStorage;
 
     MockHandshakeSld sld;
@@ -44,24 +45,12 @@ contract TestSldRegistrationManagerBase is Test {
         globalStrategy = new MockGlobalRegistrationStrategy(true, true, 1 ether);
         SldRegistrationManager implementation = new SldRegistrationManager();
 
-        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
-            address(implementation),
-            address(0x224455),
-            bytes("")
-        );
+        TransparentUpgradeableProxy uups =
+            new TransparentUpgradeableProxy(address(implementation), address(0x224455), bytes(""));
 
         manager = SldRegistrationManager(address(uups));
 
-        manager.init(
-            tld,
-            sld,
-            commitIntent,
-            oracle,
-            labelValidator,
-            globalStrategy,
-            address(this),
-            address(this)
-        );
+        manager.init(tld, sld, commitIntent, oracle, labelValidator, globalStrategy, address(this), address(this));
     }
 
     function addMockOracle() internal {
@@ -76,11 +65,7 @@ contract TestSldRegistrationManagerBase is Test {
     }
 
     function setUpGlobalStrategy(bool _canReg, bool _canRenew, uint256 _minPrice) internal {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
-            _canReg,
-            _canRenew,
-            _minPrice
-        );
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(_canReg, _canRenew, _minPrice);
         manager.updateGlobalRegistrationStrategy(globalRules);
     }
 
@@ -91,15 +76,6 @@ contract TestSldRegistrationManagerBase is Test {
     function testRunInitFunctionAgain_expectFail() public {
         MockUsdOracle oracle = new MockUsdOracle(100000000); //$1
         vm.expectRevert("Initializable: contract is already initialized");
-        manager.init(
-            tld,
-            sld,
-            commitIntent,
-            oracle,
-            labelValidator,
-            globalStrategy,
-            address(this),
-            address(this)
-        );
+        manager.init(tld, sld, commitIntent, oracle, labelValidator, globalStrategy, address(this), address(this));
     }
 }

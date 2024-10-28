@@ -38,7 +38,7 @@ abstract contract PaymentManager {
 
         // send any surplus funds back to the SLD owner
         if (excess > 0) {
-            (isSent, ) = payable(_sldOwner).call{value: excess, gas: 30_000}("");
+            (isSent,) = payable(_sldOwner).call{value: excess, gas: 30_000}("");
 
             // if (isSent) {
             //     emit PaymentSent(_sldOwner, excess);
@@ -48,7 +48,7 @@ abstract contract PaymentManager {
         // if there is a failure to send ether then the funds will just get sent to the handshake wallet
         // this is done to prevent a malicious TLD owner from blocking renewals
 
-        (isSent, ) = payable(_tldOwner).call{value: primary, gas: 30_000}("");
+        (isSent,) = payable(_tldOwner).call{value: primary, gas: 30_000}("");
 
         if (isSent) {
             emit PaymentSent(_tldOwner, primary);
@@ -56,7 +56,7 @@ abstract contract PaymentManager {
 
         uint256 remaining = address(this).balance;
         if (remaining > 0) {
-            (bool result, ) = payable(feeWalletPayoutAddress).call{value: remaining}("");
+            (bool result,) = payable(feeWalletPayoutAddress).call{value: remaining}("");
             emit PaymentSent(feeWalletPayoutAddress, remaining);
 
             // revert if the transfer failed and funds sat in the contract

@@ -93,8 +93,7 @@ library RRUtils {
         self.keytag = data.readUint16(RRSIG_KEY_TAG);
         self.signerName = readName(data, RRSIG_SIGNER_NAME);
         self.data = data.substring(
-            RRSIG_SIGNER_NAME + self.signerName.length,
-            data.length - RRSIG_SIGNER_NAME - self.signerName.length
+            RRSIG_SIGNER_NAME + self.signerName.length, data.length - RRSIG_SIGNER_NAME - self.signerName.length
         );
     }
 
@@ -121,10 +120,7 @@ library RRUtils {
      * @param offset The offset to start reading at.
      * @return ret An iterator object.
      */
-    function iterateRRs(
-        bytes memory self,
-        uint256 offset
-    ) internal pure returns (RRIterator memory ret) {
+    function iterateRRs(bytes memory self, uint256 offset) internal pure returns (RRIterator memory ret) {
         ret.data = self;
         ret.nextOffset = offset;
         next(ret);
@@ -197,11 +193,7 @@ library RRUtils {
         bytes publicKey;
     }
 
-    function readDNSKEY(
-        bytes memory data,
-        uint256 offset,
-        uint256 length
-    ) internal pure returns (DNSKEY memory self) {
+    function readDNSKEY(bytes memory data, uint256 offset, uint256 length) internal pure returns (DNSKEY memory self) {
         self.flags = data.readUint16(offset + DNSKEY_FLAGS);
         self.protocol = data.readUint8(offset + DNSKEY_PROTOCOL);
         self.algorithm = data.readUint8(offset + DNSKEY_ALGORITHM);
@@ -220,11 +212,7 @@ library RRUtils {
         bytes digest;
     }
 
-    function readDS(
-        bytes memory data,
-        uint256 offset,
-        uint256 length
-    ) internal pure returns (DS memory self) {
+    function readDS(bytes memory data, uint256 offset, uint256 length) internal pure returns (DS memory self) {
         self.keytag = data.readUint16(offset + DS_KEY_TAG);
         self.algorithm = data.readUint8(offset + DS_ALGORITHM);
         self.digestType = data.readUint8(offset + DS_DIGEST_TYPE);
@@ -246,11 +234,7 @@ library RRUtils {
     uint256 constant NSEC3_SALT_LENGTH = 4;
     uint256 constant NSEC3_SALT = 5;
 
-    function readNSEC3(
-        bytes memory data,
-        uint256 offset,
-        uint256 length
-    ) internal pure returns (NSEC3 memory self) {
+    function readNSEC3(bytes memory data, uint256 offset, uint256 length) internal pure returns (NSEC3 memory self) {
         uint256 end = offset + length;
         self.hashAlgorithm = data.readUint8(offset + NSEC3_HASH_ALGORITHM);
         self.flags = data.readUint8(offset + NSEC3_FLAGS);
@@ -278,15 +262,11 @@ library RRUtils {
      * @param rrtype The RR type to check for.
      * @return True if the type is found in the bitmap, false otherwise.
      */
-    function checkTypeBitmap(
-        bytes memory bitmap,
-        uint256 offset,
-        uint16 rrtype
-    ) internal pure returns (bool) {
+    function checkTypeBitmap(bytes memory bitmap, uint256 offset, uint16 rrtype) internal pure returns (bool) {
         uint8 typeWindow = uint8(rrtype >> 8);
         uint8 windowByte = uint8((rrtype & 0xff) / 8);
         uint8 windowBitmask = uint8(uint8(1) << (uint8(7) - uint8(rrtype & 0x7)));
-        for (uint256 off = offset; off < bitmap.length; ) {
+        for (uint256 off = offset; off < bitmap.length;) {
             uint8 window = bitmap.readUint8(off);
             uint8 len = bitmap.readUint8(off + 1);
             if (typeWindow < window) {
@@ -350,13 +330,7 @@ library RRUtils {
         }
 
         return
-            self.compare(
-                prevoff + 1,
-                self.readUint8(prevoff),
-                other,
-                otherprevoff + 1,
-                other.readUint8(otherprevoff)
-            );
+            self.compare(prevoff + 1, self.readUint8(prevoff), other, otherprevoff + 1, other.readUint8(otherprevoff));
     }
 
     /**
@@ -415,27 +389,19 @@ library RRUtils {
                     uint256 unused = 256 - (data.length - i) * 8;
                     word = (word >> unused) << unused;
                 }
-                ac1 +=
-                    (word & 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >>
-                    8;
+                ac1 += (word & 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >> 8;
                 ac2 += (word & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF);
             }
-            ac1 =
-                (ac1 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
-                ((ac1 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
-            ac2 =
-                (ac2 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) +
-                ((ac2 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
+            ac1 = (ac1 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF)
+                + ((ac1 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
+            ac2 = (ac2 & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF)
+                + ((ac2 & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >> 16);
             ac1 = (ac1 << 8) + ac2;
-            ac1 =
-                (ac1 & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) +
-                ((ac1 & 0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >> 32);
-            ac1 =
-                (ac1 & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) +
-                ((ac1 & 0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >> 64);
-            ac1 =
-                (ac1 & 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) +
-                (ac1 >> 128);
+            ac1 = (ac1 & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF)
+                + ((ac1 & 0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >> 32);
+            ac1 = (ac1 & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF)
+                + ((ac1 & 0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >> 64);
+            ac1 = (ac1 & 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) + (ac1 >> 128);
             ac1 += (ac1 >> 16) & 0xFFFF;
             return uint16(ac1);
         }

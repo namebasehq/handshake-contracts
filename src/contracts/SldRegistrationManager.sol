@@ -46,19 +46,13 @@ contract SldRegistrationManager is
     bytes32 public DOMAIN_SEPARATOR;
 
     bytes32 private constant EIP712DOMAIN_TYPEHASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     uint256 public gracePeriod;
 
     ICommitIntent public commitIntent;
 
-    event DiscountSet(
-        bytes32 indexed _tokenNamehash,
-        address indexed _claimant,
-        SldDiscountSettings _discount
-    );
+    event DiscountSet(bytes32 indexed _tokenNamehash, address indexed _claimant, SldDiscountSettings _discount);
 
     event NewGracePeriod(uint256 _newGracePeriod);
 
@@ -67,18 +61,17 @@ contract SldRegistrationManager is
     }
 
     /**
-
-    @notice Initialize the contract
-    @dev This function is called during contract deployment and sets up the contract's dependencies. It should only be called once.
-    @param _tld Address of the top level domain contract
-    @param _sld Address of the second level domain contract
-    @param _commitIntent Address of the commit intent contract
-    @param _oracle Address of the price oracle contract
-    @param _validator Address of the label validator contract
-    @param _globalRules Address of the global registration rules contract
-    @param _payoutWallet Address of the wallet for royalties
-    @param _owner Address of the contract owner
-    */
+     * @notice Initialize the contract
+     * @dev This function is called during contract deployment and sets up the contract's dependencies. It should only be called once.
+     * @param _tld Address of the top level domain contract
+     * @param _sld Address of the second level domain contract
+     * @param _commitIntent Address of the commit intent contract
+     * @param _oracle Address of the price oracle contract
+     * @param _validator Address of the label validator contract
+     * @param _globalRules Address of the global registration rules contract
+     * @param _payoutWallet Address of the wallet for royalties
+     * @param _owner Address of the contract owner
+     */
     function init(
         IHandshakeTld _tld,
         IHandshakeSld _sld,
@@ -104,23 +97,18 @@ contract SldRegistrationManager is
     }
 
     function hashDomain() internal view returns (bytes32) {
-        EIP712Domain memory eip712Domain = EIP712Domain({
-            name: "Namebase",
-            version: "1",
-            chainId: block.chainid,
-            verifyingContract: address(this)
-        });
+        EIP712Domain memory eip712Domain =
+            EIP712Domain({name: "Namebase", version: "1", chainId: block.chainid, verifyingContract: address(this)});
 
-        return
-            keccak256(
-                abi.encodePacked(
-                    EIP712DOMAIN_TYPEHASH,
-                    keccak256(bytes(eip712Domain.name)),
-                    keccak256(bytes(eip712Domain.version)),
-                    eip712Domain.chainId,
-                    eip712Domain.verifyingContract
-                )
-            );
+        return keccak256(
+            abi.encodePacked(
+                EIP712DOMAIN_TYPEHASH,
+                keccak256(bytes(eip712Domain.name)),
+                keccak256(bytes(eip712Domain.version)),
+                eip712Domain.chainId,
+                eip712Domain.verifyingContract
+            )
+        );
     }
 
     /**
@@ -141,28 +129,22 @@ contract SldRegistrationManager is
         address _recipient
     ) external payable {
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
-        require(
-            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
-            "No valid commit intent"
-        );
+        require(commitIntent.allowedCommit(sldNamehash, _secret, msg.sender), "No valid commit intent");
         registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
 
         unchecked {
-            emit RegisterSld(
-                _parentNamehash,
-                _secret,
-                _label,
-                block.timestamp + (_registrationLength * 1 days)
-            );
+            emit RegisterSld(_parentNamehash, _secret, _label, block.timestamp + (_registrationLength * 1 days));
         }
     }
 
-    function getRegistrationHash(
-        address buyer,
-        bytes32 subdomainHash
-    ) public view returns (bytes32) {
+    function getRegistrationHash(address buyer, bytes32 subdomainHash) public view returns (bytes32) {
         uint256 nonce = subdomainRegistrationNonce[subdomainHash];
 
+<<<<<<< HEAD
+        return keccak256(
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encodePacked(buyer, subdomainHash, nonce)))
+        );
+=======
         return
             keccak256(
                 abi.encodePacked(
@@ -171,28 +153,26 @@ contract SldRegistrationManager is
                     keccak256(abi.encodePacked(buyer, subdomainHash, nonce))
                 )
             );
+>>>>>>> main
     }
 
     function hash(EIP712Domain memory eip712Domain) internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    EIP712DOMAIN_TYPEHASH,
-                    keccak256(bytes(eip712Domain.name)),
-                    keccak256(bytes(eip712Domain.version)),
-                    eip712Domain.chainId,
-                    eip712Domain.verifyingContract
-                )
-            );
+        return keccak256(
+            abi.encodePacked(
+                EIP712DOMAIN_TYPEHASH,
+                keccak256(bytes(eip712Domain.name)),
+                keccak256(bytes(eip712Domain.version)),
+                eip712Domain.chainId,
+                eip712Domain.verifyingContract
+            )
+        );
     }
 
-    function checkSignatureValid(
-        address buyer,
-        bytes32 subdomainHash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public view returns (address) {
+    function checkSignatureValid(address buyer, bytes32 subdomainHash, uint8 v, bytes32 r, bytes32 s)
+        public
+        view
+        returns (address)
+    {
         bytes32 message = getRegistrationHash(buyer, subdomainHash);
         address signer = ecrecover(message, v, r, s);
 
@@ -218,12 +198,7 @@ contract SldRegistrationManager is
         unchecked {
             ++subdomainRegistrationNonce[sldNamehash];
 
-            emit RegisterSld(
-                _parentNamehash,
-                result,
-                _label,
-                block.timestamp + (_registrationLength * 1 days)
-            );
+            emit RegisterSld(_parentNamehash, result, _label, block.timestamp + (_registrationLength * 1 days));
         }
     }
 
@@ -244,18 +219,12 @@ contract SldRegistrationManager is
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
 
         require(
-            strategy.isEnabled(_parentNamehash) ||
-                tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
+            strategy.isEnabled(_parentNamehash) || tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
             "registration strategy disabled"
         );
 
-        uint256 dollarPrice = getRegistrationPrice(
-            address(strategy),
-            msg.sender,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        uint256 dollarPrice =
+            getRegistrationPrice(address(strategy), msg.sender, _parentNamehash, _label, _registrationLength);
 
         require(
             globalStrategy.canRegister(
@@ -270,11 +239,8 @@ contract SldRegistrationManager is
 
         addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
-        sldRegistrationHistory[sldNamehash] = SldRegistrationDetail(
-            uint72(block.timestamp),
-            uint80(_registrationLength * 1 days),
-            uint96(dollarPrice)
-        );
+        sldRegistrationHistory[sldNamehash] =
+            SldRegistrationDetail(uint72(block.timestamp), uint80(_registrationLength * 1 days), uint96(dollarPrice));
 
         uint256 weiValue = getWeiValueOfDollar();
 
@@ -288,14 +254,11 @@ contract SldRegistrationManager is
         address[] calldata _addresses,
         SldDiscountSettings[] calldata _discounts
     ) public {
-        require(
-            tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
-            "not approved or owner"
-        );
+        require(tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)), "not approved or owner");
         uint256 arrayLength = _discounts.length;
         require(_addresses.length == arrayLength, "array lengths do not match");
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
 
             emit DiscountSet(_parentNamehash, _addresses[i], _discounts[i]);
@@ -325,11 +288,7 @@ contract SldRegistrationManager is
      * @param _parentNamehash bytes32 representation of the top level domain
      * @param _registrationLength Number of days for registration length
      */
-    function renewSld(
-        string calldata _label,
-        bytes32 _parentNamehash,
-        uint80 _registrationLength
-    ) external payable {
+    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength) external payable {
         require(_registrationLength < 36500, "must be less than 100 years");
         bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
 
@@ -341,12 +300,7 @@ contract SldRegistrationManager is
 
         address tldOwner = tld.ownerOf(uint256(_parentNamehash));
 
-        uint256 priceInDollars = getRenewalPrice(
-            msg.sender,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        uint256 priceInDollars = getRenewalPrice(msg.sender, _parentNamehash, _label, _registrationLength);
 
         require(
             globalStrategy.canRenew(
@@ -370,8 +324,7 @@ contract SldRegistrationManager is
 
     function canRegister(bytes32 _namehash) private view returns (bool) {
         SldRegistrationDetail memory detail = sldRegistrationHistory[_namehash];
-        return
-            (detail.RegistrationTime + detail.RegistrationLength + gracePeriod) < block.timestamp;
+        return (detail.RegistrationTime + detail.RegistrationLength + gracePeriod) < block.timestamp;
     }
 
     /**
@@ -459,9 +412,7 @@ contract SldRegistrationManager is
      * @param _sldNamehash bytes32 representation of the SLD
      * @return _history An array containing the 10 year prices that were locked in when the domain was first registered
      */
-    function getTenYearGuarenteedPricing(
-        bytes32 _sldNamehash
-    ) external view returns (uint80[10] memory _history) {
+    function getTenYearGuarenteedPricing(bytes32 _sldNamehash) external view returns (uint80[10] memory _history) {
         _history = pricesAtRegistration[_sldNamehash];
     }
 
@@ -476,14 +427,8 @@ contract SldRegistrationManager is
         uint80[10] storage arr = pricesAtRegistration[_namehash];
         uint256 arrayLength = arr.length;
 
-        for (uint256 i; i < arrayLength; ) {
-            uint256 price = _strategy.getPriceInDollars(
-                msg.sender,
-                _parentNamehash,
-                _label,
-                (i + 1) * 365,
-                false
-            );
+        for (uint256 i; i < arrayLength;) {
+            uint256 price = _strategy.getPriceInDollars(msg.sender, _parentNamehash, _label, (i + 1) * 365, false);
 
             uint256 annualPrice = price / (i + 1);
 
@@ -544,16 +489,19 @@ contract SldRegistrationManager is
         );
 
         renewalCostPerAnnum =
-            renewalCostPerAnnum -
-            ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
+            renewalCostPerAnnum - ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
 
         //
-        uint256 renewalPrice = (((
-            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() ||
-                tld.ownerOf(uint256(_parentNamehash)) == _addr
-                ? globalStrategy.minimumDollarPrice()
-                : renewalCostPerAnnum
-        ) * _registrationLength) / 365);
+        uint256 renewalPrice = (
+            (
+                (
+                    renewalCostPerAnnum < globalStrategy.minimumDollarPrice()
+                        || tld.ownerOf(uint256(_parentNamehash)) == _addr
+                        ? globalStrategy.minimumDollarPrice()
+                        : renewalCostPerAnnum
+                ) * _registrationLength
+            ) / 365
+        );
 
         _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
     }
@@ -567,24 +515,25 @@ contract SldRegistrationManager is
      * @param _registrationDays The number of days for which the domain will be registered
      * @return _price The calculated price
      */
-    function safeCallRegistrationStrategyInAssembly(
-        address _strategy,
-        bytes memory _data,
-        uint256 _registrationDays
-    ) private view returns (uint256 _price) {
+    function safeCallRegistrationStrategyInAssembly(address _strategy, bytes memory _data, uint256 _registrationDays)
+        private
+        view
+        returns (uint256 _price)
+    {
         bool success;
 
         assembly {
             let ptr := mload(0x40)
 
-            success := staticcall(
-                1000000, // 1m gas units is plenty
-                _strategy,
-                add(_data, 0x20),
-                mload(_data),
-                ptr,
-                32
-            )
+            success :=
+                staticcall(
+                    1000000, // 1m gas units is plenty
+                    _strategy,
+                    add(_data, 0x20),
+                    mload(_data),
+                    ptr,
+                    32
+                )
 
             _price := mload(ptr)
         }
@@ -645,34 +594,30 @@ contract SldRegistrationManager is
                 _registrationLength
             );
 
-            uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) /
-                100;
+            uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
             currentPrice = currentPrice - discount;
 
             return minPrice > currentPrice ? minPrice : currentPrice;
         }
     }
 
-    function getCurrentDiscount(
-        bytes32 _parentNamehash,
-        address _addr,
-        bool _isRegistration
-    ) private view returns (uint256) {
+    function getCurrentDiscount(bytes32 _parentNamehash, address _addr, bool _isRegistration)
+        private
+        view
+        returns (uint256)
+    {
         uint256 discount = 0;
 
         SldDiscountSettings memory discountSetting = addressDiscounts[_parentNamehash][_addr];
         SldDiscountSettings memory wildcardDiscount = addressDiscounts[_parentNamehash][address(0)];
 
-        SldDiscountSettings memory activeDiscount = discountSetting.discountPercentage > 0
-            ? discountSetting
-            : wildcardDiscount;
+        SldDiscountSettings memory activeDiscount =
+            discountSetting.discountPercentage > 0 ? discountSetting : wildcardDiscount;
 
         if (
-            activeDiscount.discountPercentage > 0 &&
-            activeDiscount.endTimestamp >= block.timestamp &&
-            activeDiscount.startTimestamp <= block.timestamp &&
-            ((activeDiscount.isRegistration && _isRegistration) ||
-                (activeDiscount.isRenewal && !_isRegistration))
+            activeDiscount.discountPercentage > 0 && activeDiscount.endTimestamp >= block.timestamp
+                && activeDiscount.startTimestamp <= block.timestamp
+                && ((activeDiscount.isRegistration && _isRegistration) || (activeDiscount.isRenewal && !_isRegistration))
         ) {
             discount = activeDiscount.discountPercentage;
         }

@@ -97,18 +97,17 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         require(canClaim(msg.sender, namehash), "not eligible to claim");
 
         if (mintPriceInDollars > 0 || msg.value > 0) {
-            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) /
-                1 ether;
+            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
             require(msg.value >= expectedEther, "not enough ether");
 
-            (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+            (bool result,) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
             require(result, "transfer failed");
             // refund any extra ether
             if (expectedEther < msg.value) {
                 unchecked {
                     // we already do a check that msg.value must be >= expectedEther
-                    (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
+                    (result,) = msg.sender.call{value: msg.value - expectedEther}("");
                     require(result, "transfer failed");
                 }
             }
@@ -127,16 +126,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      * @param _addr Addresses of the wallets allowed to claim
      * @param _domain string representation of the domains that will be claimed
      */
-    function addTldAndClaimant(
-        address[] calldata _addr,
-        string[] calldata _domain
-    ) external onlyAuthorisedTldManager {
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external onlyAuthorisedTldManager {
         uint256 arrayLength = _addr.length;
         require(arrayLength == _domain.length, "address and domain list should be the same length");
 
         bytes32 tldNamehash;
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];

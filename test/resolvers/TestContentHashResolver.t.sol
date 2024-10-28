@@ -30,11 +30,7 @@ contract TestContentHashResolver is Test {
         vm.prank(owner);
         resolver.setContentHash(bytes32(id), bytes(contentHash));
 
-        assertEq(
-            string(resolver.contenthash(bytes32(id))),
-            contentHash,
-            "contenthash does not match"
-        );
+        assertEq(string(resolver.contenthash(bytes32(id))), contentHash, "contenthash does not match");
     }
 
     function testSetContentHashFromApprovedAddress_success() public {
@@ -53,11 +49,7 @@ contract TestContentHashResolver is Test {
         vm.prank(approved);
         resolver.setContentHash(bytes32(id), bytes(contentHash));
 
-        assertEq(
-            string(resolver.contenthash(bytes32(id))),
-            contentHash,
-            "contenthash does not match"
-        );
+        assertEq(string(resolver.contenthash(bytes32(id))), contentHash, "contenthash does not match");
     }
 
     function testSetContentHashFromNotApprovedAddress_fail() public {
@@ -86,11 +78,7 @@ contract TestContentHashResolver is Test {
         vm.prank(owner);
         resolver.setContentHash(bytes32(id), bytes(contentHash));
 
-        assertEq(
-            string(resolver.contenthash(bytes32(id))),
-            contentHash,
-            "contenthash does not match"
-        );
+        assertEq(string(resolver.contenthash(bytes32(id))), contentHash, "contenthash does not match");
 
         vm.prank(owner);
         resolver.incrementVersion(bytes32(id));

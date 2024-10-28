@@ -59,32 +59,16 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy2),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy2), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = annualCost / 2;
         assertEq(price, expected, "price should be 50% reduced");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be 50% reduced");
     }
@@ -125,22 +109,10 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy2),
-            arr1[0],
-            parentNamehash,
-            "foo",
-            365
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy2), arr1[0], parentNamehash, "foo", 365);
 
         hoax(arr1[0], price);
-        manager.registerWithCommit{value: price}(
-            "foo",
-            bytes32(uint256(555)),
-            365,
-            parentNamehash,
-            arr1[0]
-        );
+        manager.registerWithCommit{value: price}("foo", bytes32(uint256(555)), 365, parentNamehash, arr1[0]);
 
         uint256 expected = annualCost / 2;
         assertEq(price, expected, "price should be 50% reduced");
@@ -150,22 +122,10 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         sld.setMockRegistrationStrategy(parentNamehash, strategy2);
         tld.addRegistrationStrategy(parentNamehash, strategy2);
-        uint256 price2 = manager.getRegistrationPrice(
-            address(strategy2),
-            arr1[1],
-            parentNamehash,
-            "bar",
-            365
-        );
+        uint256 price2 = manager.getRegistrationPrice(address(strategy2), arr1[1], parentNamehash, "bar", 365);
 
         hoax(arr1[1], price2);
-        manager.registerWithCommit{value: price2}(
-            "bar",
-            bytes32(uint256(555)),
-            365,
-            parentNamehash,
-            arr1[1]
-        );
+        manager.registerWithCommit{value: price2}("bar", bytes32(uint256(555)), 365, parentNamehash, arr1[1]);
 
         uint256 expected2 = (annualCost / 4) * 3;
         assertEq(price2, expected2, "price should be 25% reduced");
@@ -208,34 +168,18 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy2),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy2), addr, parentNamehash, label, registrationLength);
 
         console.log("price: %s", price);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = 1 ether;
         assertEq(price, expected, "price should be $1");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be $1");
     }
@@ -275,32 +219,15 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = 1 ether;
         assertEq(price, expected * renewalYears, "price should be $1");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be $1");
     }
@@ -340,39 +267,20 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = annualCost;
         assertEq(price, expected, "price should be $2000");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be $2000");
     }
 
-    function testSetup100PercentReductionForAddressRenewFromOtherAdressShouldBeFullPrice_pass()
-        public
-    {
+    function testSetup100PercentReductionForAddressRenewFromOtherAdressShouldBeFullPrice_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -407,32 +315,15 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         uint256 expected = 1 ether;
         assertEq(price, expected, "price should be $1");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            address(0xbada55),
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(address(0xbada55), parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
@@ -476,31 +367,14 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price + 1);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, annualCost, "registration should be at full cost");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
@@ -544,31 +418,14 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price + 1);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, 1 ether, "registration should be at full cost");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, 1 ether, "renewal price should be full cost");
     }
@@ -612,31 +469,14 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price + 1);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, 1 ether, "registration should be at minimum cost");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost");
     }
@@ -680,31 +520,14 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price + 1);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
         assertEq(price, annualCost, "registration should be at full cost");
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         uint256 expected = 1 ether;
         assertEq(renewalPrice, expected, "renewal price should be full cost");
@@ -749,55 +572,26 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         assertEq(price, annualCost, "registration should be at full cost"); //not started yet
 
         vm.warp(start + 20);
 
-        price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         assertEq(price, annualCost / 2, "registration should be 50% cost"); //started now
 
         vm.warp(start + 40);
 
-        price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         assertEq(price, annualCost, "registration should be at full cost"); //completed now
 
         hoax(addr, price + 1);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
-        uint256 renewalPrice = manager.getRenewalPrice(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, annualCost, "renewal price should be full cost"); //renewal is not discounted
 
@@ -868,13 +662,8 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy), arr1[0], parentNamehash, label, registrationLength);
 
         assertEq(price, 100 ether, "registration should be full price");
 
@@ -882,11 +671,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         startHoax(address(0x4444), price);
 
         manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            arr1[0]
+            label, bytes32(uint256(555)), registrationLength, parentNamehash, arr1[0]
         );
 
         price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
@@ -956,9 +741,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         assertEq(price, 1 ether, "renewal should be 100% reduced but min is $1");
     }
 
-    function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWallets_pass()
-        public
-    {
+    function testSetupPercentReductionWithMultipleDiscountsRenewalsFromDifferentWallets_pass() public {
         string memory label = "foo";
         uint256 registrationLength = 365;
         bytes32 parentNamehash = Namehash.getTldNamehash("yoyo");
@@ -1003,21 +786,12 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            arr1[0],
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price =
+            manager.getRegistrationPrice(address(strategy), arr1[0], parentNamehash, label, registrationLength);
 
         hoax(arr1[0], price);
         manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            arr1[0]
+            label, bytes32(uint256(555)), registrationLength, parentNamehash, arr1[0]
         );
 
         price = manager.getRenewalPrice(arr1[0], parentNamehash, label, registrationLength);
@@ -1196,36 +970,16 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
 
         manager.setAddressDiscounts(parentNamehash, arr1, arr2);
 
-        uint256 price = manager.getRegistrationPrice(
-            address(strategy),
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 price = manager.getRegistrationPrice(address(strategy), addr, parentNamehash, label, registrationLength);
 
         hoax(addr, price);
-        manager.registerWithCommit{value: price}(
-            label,
-            bytes32(uint256(555)),
-            registrationLength,
-            parentNamehash,
-            addr
-        );
+        manager.registerWithCommit{value: price}(label, bytes32(uint256(555)), registrationLength, parentNamehash, addr);
 
-        sld.setMockRegistrationStrategy(
-            parentNamehash,
-            new MockGasLimitRegistrationStrategy(50000000)
-        );
+        sld.setMockRegistrationStrategy(parentNamehash, new MockGasLimitRegistrationStrategy(50000000));
 
         assertEq(price, 1 ether, "price should be $1");
 
-        uint256 renewalPrice = manager.getRenewalPrice{gas: 30000000}(
-            addr,
-            parentNamehash,
-            label,
-            registrationLength
-        );
+        uint256 renewalPrice = manager.getRenewalPrice{gas: 30000000}(addr, parentNamehash, label, registrationLength);
 
         assertEq(renewalPrice, price, "renewal price should be $1");
     }

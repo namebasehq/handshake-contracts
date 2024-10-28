@@ -64,11 +64,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
      * @param _domain The domain being registered.
      * @param _strategy The registration strategy being employed.
      */
-    function registerWithResolver(
-        address _addr,
-        string calldata _domain,
-        ISldRegistrationStrategy _strategy
-    ) external isClaimManager {
+    function registerWithResolver(address _addr, string calldata _domain, ISldRegistrationStrategy _strategy)
+        external
+        isClaimManager
+    {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
 
         if (hasExpired(namehash)) {
@@ -85,10 +84,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         emit ResolverSet(namehash, address(defaultResolver));
     }
 
-    function setResolver(
-        bytes32 _namehash,
-        IResolver _resolver
-    ) public override(IHandshakeTld, HandshakeNft) {
+    function setResolver(bytes32 _namehash, IResolver _resolver) public override(IHandshakeTld, HandshakeNft) {
         HandshakeNft.setResolver(_namehash, _resolver);
     }
 
@@ -108,10 +104,10 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
      * @param _strategy Linked registration strategy to the top level domain. It should
      *                  implement ISldRegistrationStrategy interface
      */
-    function setRegistrationStrategy(
-        bytes32 _namehash,
-        ISldRegistrationStrategy _strategy
-    ) public onlyApprovedOrOwner(uint256(_namehash)) {
+    function setRegistrationStrategy(bytes32 _namehash, ISldRegistrationStrategy _strategy)
+        public
+        onlyApprovedOrOwner(uint256(_namehash))
+    {
         registrationStrategy[_namehash] = _strategy;
         emit RegistrationStrategySet(_namehash, _strategy);
     }
@@ -125,10 +121,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
      *
      *
      */
-    function royaltyInfo(
-        uint256,
-        uint256 salePrice
-    ) external view returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
         uint256 divisor = royaltyPayoutAmount / 10;
         uint256 amount = royaltyPayoutAmount == 0 || divisor == 0 ? 0 : salePrice / divisor;
 
@@ -142,9 +135,7 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
      * @param _tokenId The token ID of the SLD NFT to be checked
      * @return _addr Owner of NFT
      */
-    function ownerOf(
-        uint256 _tokenId
-    ) public view override(HandshakeNft, IHandshakeTld) returns (address _addr) {
+    function ownerOf(uint256 _tokenId) public view override(HandshakeNft, IHandshakeTld) returns (address _addr) {
         uint256 tldExpiry = expiry(bytes32(_tokenId));
         require(tldExpiry > 0, "Query for non-existent token");
 
@@ -167,10 +158,12 @@ contract HandshakeTld is HandshakeNft, IHandshakeTld {
         return uint256(block.timestamp) > _expiry;
     }
 
-    function isApprovedOrOwner(
-        address _operator,
-        uint256 _id
-    ) public view override(HandshakeNft, IHandshakeTld) returns (bool) {
+    function isApprovedOrOwner(address _operator, uint256 _id)
+        public
+        view
+        override(HandshakeNft, IHandshakeTld)
+        returns (bool)
+    {
         return _isApprovedOrOwner(_operator, _id);
     }
 

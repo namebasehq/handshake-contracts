@@ -36,7 +36,11 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
 
     /// @notice A modifier that only allows the bridge to call
     modifier onlyBridge() {
+<<<<<<< HEAD
+        if (msg.sender != BRIDGE) {
+=======
         if(msg.sender != BRIDGE) {
+>>>>>>> main
             revert OnlyBridge();
         }
         _;
@@ -50,6 +54,11 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
     /// @param _remoteToken Address of the corresponding L1 token.
     /// @param _name        ERC20 name.
     /// @param _symbol      ERC20 symbol.
+<<<<<<< HEAD
+    constructor(address _bridge, address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals)
+        ERC20(_name, _symbol)
+    {
+=======
     constructor(
         address _bridge,
         address _remoteToken,
@@ -57,6 +66,7 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
         string memory _symbol,
         uint8 _decimals
     ) ERC20(_name, _symbol) {
+>>>>>>> main
         REMOTE_TOKEN = _remoteToken;
         BRIDGE = _bridge;
         DECIMALS = _decimals;
@@ -65,10 +75,19 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
     /// @notice Allows the StandardBridge on this network to mint tokens.
     /// @param _to     Address to mint tokens to.
     /// @param _amount Amount of tokens to mint.
+<<<<<<< HEAD
+    function mint(address _to, uint256 _amount)
+        external
+        virtual
+        override(IOptimismMintableERC20, ILegacyMintableERC20)
+        onlyBridge
+    {
+=======
     function mint(
         address _to,
         uint256 _amount
     ) external virtual override(IOptimismMintableERC20, ILegacyMintableERC20) onlyBridge {
+>>>>>>> main
         _mint(_to, _amount);
         emit Mint(_to, _amount);
     }
@@ -76,10 +95,19 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
     /// @notice Allows the StandardBridge on this network to burn tokens.
     /// @param _from   Address to burn tokens from.
     /// @param _amount Amount of tokens to burn.
+<<<<<<< HEAD
+    function burn(address _from, uint256 _amount)
+        external
+        virtual
+        override(IOptimismMintableERC20, ILegacyMintableERC20)
+        onlyBridge
+    {
+=======
     function burn(
         address _from,
         uint256 _amount
     ) external virtual override(IOptimismMintableERC20, ILegacyMintableERC20) onlyBridge {
+>>>>>>> main
         _burn(_from, _amount);
         emit Burn(_from, _amount);
     }

@@ -23,6 +23,7 @@ import "interfaces/IResolver.sol";
 
 contract TestHandshakeTld is Test {
     using stdStorage for StdStorage;
+
     HandshakeTld tld;
     HandshakeSld sld;
 
@@ -35,14 +36,11 @@ contract TestHandshakeTld is Test {
     ISldRegistrationStrategy defaultRegistrationStrategy;
 
     // test
-    bytes32 constant TEST_TLD_NAMEHASH =
-        0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
+    bytes32 constant TEST_TLD_NAMEHASH = 0x04f740db81dc36c853ab4205bddd785f46e79ccedca351fc6dfcbd8cc9a33dd6;
     // test.test
-    bytes32 constant TEST_SLD_NAMEHASH =
-        0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
+    bytes32 constant TEST_SLD_NAMEHASH = 0x28f4f6752878f66fd9e3626dc2a299ee01cfe269be16e267e71046f1022271cb;
     // test.test.test
-    bytes32 constant TEST_SUB_NAMEHASH =
-        0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
+    bytes32 constant TEST_SUB_NAMEHASH = 0xab4320f3c1dd20a2fc23e7b0dda6f37afbf916136c4797a99caad59e740d9494;
 
     function setUp() public {
         claimManager = new MockClaimManager();
@@ -52,10 +50,8 @@ contract TestHandshakeTld is Test {
         tld.setTldClaimManager(claimManager);
         sld = new HandshakeSld(tld);
 
-        registrationManager = new MockSldRegistrationManager(
-            tld,
-            new MockGlobalRegistrationStrategy(true, true, 1 ether)
-        );
+        registrationManager =
+            new MockSldRegistrationManager(tld, new MockGlobalRegistrationStrategy(true, true, 1 ether));
 
         sld.setRegistrationManager(registrationManager);
         sld.setMetadataContract(metadata);
@@ -127,7 +123,7 @@ contract TestHandshakeTld is Test {
         address payoutAddress = address(0x66991122);
 
         tld.setRoyaltyPayoutAddress(payoutAddress);
-        (address addr, ) = tld.royaltyInfo(0, 100);
+        (address addr,) = tld.royaltyInfo(0, 100);
         assertEq(payoutAddress, addr);
     }
 
@@ -161,9 +157,7 @@ contract TestHandshakeTld is Test {
         assertEq(amount, 0);
     }
 
-    function testUpdateRoyaltyPercentageToLargestNumberSaleAmountToSmallestNumbertenPercentRoyalty()
-        public
-    {
+    function testUpdateRoyaltyPercentageToLargestNumberSaleAmountToSmallestNumbertenPercentRoyalty() public {
         //10 percent is the max royalty
         uint256 tenPercentRoyalty = 100;
         uint256 smallestSaleAmount = 1;
@@ -244,10 +238,7 @@ contract TestHandshakeTld is Test {
         vm.expectRevert("not approved or owner");
         tld.setRegistrationStrategy(parentNamehash, strategy);
 
-        assertEq(
-            address(tld.registrationStrategy(parentNamehash)),
-            address(defaultRegistrationStrategy)
-        );
+        assertEq(address(tld.registrationStrategy(parentNamehash)), address(defaultRegistrationStrategy));
     }
 
     function testRegisterTldDefaultRegistrationStrategyIsSet() public {
@@ -262,10 +253,7 @@ contract TestHandshakeTld is Test {
         vm.startPrank(tldOwner);
         tld.registerWithResolver(tldOwner, tldName, defaultRegistrationStrategy);
 
-        assertEq(
-            address(tld.registrationStrategy(parentNamehash)),
-            address(defaultRegistrationStrategy)
-        );
+        assertEq(address(tld.registrationStrategy(parentNamehash)), address(defaultRegistrationStrategy));
     }
 
     function testRegisterTldDefaultResolverIsSet() public {

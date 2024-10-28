@@ -17,10 +17,7 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _dollarCost
     ) external pure returns (bool) {
         require(_registrationLength >= MIN_REGISTRATION_DAYS, "less than min days registration");
-        require(
-            ((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice,
-            "min price $1/year"
-        );
+        require(((_dollarCost * DAYS_IN_A_YEAR) / _registrationLength) >= minimumDollarPrice, "min price $1/year");
         return true;
     }
 
@@ -32,16 +29,11 @@ contract GlobalRegistrationRules is IGlobalRegistrationRules {
         uint256 _dollarCost
     ) external pure returns (bool) {
         require(_renewalLength >= MIN_RENEWAL_DAYS, "less than 365 days renewal");
-        require(
-            ((_dollarCost * DAYS_IN_A_YEAR) / _renewalLength) >= minimumDollarPrice,
-            "min price $1/year"
-        );
+        require(((_dollarCost * DAYS_IN_A_YEAR) / _renewalLength) >= minimumDollarPrice, "min price $1/year");
         return true;
     }
 
     function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
-        return
-            _interfaceId == this.canRegister.selector ||
-            _interfaceId == this.supportsInterface.selector;
+        return _interfaceId == this.canRegister.selector || _interfaceId == this.supportsInterface.selector;
     }
 }

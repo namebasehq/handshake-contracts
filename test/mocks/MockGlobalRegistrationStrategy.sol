@@ -39,8 +39,6 @@ contract MockGlobalRegistrationStrategy is IGlobalRegistrationRules {
     }
 
     function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
-        return
-            _interfaceId == this.canRegister.selector ||
-            _interfaceId == this.supportsInterface.selector;
+        return _interfaceId == this.canRegister.selector || _interfaceId == this.supportsInterface.selector;
     }
 }

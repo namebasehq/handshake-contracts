@@ -28,11 +28,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         ILabelValidator validator = new MockLabelValidator(true);
         manager.updateLabelValidator(validator);
 
-        assertEq(
-            address(manager.labelValidator()),
-            address(validator),
-            "label validator not set correctly"
-        );
+        assertEq(address(manager.labelValidator()), address(validator), "label validator not set correctly");
     }
 
     function testUpdateUsdOracleFromOwner_pass() public {
@@ -57,29 +53,17 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetGlobalRegistrationStrategyFromContractOwner_pass() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
-            false,
-            false,
-            1 ether
-        );
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, false, 1 ether);
         manager.updateGlobalRegistrationStrategy(globalRules);
 
-        assertEq(
-            address(manager.globalStrategy()),
-            address(globalRules),
-            "global registration rules not set correctly"
-        );
+        assertEq(address(manager.globalStrategy()), address(globalRules), "global registration rules not set correctly");
     }
 
     function testSetCommitIntentFromContractOwner_pass() public {
         MockCommitIntent intent = new MockCommitIntent(false);
         manager.updateCommitIntent(intent);
 
-        assertEq(
-            address(manager.commitIntent()),
-            address(intent),
-            "commit intent not set correctly"
-        );
+        assertEq(address(manager.commitIntent()), address(intent), "commit intent not set correctly");
     }
 
     function testSetCommitIntentFromNotContractOwner_fail() public {
@@ -90,11 +74,7 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
     }
 
     function testSetGlobalRegistrationStrategyFromNotContractOwner_fail() public {
-        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(
-            false,
-            false,
-            1 ether
-        );
+        IGlobalRegistrationRules globalRules = new MockGlobalRegistrationStrategy(false, false, 1 ether);
 
         vm.startPrank(address(0x1234));
         vm.expectRevert("Ownable: caller is not the owner");
@@ -117,13 +97,12 @@ contract TestSldRegistrationManagerContractOwnerTests is TestSldRegistrationMana
         address sendingAddress = address(0x420);
         hoax(sendingAddress, 20 ether);
         vm.expectCall(
-            address(manager.sld()),
-            abi.encodeCall(manager.sld().registerSld, (sendingAddress, parentNamehash, label))
+            address(manager.sld()), abi.encodeCall(manager.sld().registerSld, (sendingAddress, parentNamehash, label))
         );
         vm.startPrank(sendingAddress);
-        manager.registerWithCommit{
-            value: (uint256(1 ether) / uint256(365)) * registrationLength + 137
-        }(label, secret, registrationLength, parentNamehash, recipient);
+        manager.registerWithCommit{value: (uint256(1 ether) / uint256(365)) * registrationLength + 137}(
+            label, secret, registrationLength, parentNamehash, recipient
+        );
     }
 
     function testSetWalletAddressFromContractOwner_pass() public {

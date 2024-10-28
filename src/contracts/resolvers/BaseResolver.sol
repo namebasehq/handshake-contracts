@@ -22,9 +22,7 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
-        return
-            _interfaceId == type(IVersionableResolver).interfaceId ||
-            super.supportsInterface(_interfaceId);
+        return _interfaceId == type(IVersionableResolver).interfaceId || super.supportsInterface(_interfaceId);
     }
 
     // we can use this nonce to invalidate all records for a given node
@@ -39,8 +37,7 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
     function setDelegate(uint256 _id, address _delegate) public {
         // delegate can't be transferred by the delegate
         require(
-            sldContract.isApprovedOrOwner(msg.sender, _id) ||
-                tldContract.isApprovedOrOwner(msg.sender, _id),
+            sldContract.isApprovedOrOwner(msg.sender, _id) || tldContract.isApprovedOrOwner(msg.sender, _id),
             "not authorised or owner"
         );
 
@@ -93,9 +90,8 @@ abstract contract BaseResolver is ERC165, IVersionableResolver {
         uint256 id = uint256(_nodehash);
 
         require(
-            sldContract.isApprovedOrOwner(msg.sender, id) ||
-                tldContract.isApprovedOrOwner(msg.sender, id) ||
-                delegates[getTokenOwner(id)][id] == msg.sender,
+            sldContract.isApprovedOrOwner(msg.sender, id) || tldContract.isApprovedOrOwner(msg.sender, id)
+                || delegates[getTokenOwner(id)][id] == msg.sender,
             "not authorised or owner"
         );
         _;

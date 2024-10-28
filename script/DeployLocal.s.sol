@@ -104,9 +104,7 @@ contract DeployLocalScript is Script {
             )
         );
 
-        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(
-            SldRegistrationManager(address(uups2))
-        );
+        DefaultRegistrationStrategy strategy = new DefaultRegistrationStrategy(SldRegistrationManager(address(uups2)));
 
         TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
             address(new TldClaimManager()),
@@ -127,10 +125,7 @@ contract DeployLocalScript is Script {
 
         console.log("owner", SldRegistrationManager(address(uups2)).owner());
         console.log("msg.sender", msg.sender);
-        SldRegistrationManager(address(uups2)).updateSigner(
-            0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f,
-            true
-        );
+        SldRegistrationManager(address(uups2)).updateSigner(0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f, true);
 
         sld.setRegistrationManager(SldRegistrationManager(address(uups2)));
 

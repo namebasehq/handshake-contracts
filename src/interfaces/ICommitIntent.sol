@@ -36,11 +36,7 @@ interface ICommitIntent {
      *
      * @return _ True/False value if the user is currently allowed to register the name
      */
-    function allowedCommit(
-        bytes32 _namehash,
-        bytes32 _secret,
-        address _addr
-    ) external view returns (bool);
+    function allowedCommit(bytes32 _namehash, bytes32 _secret, address _addr) external view returns (bool);
 
     /**
      * Max time in blocks that an SLD is held for.

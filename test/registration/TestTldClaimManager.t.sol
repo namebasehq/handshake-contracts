@@ -32,11 +32,8 @@ contract TestTldClaimManager is Test {
         metadata = new MockMetadataService("base_url");
         labelValidator = new MockLabelValidator(true);
         TestingTldClaimManager implementation = new TestingTldClaimManager();
-        TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(
-            address(implementation),
-            address(0x224455),
-            bytes("")
-        );
+        TransparentUpgradeableProxy uups =
+            new TransparentUpgradeableProxy(address(implementation), address(0x224455), bytes(""));
 
         manager = TldClaimManager(address(uups));
 
@@ -348,15 +345,7 @@ contract TestTldClaimManager is Test {
 
     function testRunInitAgain_expect_revert() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        manager.init(
-            labelValidator,
-            address(this),
-            nft,
-            strategy,
-            IPriceOracle(address(0)),
-            0,
-            address(0)
-        );
+        manager.init(labelValidator, address(this), nft, strategy, IPriceOracle(address(0)), 0, address(0));
     }
 
     function testBurnTLD_fromTldClaimManager() public {

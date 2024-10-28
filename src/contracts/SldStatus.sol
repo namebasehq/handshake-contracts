@@ -7,10 +7,10 @@ import {DefaultRegistrationStrategy} from "contracts/DefaultRegistrationStrategy
 import {ISldRegistrationStrategy} from "interfaces/ISldRegistrationStrategy.sol";
 import {IHandshakeSld} from "interfaces/IHandshakeSld.sol";
 import {IHandshakeTld} from "interfaces/IHandshakeTld.sol";
-
 import {ILabelValidator} from "interfaces/ILabelValidator.sol";
 import {LabelValidator} from "contracts/LabelValidator.sol";
 import {HandshakeSld} from "contracts/HandshakeSld.sol";
+
 struct DomainDetails {
     bool isAvailable;
     bool labelValid;
@@ -34,60 +34,20 @@ contract SldStatus {
         tld = _tld;
     }
 
-    function getDomainDetails(
-        address _buyer,
-        uint256 _registrationDays,
-        bytes32 _parentHash,
-        string calldata _label
-    ) external view returns (DomainDetails memory) {
+    function getDomainDetails(address _buyer, uint256 _registrationDays, bytes32 _parentHash, string calldata _label)
+        external
+        view
+        returns (DomainDetails memory)
+    {
         bytes32 sldHash = Namehash.getNamehash(_parentHash, _label);
 
-        ISldRegistrationStrategy interfaceStrategy = sld.getRegistrationStrategy(_parentHash);
-        DefaultRegistrationStrategy strategy = DefaultRegistrationStrategy(
-            address(interfaceStrategy)
-        );
+        (bool isAvailable, bool labelValid, bool publicRegistrationOpen, address owner, uint256 expiry) =
+            _getBasicDetails(sldHash, _label);
 
-        ILabelValidator interfaceValidator = manager.labelValidator();
-        LabelValidator labelValidator = LabelValidator(address(interfaceValidator));
+        (bool isPremium, address reservedAddress, uint256 priceInCents, uint256 priceInWei) =
+            _getPricingDetails(_buyer, _registrationDays, _parentHash, _label, sldHash);
 
-        bool exists = sld.exists(uint256(sldHash));
-
-        address owner = exists ? sld.ownerOf(uint256(sldHash)) : address(0);
-        uint256 expiry = sld.expiry(sldHash);
-        bool isAvailable = expiry + manager.gracePeriod() < block.timestamp;
-        bool labelValid = labelValidator.isValidLabel(_label);
-
-        uint256 registrationPrice;
-        try
-            manager.getRegistrationPrice(
-                address(strategy),
-                _buyer,
-                _parentHash,
-                _label,
-                _registrationDays
-            )
-        {
-            registrationPrice = manager.getRegistrationPrice(
-                address(strategy),
-                _buyer,
-                _parentHash,
-                _label,
-                _registrationDays
-            );
-        } catch {
-            registrationPrice = 0;
-        }
-
-        uint256 weiValueOfDollar = manager.getWeiValueOfDollar();
-
-        bool publicRegistrationOpen = strategy.isEnabled(_parentHash);
-
-        uint256 premiumPrice = strategy.premiumNames(sldHash);
-        address reservedAddress = strategy.reservedNames(sldHash);
-        uint256 priceInCents = registrationPrice / 10 ** 16;
-        uint256 priceInWei = priceInCents * (weiValueOfDollar / 100);
-        bool isPremium = premiumPrice > 0;
-        DomainDetails memory details = DomainDetails(
+        return DomainDetails(
             isAvailable,
             labelValid,
             publicRegistrationOpen,
@@ -98,7 +58,50 @@ contract SldStatus {
             priceInCents,
             priceInWei
         );
+    }
 
-        return details;
+    function _getBasicDetails(bytes32 sldHash, string calldata _label)
+        private
+        view
+        returns (bool isAvailable, bool labelValid, bool publicRegistrationOpen, address owner, uint256 expiry)
+    {
+        ILabelValidator labelValidator = LabelValidator(address(manager.labelValidator()));
+
+        bool exists = sld.exists(uint256(sldHash));
+        owner = exists ? sld.ownerOf(uint256(sldHash)) : address(0);
+        expiry = sld.expiry(sldHash);
+        isAvailable = expiry + manager.gracePeriod() < block.timestamp;
+        labelValid = labelValidator.isValidLabel(_label);
+
+        ISldRegistrationStrategy interfaceStrategy = sld.getRegistrationStrategy(sldHash);
+        DefaultRegistrationStrategy strategy = DefaultRegistrationStrategy(address(interfaceStrategy));
+        publicRegistrationOpen = strategy.isEnabled(sldHash);
+    }
+
+    function _getPricingDetails(
+        address _buyer,
+        uint256 _registrationDays,
+        bytes32 _parentHash,
+        string calldata _label,
+        bytes32 sldHash
+    ) private view returns (bool isPremium, address reservedAddress, uint256 priceInCents, uint256 priceInWei) {
+        ISldRegistrationStrategy interfaceStrategy = sld.getRegistrationStrategy(_parentHash);
+        DefaultRegistrationStrategy strategy = DefaultRegistrationStrategy(address(interfaceStrategy));
+
+        uint256 registrationPrice;
+        try manager.getRegistrationPrice(address(strategy), _buyer, _parentHash, _label, _registrationDays) returns (
+            uint256 price
+        ) {
+            registrationPrice = price;
+        } catch {
+            registrationPrice = 0;
+        }
+
+        uint256 weiValueOfDollar = manager.getWeiValueOfDollar();
+        uint256 premiumPrice = strategy.premiumNames(sldHash);
+        reservedAddress = strategy.reservedNames(sldHash);
+        priceInCents = registrationPrice / 10 ** 16;
+        priceInWei = priceInCents * (weiValueOfDollar / 100);
+        isPremium = premiumPrice > 0;
     }
 }

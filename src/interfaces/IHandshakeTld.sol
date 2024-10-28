@@ -8,11 +8,8 @@ import "interfaces/ISldRegistrationStrategy.sol";
 interface IHandshakeTld {
     //function register(address _addr, string calldata _domain) external;
 
-    function registerWithResolver(
-        address _addr,
-        string calldata _domain,
-        ISldRegistrationStrategy _strategy
-    ) external;
+    function registerWithResolver(address _addr, string calldata _domain, ISldRegistrationStrategy _strategy)
+        external;
 
     function ownerOf(uint256 _id) external view returns (address);
 
@@ -24,7 +21,5 @@ interface IHandshakeTld {
 
     function setResolver(bytes32 _namehash, IResolver _resolver) external;
 
-    function registrationStrategy(
-        bytes32 _namehash
-    ) external view returns (ISldRegistrationStrategy);
+    function registrationStrategy(bytes32 _namehash) external view returns (ISldRegistrationStrategy);
 }

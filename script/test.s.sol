@@ -12,9 +12,7 @@ contract TestScript is Script {
     function run() public {
         vm.startBroadcast(vm.envUint("OWNER_PK"));
 
-        SldRegistrationManager manager = SldRegistrationManager(
-            0x529B2b5B576c27769Ae0aB811F1655012f756C00
-        );
+        SldRegistrationManager manager = SldRegistrationManager(0x529B2b5B576c27769Ae0aB811F1655012f756C00);
 
         address owner = manager.owner();
 

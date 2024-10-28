@@ -43,29 +43,24 @@ contract MockSldRegistrationManager is
 
     uint256 public minDevContribution;
 
-    event DiscountSet(
-        bytes32 indexed _tokenNamehash,
-        address indexed _claimant,
-        SldDiscountSettings _discount
-    );
+    event DiscountSet(bytes32 indexed _tokenNamehash, address indexed _claimant, SldDiscountSettings _discount);
 
     constructor() {
         _disableInitializers();
     }
 
     /**
-
-    @notice Initialize the contract
-    @dev This function is called during contract deployment and sets up the contract's dependencies. It should only be called once.
-    @param _tld Address of the top level domain contract
-    @param _sld Address of the second level domain contract
-    @param _commitIntent Address of the commit intent contract
-    @param _oracle Address of the price oracle contract
-    @param _validator Address of the label validator contract
-    @param _globalRules Address of the global registration rules contract
-    @param _payoutWallet Address of the wallet for royalties
-    @param _owner Address of the contract owner
-    */
+     * @notice Initialize the contract
+     * @dev This function is called during contract deployment and sets up the contract's dependencies. It should only be called once.
+     * @param _tld Address of the top level domain contract
+     * @param _sld Address of the second level domain contract
+     * @param _commitIntent Address of the commit intent contract
+     * @param _oracle Address of the price oracle contract
+     * @param _validator Address of the label validator contract
+     * @param _globalRules Address of the global registration rules contract
+     * @param _payoutWallet Address of the wallet for royalties
+     * @param _owner Address of the contract owner
+     */
     function init(
         IHandshakeTld _tld,
         IHandshakeSld _sld,
@@ -125,30 +120,21 @@ contract MockSldRegistrationManager is
 
         ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
         require(
-            address(strategy).supportsInterface(type(IERC165).interfaceId) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector) &&
-                strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector),
+            address(strategy).supportsInterface(type(IERC165).interfaceId)
+                && strategy.supportsInterface(ISldRegistrationStrategy.getPriceInDollars.selector)
+                && strategy.supportsInterface(ISldRegistrationStrategy.isEnabled.selector),
             "registration strategy does not support interface"
         );
 
         bool isApproved = tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash));
 
-        require(
-            strategy.isEnabled(_parentNamehash) || isApproved,
-            "registration strategy disabled"
-        );
+        require(strategy.isEnabled(_parentNamehash) || isApproved, "registration strategy disabled");
 
         address tldOwner = tld.ownerOf(uint256(_parentNamehash));
         uint256 dollarPrice;
 
-        dollarPrice = getRegistrationPrice(
-            address(strategy),
-            msg.sender,
-            tldOwner,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        dollarPrice =
+            getRegistrationPrice(address(strategy), msg.sender, tldOwner, _parentNamehash, _label, _registrationLength);
 
         require(
             globalStrategy.canRegister(
@@ -163,11 +149,8 @@ contract MockSldRegistrationManager is
 
         addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
-        sldRegistrationHistory[sldNamehash] = SldRegistrationDetail(
-            uint72(block.timestamp),
-            uint80(_registrationLength * 1 days),
-            uint96(dollarPrice)
-        );
+        sldRegistrationHistory[sldNamehash] =
+            SldRegistrationDetail(uint72(block.timestamp), uint80(_registrationLength * 1 days), uint96(dollarPrice));
 
         uint256 weiValue = getWeiValueOfDollar();
 
@@ -175,17 +158,9 @@ contract MockSldRegistrationManager is
 
         distributePrimaryFunds(msg.sender, tldOwner, priceInWei);
 
-        require(
-            commitIntent.allowedCommit(sldNamehash, _secret, msg.sender),
-            "No valid commit intent"
-        );
+        require(commitIntent.allowedCommit(sldNamehash, _secret, msg.sender), "No valid commit intent");
 
-        emit RegisterSld(
-            _parentNamehash,
-            _secret,
-            _label,
-            block.timestamp + (_registrationLength * 1 days)
-        );
+        emit RegisterSld(_parentNamehash, _secret, _label, block.timestamp + (_registrationLength * 1 days));
     }
 
     function setAddressDiscounts(
@@ -193,13 +168,10 @@ contract MockSldRegistrationManager is
         address[] calldata _addresses,
         SldDiscountSettings[] calldata _discounts
     ) public {
-        require(
-            tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
-            "not approved or owner"
-        );
+        require(tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)), "not approved or owner");
         require(_addresses.length == _discounts.length, "array lengths do not match");
 
-        for (uint256 i; i < _discounts.length; ) {
+        for (uint256 i; i < _discounts.length;) {
             addressDiscounts[_parentNamehash][_addresses[i]] = _discounts[i];
 
             emit DiscountSet(_parentNamehash, _addresses[i], _discounts[i]);
@@ -219,11 +191,7 @@ contract MockSldRegistrationManager is
      * @param _parentNamehash bytes32 representation of the top level domain
      * @param _registrationLength Number of days for registration length
      */
-    function renewSld(
-        string calldata _label,
-        bytes32 _parentNamehash,
-        uint80 _registrationLength
-    ) external payable {
+    function renewSld(string calldata _label, bytes32 _parentNamehash, uint80 _registrationLength) external payable {
         // no-one gonna need to extend domain more than 100 years, and we do unchecked matth
         // inside the price function
         require(_registrationLength < 36500, "must be less than 100 years");
@@ -237,12 +205,7 @@ contract MockSldRegistrationManager is
 
         address tldOwner = tld.ownerOf(uint256(_parentNamehash));
 
-        uint256 priceInDollars = getRenewalPrice(
-            msg.sender,
-            _parentNamehash,
-            _label,
-            _registrationLength
-        );
+        uint256 priceInDollars = getRenewalPrice(msg.sender, _parentNamehash, _label, _registrationLength);
 
         uint256 priceInWei = (getWeiValueOfDollar() * priceInDollars) / 1 ether;
 
@@ -324,9 +287,7 @@ contract MockSldRegistrationManager is
      * @param _sldNamehash bytes32 representation of the SLD
      * @return _history An array containing the 10 year prices that were locked in when the domain was first registered
      */
-    function getTenYearGuarenteedPricing(
-        bytes32 _sldNamehash
-    ) external view returns (uint80[10] memory _history) {
+    function getTenYearGuarenteedPricing(bytes32 _sldNamehash) external view returns (uint80[10] memory _history) {
         _history = pricesAtRegistration[_sldNamehash];
     }
 
@@ -340,14 +301,8 @@ contract MockSldRegistrationManager is
         // checked this.. Most gas efficient way to do this
         uint80[10] storage arr = pricesAtRegistration[_namehash];
 
-        for (uint256 i; i < arr.length; ) {
-            uint256 price = _strategy.getPriceInDollars(
-                msg.sender,
-                _parentNamehash,
-                _label,
-                (i + 1) * 365,
-                false
-            );
+        for (uint256 i; i < arr.length;) {
+            uint256 price = _strategy.getPriceInDollars(msg.sender, _parentNamehash, _label, (i + 1) * 365, false);
 
             arr[i] = uint80(price / (i + 1));
 
@@ -381,9 +336,8 @@ contract MockSldRegistrationManager is
 
         registrationYears = registrationYears > 10 ? 10 : registrationYears;
 
-        uint256 renewalCostPerAnnum = pricesAtRegistration[sldNamehash][
-            (registrationYears > 10 ? 10 : registrationYears) - 1
-        ];
+        uint256 renewalCostPerAnnum =
+            pricesAtRegistration[sldNamehash][(registrationYears > 10 ? 10 : registrationYears) - 1];
 
         uint256 registrationPrice = getRegistrationBasePrice(
             address(strategy),
@@ -395,15 +349,18 @@ contract MockSldRegistrationManager is
         );
 
         renewalCostPerAnnum =
-            renewalCostPerAnnum -
-            ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
+            renewalCostPerAnnum - ((renewalCostPerAnnum * getCurrentDiscount(_parentNamehash, _addr, false)) / 100);
 
         //
-        uint256 renewalPrice = (((
-            renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || tldOwner == _addr
-                ? globalStrategy.minimumDollarPrice()
-                : renewalCostPerAnnum
-        ) * _registrationLength) / 365);
+        uint256 renewalPrice = (
+            (
+                (
+                    renewalCostPerAnnum < globalStrategy.minimumDollarPrice() || tldOwner == _addr
+                        ? globalStrategy.minimumDollarPrice()
+                        : renewalCostPerAnnum
+                ) * _registrationLength
+            ) / 365
+        );
 
         _price = renewalPrice > registrationPrice ? registrationPrice : renewalPrice;
     }
@@ -417,24 +374,25 @@ contract MockSldRegistrationManager is
      * @param _registrationDays The number of days for which the domain will be registered
      * @return _price The calculated price
      */
-    function safeCallRegistrationStrategyInAssembly(
-        address _strategy,
-        bytes memory _data,
-        uint256 _registrationDays
-    ) private view returns (uint256 _price) {
+    function safeCallRegistrationStrategyInAssembly(address _strategy, bytes memory _data, uint256 _registrationDays)
+        private
+        view
+        returns (uint256 _price)
+    {
         bool success;
 
         assembly {
             let ptr := mload(0x40)
 
-            success := staticcall(
-                1000000, // 1m gas units is plenty
-                _strategy,
-                add(_data, 0x20),
-                mload(_data),
-                ptr,
-                32
-            )
+            success :=
+                staticcall(
+                    1000000, // 1m gas units is plenty
+                    _strategy,
+                    add(_data, 0x20),
+                    mload(_data),
+                    ptr,
+                    32
+                )
 
             _price := mload(ptr)
         }
@@ -496,34 +454,30 @@ contract MockSldRegistrationManager is
                 _registrationLength
             );
 
-            uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) /
-                100;
+            uint256 discount = (currentPrice * getCurrentDiscount(_parentNamehash, _addr, true)) / 100;
             currentPrice = currentPrice - discount;
 
             return minPrice > currentPrice ? minPrice : currentPrice;
         }
     }
 
-    function getCurrentDiscount(
-        bytes32 _parentNamehash,
-        address _addr,
-        bool _isRegistration
-    ) private view returns (uint256) {
+    function getCurrentDiscount(bytes32 _parentNamehash, address _addr, bool _isRegistration)
+        private
+        view
+        returns (uint256)
+    {
         uint256 discount = 0;
 
         SldDiscountSettings memory discountSetting = addressDiscounts[_parentNamehash][_addr];
         SldDiscountSettings memory wildcardDiscount = addressDiscounts[_parentNamehash][address(0)];
 
-        SldDiscountSettings memory activeDiscount = discountSetting.discountPercentage > 0
-            ? discountSetting
-            : wildcardDiscount;
+        SldDiscountSettings memory activeDiscount =
+            discountSetting.discountPercentage > 0 ? discountSetting : wildcardDiscount;
 
         if (
-            activeDiscount.discountPercentage > 0 &&
-            activeDiscount.endTimestamp >= block.timestamp &&
-            activeDiscount.startTimestamp <= block.timestamp &&
-            ((activeDiscount.isRegistration && _isRegistration) ||
-                (activeDiscount.isRenewal && !_isRegistration))
+            activeDiscount.discountPercentage > 0 && activeDiscount.endTimestamp >= block.timestamp
+                && activeDiscount.startTimestamp <= block.timestamp
+                && ((activeDiscount.isRegistration && _isRegistration) || (activeDiscount.isRenewal && !_isRegistration))
         ) {
             discount = activeDiscount.discountPercentage;
         }

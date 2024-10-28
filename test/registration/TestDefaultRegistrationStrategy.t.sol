@@ -19,16 +19,9 @@ contract TestDefaultRegistrationStrategy is Test {
     function setUp() public {
         tld = new MockHandshakeTld();
 
-        MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(
-            true,
-            true,
-            1 ether
-        );
+        MockGlobalRegistrationStrategy globalStrategy = new MockGlobalRegistrationStrategy(true, true, 1 ether);
 
-        MockSldRegistrationManager sldRegistrationManager = new MockSldRegistrationManager(
-            tld,
-            globalStrategy
-        );
+        MockSldRegistrationManager sldRegistrationManager = new MockSldRegistrationManager(tld, globalStrategy);
         strategy = new DefaultRegistrationStrategy(sldRegistrationManager);
     }
 
@@ -140,9 +133,7 @@ contract TestDefaultRegistrationStrategy is Test {
         vm.expectRevert("not approved or owner");
         strategy.setPremiumNames(namehash, labels, prices);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
+        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
         assertEq(strategy.premiumNames(full_hash), 0);
     }
@@ -164,9 +155,7 @@ contract TestDefaultRegistrationStrategy is Test {
         vm.expectRevert("not approved or owner");
         strategy.setReservedNames(namehash, labels, claimers);
 
-        bytes32 full_hash = keccak256(
-            abi.encodePacked(keccak256(abi.encodePacked(label)), namehash)
-        );
+        bytes32 full_hash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(label)), namehash));
 
         assertEq(strategy.reservedNames(full_hash), address(0));
     }
@@ -384,19 +373,9 @@ contract TestDefaultRegistrationStrategy is Test {
         tld.register(address(0x1234), uint256(namehash));
         bytes32 full_namehash = Namehash.getNamehash(namehash, label);
         uint256 price = 50;
-        stdstore
-            .target(address(strategy))
-            .sig("premiumNames(bytes32)")
-            .with_key(full_namehash)
-            .checked_write(price);
+        stdstore.target(address(strategy)).sig("premiumNames(bytes32)").with_key(full_namehash).checked_write(price);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(this),
-            namehash,
-            label,
-            365,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(this), namehash, label, 365, false);
         assertEq(actualPrice, 50 ether);
 
         //it should round this one up to the next dollar
@@ -417,11 +396,7 @@ contract TestDefaultRegistrationStrategy is Test {
         string memory label = "label";
         bytes32 full_namehash = Namehash.getNamehash(namehash, label);
         address addr = address(0x335577);
-        stdstore
-            .target(address(strategy))
-            .sig("reservedNames(bytes32)")
-            .with_key(full_namehash)
-            .checked_write(addr);
+        stdstore.target(address(strategy)).sig("reservedNames(bytes32)").with_key(full_namehash).checked_write(addr);
 
         uint256[] memory prices = new uint256[](1);
         prices[0] = 10;
@@ -467,13 +442,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setLengthCost(namehash, arr);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "1",
-            365,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365, false);
         assertEq(actualPrice, 29 ether);
 
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "12", 365, false);
@@ -496,11 +465,7 @@ contract TestDefaultRegistrationStrategy is Test {
         assertEq(actualPrice, 25 ether);
 
         actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            365,
-            false
+            address(0x1337), namehash, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 365, false
         );
         assertEq(actualPrice, 25 ether);
     }
@@ -521,13 +486,7 @@ contract TestDefaultRegistrationStrategy is Test {
 
         strategy.setLengthCost(namehash, arr);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "1",
-            365 * 2,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365 * 2, false);
         assertEq(actualPrice, 29 ether * 2);
 
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "12", 365 * 2, false);
@@ -539,40 +498,18 @@ contract TestDefaultRegistrationStrategy is Test {
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1234", 365 * 2, false);
         assertEq(actualPrice, 26 ether * 2);
 
-        actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "12345",
-            365 * 2,
-            false
-        );
+        actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "12345", 365 * 2, false);
         assertEq(actualPrice, 25 ether * 2);
 
         //these should be $25 as they are past the max number
-        actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "123456",
-            365 * 2,
-            false
-        );
+        actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "123456", 365 * 2, false);
+        assertEq(actualPrice, 25 ether * 2);
+
+        actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "123457", 365 * 2, false);
         assertEq(actualPrice, 25 ether * 2);
 
         actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "123457",
-            365 * 2,
-            false
-        );
-        assertEq(actualPrice, 25 ether * 2);
-
-        actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            365 * 2,
-            false
+            address(0x1337), namehash, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 365 * 2, false
         );
         assertEq(actualPrice, 25 ether * 2);
     }
@@ -626,13 +563,7 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "1",
-            365,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365, false);
         assertEq(actualPrice, 25 ether);
 
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365 * 2, false);
@@ -663,13 +594,7 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "1",
-            365,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365, false);
         assertEq(actualPrice, 1 ether);
 
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365 * 2, false);
@@ -702,13 +627,7 @@ contract TestDefaultRegistrationStrategy is Test {
         strategy.setLengthCost(namehash, lengthPrices);
         strategy.setMultiYearDiscount(namehash, multiYearDiscount);
 
-        uint256 actualPrice = strategy.getPriceInDollars(
-            address(0x1337),
-            namehash,
-            "1",
-            365,
-            false
-        );
+        uint256 actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365, false);
         assertEq(actualPrice, 25 ether);
 
         actualPrice = strategy.getPriceInDollars(address(0x1337), namehash, "1", 365 * 2, false);

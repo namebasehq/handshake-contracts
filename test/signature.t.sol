@@ -11,9 +11,7 @@ import "structs/EIP712Domain.sol";
 
 contract SignatureTests is Test {
     bytes32 private EIP712DOMAIN_TYPEHASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     bytes32 public DOMAIN_SEPARATOR;
 
@@ -44,30 +42,18 @@ contract SignatureTests is Test {
         checkSignatureValid(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, sd, v, r, s);
     }
 
-    function getRegistrationHash(
-        address buyer,
-        bytes32 subdomainHash,
-        uint256 nonce
-    ) public view returns (bytes32) {
+    function getRegistrationHash(address buyer, bytes32 subdomainHash, uint256 nonce) public view returns (bytes32) {
         console.log("data hashed");
         console.logBytes32(keccak256(abi.encodePacked(buyer, subdomainHash, nonce)));
-        return
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    DOMAIN_SEPARATOR,
-                    keccak256(abi.encodePacked(buyer, subdomainHash, nonce))
-                )
-            );
+        return keccak256(
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encodePacked(buyer, subdomainHash, nonce)))
+        );
     }
 
-    function checkSignatureValid(
-        address buyer,
-        bytes32 subdomainHash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) private returns (address) {
+    function checkSignatureValid(address buyer, bytes32 subdomainHash, uint8 v, bytes32 r, bytes32 s)
+        private
+        returns (address)
+    {
         DOMAIN_SEPARATOR = hashDomain();
 
         bytes32 message = getRegistrationHash(buyer, subdomainHash, 0);
@@ -90,15 +76,14 @@ contract SignatureTests is Test {
             verifyingContract: 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6
         });
 
-        return
-            keccak256(
-                abi.encodePacked(
-                    EIP712DOMAIN_TYPEHASH,
-                    keccak256(bytes(eip712Domain.name)),
-                    keccak256(bytes(eip712Domain.version)),
-                    eip712Domain.chainId,
-                    eip712Domain.verifyingContract
-                )
-            );
+        return keccak256(
+            abi.encodePacked(
+                EIP712DOMAIN_TYPEHASH,
+                keccak256(bytes(eip712Domain.name)),
+                keccak256(bytes(eip712Domain.version)),
+                eip712Domain.chainId,
+                eip712Domain.verifyingContract
+            )
+        );
     }
 }

@@ -24,6 +24,7 @@ contract TestNft is HandshakeNft {
 
 contract TestHandshakeNft is Test {
     using stdStorage for StdStorage;
+
     TestNft nft;
 
     function setUp() public {
