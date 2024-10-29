@@ -55,14 +55,7 @@ contract MockENS is ENS {
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
-<<<<<<< HEAD
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: transfer caller is not owner nor approved");
-=======
-        require(
-            _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
-        );
->>>>>>> main
         _balances[from] -= 1;
         _balances[to] += 1;
         _owners[tokenId] = to;
@@ -71,14 +64,7 @@ contract MockENS is ENS {
 
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public {
         transferFrom(from, to, tokenId);
-<<<<<<< HEAD
         require(_checkOnERC721Received(from, to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer");
-=======
-        require(
-            _checkOnERC721Received(from, to, tokenId, data),
-            "ERC721: transfer to non ERC721Receiver implementer"
-        );
->>>>>>> main
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId) public {

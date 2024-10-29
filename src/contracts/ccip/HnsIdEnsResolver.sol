@@ -64,23 +64,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     event NewSigners(address indexed signer, bool isSigner);
     event UpdateUrl(string url);
     event TldChanged(
-<<<<<<< HEAD
         bytes32 indexed node, string indexed indexedEns, string indexed indexedTld, string ens, string tld
-=======
-        bytes32 indexed node,
-        string indexed indexedEns,
-        string indexed indexedTld,
-        string ens,
-        string tld
-    );
-
-    error OffchainLookup(
-        address sender,
-        string[] urls,
-        bytes callData,
-        bytes4 callbackFunction,
-        bytes extraData
->>>>>>> main
     );
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -132,10 +116,6 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-<<<<<<< HEAD
-    function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IExtendedResolver.resolve.selector, name, data);
-=======
     function resolve(
         bytes calldata name,
         bytes calldata data
@@ -145,31 +125,14 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
             name,
             data
         );
->>>>>>> main
         string[] memory urls = new string[](1);
         urls[0] = getUrl(name);
 
         // revert with the OffchainLookup error, which will be caught by the client
-<<<<<<< HEAD
         revert OffchainLookup(address(this), urls, callData, HnsIdEnsResolver.resolveWithProof.selector, callData);
     }
 
     function updateSigners(address[] calldata _signers, bool[] calldata _isSigner) external onlyOwner {
-=======
-        revert OffchainLookup(
-            address(this),
-            urls,
-            callData,
-            HnsIdEnsResolver.resolveWithProof.selector,
-            callData
-        );
-    }
-
-    function updateSigners(
-        address[] calldata _signers,
-        bool[] calldata _isSigner
-    ) external onlyOwner {
->>>>>>> main
         for (uint256 i; i < _signers.length; i++) {
             signers[_signers[i]] = _isSigner[i];
             emit NewSigners(_signers[i], _isSigner[i]);
@@ -194,14 +157,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      */
-<<<<<<< HEAD
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-=======
-    function resolveWithProof(
-        bytes calldata response,
-        bytes calldata extraData
-    ) external view returns (bytes memory) {
->>>>>>> main
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
 
         if (!signers[signer]) {
@@ -212,15 +168,9 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
     }
 
     function hexToText(bytes memory hexBytes) private pure returns (string memory) {
-<<<<<<< HEAD
         uint256 start = 0;
         // Find the first line break (0x0a)
         for (uint256 i = 0; i < hexBytes.length; i++) {
-=======
-        uint start = 0;
-        // Find the first line break (0x0a)
-        for (uint i = 0; i < hexBytes.length; i++) {
->>>>>>> main
             if (hexBytes[i] == 0x0a) {
                 start = i + 1;
                 break;
@@ -229,15 +179,9 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         // Initialize the final bytes array
         bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-<<<<<<< HEAD
         uint256 tempIndex = 0;
 
         for (uint256 i = start; i < hexBytes.length; i++) {
-=======
-        uint tempIndex = 0;
-
-        for (uint i = start; i < hexBytes.length; i++) {
->>>>>>> main
             if (hexBytes[i] == 0x00) {
                 break; // Ignore termination byte and stop processing
             } else if (hexBytes[i] == 0x03) {
@@ -250,11 +194,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         // Create the final bytes array with the exact length of valid characters
         bytes memory strBytes = new bytes(tempIndex);
-<<<<<<< HEAD
         for (uint256 j = 0; j < tempIndex; j++) {
-=======
-        for (uint j = 0; j < tempIndex; j++) {
->>>>>>> main
             strBytes[j] = tempBytes[j];
         }
 
