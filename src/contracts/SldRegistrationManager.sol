@@ -169,74 +169,109 @@ contract SldRegistrationManager is
         return signer;
     }
 
-    function registerWithSignature(
-        string calldata _label,
-        uint256 _registrationLength,
-        bytes32 _parentNamehash,
-        address _recipient,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external payable {
-        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
-        address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
-        registerSld(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient);
+  // Internal function that handles the core registration logic
+function _registerSldInternal(
+    string calldata _label,
+    bytes32 sldNamehash,
+    uint256 _registrationLength,
+    bytes32 _parentNamehash,
+    address _recipient,
+    bool returnFundsToRecipient
+) private {
+    require(canRegister(sldNamehash), "domain already registered");
 
-        bytes32 result = bytes32(abi.encodePacked(signer));
+    _recipient = _recipient == address(0) ? msg.sender : _recipient;
+    sld.registerSld(_recipient, _parentNamehash, _label);
 
-        unchecked {
-            ++subdomainRegistrationNonce[sldNamehash];
+    require(labelValidator.isValidLabel(_label), "invalid label");
 
-            emit RegisterSld(_parentNamehash, result, _label, block.timestamp + (_registrationLength * 1 days));
-        }
+    ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+    require(
+        strategy.isEnabled(_parentNamehash) || tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
+        "registration strategy disabled"
+    );
+
+    uint256 dollarPrice = getRegistrationPrice(address(strategy), msg.sender, _parentNamehash, _label, _registrationLength);
+    require(
+        globalStrategy.canRegister(
+            msg.sender,
+            _parentNamehash,
+            _label,
+            _registrationLength,
+            dollarPrice + 1 // plus 1 wei for rounding issue
+        ),
+        "failed global strategy"
+    );
+
+    addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
+
+    sldRegistrationHistory[sldNamehash] = SldRegistrationDetail(
+        uint72(block.timestamp),
+        uint80(_registrationLength * 1 days),
+        uint96(dollarPrice)
+    );
+
+    uint256 weiValue = getWeiValueOfDollar();
+    uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
+
+    // Determine who receives the funds based on the flag
+    address fundReceiver = returnFundsToRecipient ? _recipient : msg.sender;
+    distributePrimaryFunds(fundReceiver, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+}
+
+// Private function for basic registration
+function registerSld(
+    string calldata _label,
+    bytes32 sldNamehash,
+    uint256 _registrationLength,
+    bytes32 _parentNamehash,
+    address _recipient
+) private {
+    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
+}
+
+// Public function for signature-based registration with standard fund distribution
+function registerWithSignature(
+    string calldata _label,
+    uint256 _registrationLength,
+    bytes32 _parentNamehash,
+    address _recipient,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+) external payable {
+    bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+    address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
+    
+    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
+
+    unchecked {
+        ++subdomainRegistrationNonce[sldNamehash];
+        emit RegisterSld(_parentNamehash, bytes32(abi.encodePacked(signer)), _label, block.timestamp + (_registrationLength * 1 days));
     }
+}
 
-    function registerSld(
-        string calldata _label,
-        bytes32 sldNamehash,
-        uint256 _registrationLength,
-        bytes32 _parentNamehash,
-        address _recipient
-    ) private {
-        require(canRegister(sldNamehash), "domain already registered");
+// New public function for signature-based registration that returns funds to recipient
+function registerWithSignatureReturnFundsToRecipient(
+    string calldata _label,
+    uint256 _registrationLength,
+    bytes32 _parentNamehash,
+    address _recipient,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+) external payable {
+    bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+    address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
+    
+    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, true);
 
-        _recipient = _recipient == address(0) ? msg.sender : _recipient;
-        sld.registerSld(_recipient, _parentNamehash, _label);
-
-        require(labelValidator.isValidLabel(_label), "invalid label");
-
-        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-
-        require(
-            strategy.isEnabled(_parentNamehash) || tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
-            "registration strategy disabled"
-        );
-
-        uint256 dollarPrice =
-            getRegistrationPrice(address(strategy), msg.sender, _parentNamehash, _label, _registrationLength);
-
-        require(
-            globalStrategy.canRegister(
-                msg.sender,
-                _parentNamehash,
-                _label,
-                _registrationLength,
-                dollarPrice + 1 // plus 1 wei for rounding issue
-            ),
-            "failed global strategy"
-        );
-
-        addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
-
-        sldRegistrationHistory[sldNamehash] =
-            SldRegistrationDetail(uint72(block.timestamp), uint80(_registrationLength * 1 days), uint96(dollarPrice));
-
-        uint256 weiValue = getWeiValueOfDollar();
-
-        uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
-
-        distributePrimaryFunds(msg.sender, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
+    unchecked {
+        ++subdomainRegistrationNonce[sldNamehash];
+        emit RegisterSld(_parentNamehash, bytes32(abi.encodePacked(signer)), _label, block.timestamp + (_registrationLength * 1 days));
     }
+}
+
 
     function setAddressDiscounts(
         bytes32 _parentNamehash,
