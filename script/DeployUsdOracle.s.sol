@@ -22,14 +22,11 @@ import "test/mocks/TestingRegistrationStrategy.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract DeployScript is Script {
-
     IPriceOracle priceOracle;
-
 
     // https://docs.chain.link/data-feeds/price-feeds/addresses/?network=optimism
     address private constant ORACLE_ADDRESS = 0x61Ec26aA57019C486B10502285c5A3D4A4750AD7;
     address private constant REGISTRATION_MANAGER = 0x529B2b5B576c27769Ae0aB811F1655012f756C00;
-
 
     function setUp() public {}
 
@@ -54,18 +51,13 @@ contract DeployScript is Script {
         //source .test-env
         //forge script script/DeployUsdOracle.s.sol:DeployScript --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $OPT_TEST_RPC --broadcast -vv
 
-    
-            vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
-            console.log("msg.sender", msg.sender);
-            priceOracle = new UsdPriceOracle(ORACLE_ADDRESS);
-
-
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
+        console.log("msg.sender", msg.sender);
+        priceOracle = new UsdPriceOracle(ORACLE_ADDRESS);
 
         SldRegistrationManager manager = SldRegistrationManager(REGISTRATION_MANAGER);
 
         console.log("manager address: ", manager.owner());
         manager.updatePriceOracle(priceOracle);
-
-        
     }
 }

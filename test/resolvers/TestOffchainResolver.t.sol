@@ -1,73 +1,39 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-// import "forge-std/Test.sol";
-// import "contracts/ccip/OffchainResolver.sol"; // Update this path to where your OffchainResolver contract is located.
-// import "mocks/MockEns.sol"; // Mock for testing ownership.
+import "forge-std/Test.sol";
+import "src/contracts/ccip/HnsIdEnsResolver.sol";
 
-// contract OffchainResolverTest is Test {
-//     OffchainResolver resolver;
-//     address ensAddress;
-//     MockENS ens;
+contract HnsIdEnsResolverTest is Test {
+    HnsIdEnsResolver resolver;
 
-//     error Unauthorized();
+    function setUp() public {
+        // Deploy the resolver contract with test parameters
+        address[] memory signers = new address[](1);
+        signers[0] = address(this);
 
-//     function setUp() public {
+        resolver = new HnsIdEnsResolver("https://example.com", signers, address(0), address(0));
+    }
 
-//         address[] memory signers = new address[](1);
-//         signers[0] = address(this); // Assume the deployer is a signer for simplicity.
+    function testHexToText() public {
+        // DNS Encoded Names (precomputed)
+        bytes memory testing11Dns = hex"0974657374696e6731310365746800";
+        bytes memory testing666Dns = hex"0a74657374696e673636360365746800";
+        bytes memory testing111Dns = hex"0a74657374696e673131310365746800";
 
-//         ens = new MockENS();
-//         ensAddress = address(ens);
+        // Expected outputs
+        string memory expectedTesting11 = "testing11.eth";
+        string memory expectedTesting666 = "testing666.eth";
+        string memory expectedTesting111 = "testing111.eth";
 
-//         resolver = new OffchainResolver("https://example.com", signers, ensAddress, address(0));
-//     }
+        // Run hexToText function
+        string memory result11 = resolver.hexToText(testing11Dns);
+        string memory result666 = resolver.hexToText(testing666Dns);
+        string memory result111 = resolver.hexToText(testing111Dns);
 
-//     /// Test initial url setup
-//     function testInitialUrl() public {
-//         assertEq(resolver.url(), "https://example.com");
-//     }
-
-//     /// Test updating signers and checking authorizations
-//     function testUpdateSigners() public {
-//         address newSigner = address(0xBEEF);
-//         address[] memory signers = new address[](1);
-//         bool[] memory states = new bool[](1);
-//         signers[0] = newSigner;
-//         states[0] = true;
-
-//         resolver.updateSigners(signers, states);
-//         assertTrue(resolver.signers(newSigner));
-//     }
-
-//     /// Test unauthorized access to setting text
-//     function testFailUnauthorisedSetText() public {
-//         vm.prank(address(0xDEAD));
-//         resolver.setText(0x0, "key", "value");
-//     }
-
-//     /// Test setting and getting text records
-//     function testSetText() public {
-//         bytes32 node = keccak256("testnode");
-
-//         ens.mint(uint256(node), address(this));
-
-//         resolver.setText(node, "email", "test@example.com");
-//         assertEq(resolver.tldText(node, "email"), "test@example.com");
-
-//         vm.prank(address(0xDEAD));
-//         vm.expectRevert(Unauthorized.selector);
-//         resolver.setText(node, "test", "test@example.com");
-//     }
-
-//     /// Test URL updates by owner only
-//     function testUpdateUrl() public {
-//         resolver.updateUrl("https://newexample.com");
-//         assertEq(resolver.url(), "https://newexample.com");
-
-//         vm.prank(address(0xDEAD));
-//         vm.expectRevert("Ownable: caller is not the owner");
-//         resolver.updateUrl("https://fail.com");
-//     }
-
-// }
+        // Assert equality
+        assertEq(result11, expectedTesting11, "testing11.eth failed");
+        assertEq(result666, expectedTesting666, "testing666.eth failed");
+        assertEq(result111, expectedTesting111, "testing111.eth failed");
+    }
+}

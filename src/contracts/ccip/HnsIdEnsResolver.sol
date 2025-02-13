@@ -7,6 +7,7 @@ import "./IExtendedResolver.sol";
 import "./SignatureVerifier.sol";
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -26,12 +27,7 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     mapping(string => string) public tldMappings;
 
-    event AuthorisationChanged(
-        bytes32 indexed node,
-        address indexed owner,
-        address indexed target,
-        bool isAuthorised
-    );
+    event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
 
     /**
      * @dev Sets or clears an authorisation.
@@ -71,6 +67,8 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     error Unauthorized();
     error InvalidSignature();
+
+    error TldNotFound(bytes rawName, string decodedEnsName);
 
     constructor(string memory _url, address[] memory _signers, address _ens, address _wrapper) {
         url = _url;
@@ -116,15 +114,8 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-    function resolve(
-        bytes calldata name,
-        bytes calldata data
-    ) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(
-            IExtendedResolver.resolve.selector,
-            name,
-            data
-        );
+    function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
+        bytes memory callData = abi.encodeWithSelector(IExtendedResolver.resolve.selector, name, data);
         string[] memory urls = new string[](1);
         urls[0] = getUrl(name);
 
@@ -148,10 +139,33 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         string memory ensName = hexToText(name);
         string memory tld = tldMappings[ensName];
 
-        require(bytes(tld).length > 0, "TLD not found");
+        require(
+            bytes(tld).length > 0,
+            string(
+                abi.encodePacked(
+                    "TLD not found. Raw DNS Name: ",
+                    bytesToHex(name), // Corrected: Convert bytes to hex properly
+                    " | Decoded ENS Name: '",
+                    ensName,
+                    "'"
+                )
+            )
+        );
 
-        return
-            string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+        return string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+    }
+
+    // Helper function to convert `bytes` to a hex string
+    function bytesToHex(bytes memory data) public pure returns (string memory) {
+        bytes16 hexAlphabet = "0123456789abcdef";
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint256 i = 0; i < data.length; i++) {
+            str[2 + i * 2] = hexAlphabet[uint8(data[i] >> 4)];
+            str[3 + i * 2] = hexAlphabet[uint8(data[i] & 0x0f)];
+        }
+        return string(str);
     }
 
     /**
@@ -167,39 +181,58 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
         return result;
     }
 
-    function hexToText(bytes memory hexBytes) private pure returns (string memory) {
-        uint256 start = 0;
-        // Find the first line break (0x0a)
-        for (uint256 i = 0; i < hexBytes.length; i++) {
-            if (hexBytes[i] == 0x0a) {
-                start = i + 1;
+  function hexToText(bytes memory hexBytes) public pure returns (string memory) {
+    uint256 index = 0;
+    uint256 length = hexBytes.length;
+    bytes memory fullDomain = new bytes(length);
+    uint256 domainIndex = 0;
+
+    while (index < length) {
+        uint8 labelLength = uint8(hexBytes[index]);
+        index++;
+
+        if (labelLength == 0 || index + labelLength > length) break;
+
+        for (uint256 i = 0; i < labelLength; i++) {
+            fullDomain[domainIndex++] = hexBytes[index++];
+        }
+
+        if (index < length && hexBytes[index] != 0) {
+            fullDomain[domainIndex++] = ".";
+        }
+    }
+
+    bytes memory assembledDomain = new bytes(domainIndex);
+    for (uint256 i = 0; i < domainIndex; i++) {
+        assembledDomain[i] = fullDomain[i];
+    }
+
+    uint256 dotCount = 0;
+    uint256 startIndex = domainIndex;
+
+    for (uint256 i = domainIndex; i > 0; i--) {
+        if (assembledDomain[i - 1] == ".") {
+            dotCount++;
+            if (dotCount == 2) {
+                startIndex = i;
                 break;
             }
         }
-
-        // Initialize the final bytes array
-        bytes memory tempBytes = new bytes(hexBytes.length - start - 1);
-        uint256 tempIndex = 0;
-
-        for (uint256 i = start; i < hexBytes.length; i++) {
-            if (hexBytes[i] == 0x00) {
-                break; // Ignore termination byte and stop processing
-            } else if (hexBytes[i] == 0x03) {
-                tempBytes[tempIndex] = bytes1(uint8(0x2e)); // Replace ETX with dot
-            } else {
-                tempBytes[tempIndex] = hexBytes[i];
-            }
-            tempIndex++;
-        }
-
-        // Create the final bytes array with the exact length of valid characters
-        bytes memory strBytes = new bytes(tempIndex);
-        for (uint256 j = 0; j < tempIndex; j++) {
-            strBytes[j] = tempBytes[j];
-        }
-
-        return string(strBytes);
     }
+
+    if (startIndex == domainIndex) {
+        startIndex = 0;
+    }
+
+    bytes memory trimmedResult = new bytes(domainIndex - startIndex);
+    for (uint256 i = startIndex; i < domainIndex; i++) {
+        trimmedResult[i - startIndex] = assembledDomain[i];
+    }
+
+    return string(trimmedResult);
+}
+
+
 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return interfaceID == type(IExtendedResolver).interfaceId || interfaceID == type(IERC165).interfaceId;

@@ -26,7 +26,7 @@ contract OptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, 
 
     /// @notice A modifier that only allows the bridge to call
     modifier onlyBridge() {
-        if(msg.sender != BRIDGE) {
+        if (msg.sender != BRIDGE) {
             revert OnlyBridge();
         }
         _;
