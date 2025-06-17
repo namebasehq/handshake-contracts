@@ -137,7 +137,7 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
         );
     }
 
-  function testRegisterAfterExpiry() public {
+  function testRegisterAfterExpiry_() public {
     address initialSendingAddress = address(0x420);
     bytes32 parentNamehash = bytes32(uint256(0x55446677));
 

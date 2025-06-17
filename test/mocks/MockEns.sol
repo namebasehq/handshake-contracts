@@ -88,7 +88,6 @@ contract MockENS is ENS {
     function setResolver(bytes32 node, address resolver) external override {
         revert("Not implemented");
     }
-<<<<<<< HEAD
 
     function ttl(bytes32 node) external view override returns (uint64) {
         revert("Not implemented");
@@ -104,39 +103,11 @@ contract MockENS is ENS {
     }
 
     function setRecord(bytes32 node, address nodeOwner, address resolver, uint64 ttl) external override {
-=======
-    function ttl(bytes32 node) external view override returns (uint64) {
-        revert("Not implemented");
-    }
-    function resolver(bytes32 node) external view override returns (address) {
-        revert("Not implemented");
-    }
-    // Continue implementing other necessary functions
-
-    function supportsInterface(bytes4 interfaceId) public view returns (bool) {
-        return interfaceId == type(IERC721).interfaceId || interfaceId == type(IERC165).interfaceId;
-    }
-
-    function setRecord(
-        bytes32 node,
-        address nodeOwner,
-        address resolver,
-        uint64 ttl
-    ) external override {
->>>>>>> main
         // Simple logic or revert
         revert("Not implemented yet");
     }
 
-<<<<<<< HEAD
     function setSubnodeOwner(bytes32 node, bytes32 label, address nodeOwner) external override returns (bytes32) {
-=======
-    function setSubnodeOwner(
-        bytes32 node,
-        bytes32 label,
-        address nodeOwner
-    ) external override returns (bytes32) {
->>>>>>> main
         // Return label to simulate creation of subnode
         return label;
     }
@@ -146,20 +117,10 @@ contract MockENS is ENS {
         return _owners[uint256(node)] != address(0);
     }
 
-<<<<<<< HEAD
     function setSubnodeRecord(bytes32 node, bytes32 label, address nodeOwner, address resolver, uint64 ttl)
         external
         override
     {
-=======
-    function setSubnodeRecord(
-        bytes32 node,
-        bytes32 label,
-        address nodeOwner,
-        address resolver,
-        uint64 ttl
-    ) external override {
->>>>>>> main
         // Simple logic or revert to simulate setting a subnode record
         revert("Not implemented yet");
     }
@@ -175,19 +136,10 @@ contract MockENS is ENS {
     }
 
     // Helper function to handle the receipt checking
-<<<<<<< HEAD
     function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data)
         private
         returns (bool)
     {
-=======
-    function _checkOnERC721Received(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) private returns (bool) {
->>>>>>> main
         return true;
     }
 
@@ -209,12 +161,6 @@ contract MockENS is ENS {
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
         require(_owners[tokenId] != address(0), "ERC721: operator query for nonexistent token");
         address owner = ownerOf(tokenId);
-<<<<<<< HEAD
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
-=======
-        return (spender == owner ||
-            getApproved(tokenId) == spender ||
-            isApprovedForAll(owner, spender));
->>>>>>> main
     }
 }
