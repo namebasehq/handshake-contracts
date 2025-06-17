@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Script.sol";
 import {console} from "forge-std/console.sol";
-import {TransparentUpgradeableProxy, ITransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {TransparentUpgradeableProxy} from "node_modules/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "contracts/SldRegistrationManager.sol";
 
@@ -13,7 +13,7 @@ import "contracts/SldRegistrationManager.sol";
 // old sepolia implementation contract 0x5c1C80d89d6Aaa541720421e797194B2F9D8ED7d
 contract UpgradeScript is Script {
     // The address of the proxy we want to upgrade
-    address private constant PROXY_ADDRESS = 0x529B2b5B576c27769Ae0aB811F1655012f756C00;
+    address payable private constant PROXY_ADDRESS = payable(0x529B2b5B576c27769Ae0aB811F1655012f756C00);
 
     function setUp() public {}
 
@@ -28,7 +28,7 @@ contract UpgradeScript is Script {
         console.log("New implementation deployed at:", address(newImplementation));
 
         // 2. Get proxy admin interface
-        ITransparentUpgradeableProxy proxy = ITransparentUpgradeableProxy(PROXY_ADDRESS);
+        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(PROXY_ADDRESS);
         
         // 3. Upgrade to new implementation
         proxy.upgradeTo(address(newImplementation));
