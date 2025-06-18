@@ -2,10 +2,10 @@
 pragma solidity ^0.8.17;
 
 import "interfaces/ISldRegistrationManager.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ISldRegistrationManager2 {
-        function registerWithSignatureReturnFundsToRecipient(
+    function registerWithSignatureReturnFundsToRecipient(
         string calldata _label,
         uint256 _registrationLength,
         bytes32 _parentNamehash,
@@ -14,7 +14,6 @@ interface ISldRegistrationManager2 {
         bytes32 r,
         bytes32 s
     ) external payable;
-
 }
 
 contract CrossmintMinter is Ownable {
@@ -22,12 +21,12 @@ contract CrossmintMinter is Ownable {
 
     mapping(address => bool) public isMinter;
     bool public isWhitelist;
-    
+
     constructor(address _registrar) Ownable() {
         require(_registrar != address(0), "Invalid registrar address");
         registrar = ISldRegistrationManager2(_registrar);
     }
-    
+
     function mint(
         string calldata _label,
         uint256 _registrationLength,
@@ -39,13 +38,7 @@ contract CrossmintMinter is Ownable {
     ) external payable {
         require(isMinter[msg.sender] || !isWhitelist, "Not authorized");
         registrar.registerWithSignatureReturnFundsToRecipient{value: msg.value}(
-            _label,
-            _registrationLength,
-            _parentNamehash,
-            _recipient,
-            v,
-            r,
-            s
+            _label, _registrationLength, _parentNamehash, _recipient, v, r, s
         );
     }
 
@@ -56,5 +49,4 @@ contract CrossmintMinter is Ownable {
     function updateWhitelist(bool _isWhitelist) external onlyOwner {
         isWhitelist = _isWhitelist;
     }
-
 }

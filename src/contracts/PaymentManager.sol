@@ -39,7 +39,6 @@ abstract contract PaymentManager {
         // send any surplus funds back to the SLD owner
         if (excess > 0) {
             (isSent,) = payable(_sldOwner).call{value: excess, gas: 50_000}("");
-
         }
 
         // if there is a failure to send ether then the funds will just get sent to the handshake wallet

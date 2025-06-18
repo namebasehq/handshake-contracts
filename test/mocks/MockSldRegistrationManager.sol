@@ -10,6 +10,7 @@ import "structs/SldRegistrationDetail.sol";
 
 contract MockSldRegistrationManager is ISldRegistrationManager {
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
+    mapping(bytes32 => uint256) public sldCountPerTld;
 
     IHandshakeTld public tld;
     IGlobalRegistrationRules public globalStrategy;
@@ -33,6 +34,10 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         SldRegistrationDetail memory detail =
             SldRegistrationDetail(_registrationTime, _registrationLength, _registrationPrice);
         addSldDetail(_sldNamehash, detail);
+    }
+
+    function deleteSldDetail(bytes32 _sldNamehash) public {
+        delete sldRegistrationHistory[_sldNamehash];
     }
 
     function registerWithCommit(

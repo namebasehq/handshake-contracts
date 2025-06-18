@@ -46,10 +46,8 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
-        ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, uint96 actualRegistrationPrice) =
+            manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
         uint256 actualValue = block.timestamp + ((registrationLength + renewalLength) * 1 days);
@@ -80,19 +78,23 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
 
         manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
 
+        // Get the actual registration time from the contract
+        bytes32 sldNamehash = Namehash.getNamehash(parentNamehash, label);
+        (uint80 initialRegTime, uint80 initialRegLength,) = manager.sldRegistrationHistory(sldNamehash);
+
         vm.warp(tld.expiry(parentNamehash) + 100);
+
         manager.renewSld{value: 5 ether}(label, parentNamehash, renewalLength);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength, // uint96 actualRegistrationPrice
-        ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
-
-        uint256 expectedValue = actualRegistrationTime + actualRegistrationLength;
-        uint256 actualValue = regdate + ((registrationLength + renewalLength) * 1 days);
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, uint96 actualRegistrationPrice) =
+            manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         //check that the registration details have been updated.
-        assertEq(actualValue, expectedValue, "invalid registration details");
+        assertEq(
+            actualRegistrationTime + actualRegistrationLength,
+            initialRegTime + ((registrationLength + renewalLength) * 1 days),
+            "invalid registration details"
+        );
     }
 
     function testRenewSldFromSldOwnerGlobalRulesFail_fail() public {
@@ -140,25 +142,23 @@ contract TestSldRegistrationManagerRenewSldTests is TestSldRegistrationManagerBa
         manager.registerWithCommit{value: 2 ether}(label, secret, registrationLength, parentNamehash, recipient);
         vm.stopPrank();
 
-        uint256 registrationTimestamp = block.timestamp;
+        // Get the actual registration time from the contract
+        bytes32 sldNamehash = Namehash.getNamehash(parentNamehash, label);
+        (uint80 initialRegTime, uint80 initialRegLength,) = manager.sldRegistrationHistory(sldNamehash);
+
         vm.warp(block.timestamp + (registrationLength * 86400));
 
         //different wallet, can renew domain.
         startHoax(address(0x99999999));
         manager.renewSld{value: 3.29 ether}(label, parentNamehash, renewalLength);
 
-        (
-            uint80 actualRegistrationTime,
-            uint80 actualRegistrationLength, //uint96 actualRegistrationPrice
-        ) = manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
-
-        console.log("registration time", actualRegistrationTime);
-        console.log("registration length", actualRegistrationLength);
+        (uint80 actualRegistrationTime, uint80 actualRegistrationLength, uint96 actualRegistrationPrice) =
+            manager.sldRegistrationHistory(Namehash.getNamehash(parentNamehash, label));
 
         //check that the registration details have been updated.
         assertEq(
             actualRegistrationTime + actualRegistrationLength,
-            registrationTimestamp + (registrationLength + renewalLength) * 1 days,
+            initialRegTime + ((registrationLength + renewalLength) * 1 days),
             "invalid registration details"
         );
     }
