@@ -7,6 +7,8 @@ import "interfaces/ITldClaimManager.sol";
 import "./HasLabelValidator.sol";
 import {Namehash} from "utils/Namehash.sol";
 import "src/contracts/HasUsdOracle.sol";
+import "structs/EIP712Domain.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @title Tld claim manager contract
@@ -25,6 +27,18 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     ISldRegistrationStrategy public defaultRegistrationStrategy;
 
     uint256 public mintPriceInDollars;
+
+    // IMPORTANT: New storage variables must be added at the END to maintain storage layout
+    ISldRegistrationManager public sldRegistrationManager;
+    mapping(address => bool) public ValidSigner;
+
+    /**
+     * @return DOMAIN_SEPARATOR is used for eip712
+     */
+    bytes32 public DOMAIN_SEPARATOR;
+
+    bytes32 private constant EIP712DOMAIN_TYPEHASH =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     constructor() {
         _disableInitializers();
@@ -47,6 +61,45 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         mintPriceInDollars = _mintPriceInDollars;
         handshakeWalletPayoutAddress = _handshakeWalletPayoutAddress;
         _transferOwnership(_owner);
+
+        DOMAIN_SEPARATOR = hashDomain();
+    }
+
+    function hashDomain() internal view returns (bytes32) {
+        EIP712Domain memory eip712Domain = EIP712Domain({
+            name: "TldClaimManager",
+            version: "1",
+            chainId: block.chainid,
+            verifyingContract: address(this)
+        });
+
+        return keccak256(
+            abi.encodePacked(
+                EIP712DOMAIN_TYPEHASH,
+                keccak256(bytes(eip712Domain.name)),
+                keccak256(bytes(eip712Domain.version)),
+                eip712Domain.chainId,
+                eip712Domain.verifyingContract
+            )
+        );
+    }
+
+    function getBurnHash(address burner, bytes32 tldNamehash) public view returns (bytes32) {
+        return
+            keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encodePacked(burner, tldNamehash))));
+    }
+
+    function checkSignatureValid(address burner, bytes32 tldNamehash, uint8 v, bytes32 r, bytes32 s)
+        public
+        view
+        returns (address)
+    {
+        bytes32 message = getBurnHash(burner, tldNamehash);
+
+        address signer = ecrecover(message, v, r, s);
+
+        require(ValidSigner[signer], "invalid signature");
+        return signer;
     }
 
     /**
@@ -64,6 +117,25 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
     function setHandshakeTldContract(IHandshakeTld _tld) external onlyOwner {
         handshakeTldContract = _tld;
+    }
+
+    /**
+     * @notice Set the SLD registration manager contract
+     * @dev This function can only be called by the contract owner
+     * @param _manager Address of the SLD registration manager contract
+     */
+    function setSldRegistrationManager(ISldRegistrationManager _manager) external onlyOwner {
+        sldRegistrationManager = _manager;
+    }
+
+    /**
+     * @notice Update a signer
+     * @dev This function can only be run by the contract owner
+     * @param _signer Public address of the signer
+     * @param _status Boolean to set the signer to
+     */
+    function updateSigner(address _signer, bool _status) public onlyOwner {
+        ValidSigner[_signer] = _status;
     }
 
     /**
@@ -117,6 +189,36 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
 
         delete tldClaimantMap[namehash];
         emit TldClaimed(msg.sender, uint256(namehash), _domain);
+    }
+
+    /**
+     * @notice Burns a TLD if the caller is the owner, no SLDs exist for it, and signature is valid
+     * @dev Requires the SldRegistrationManager to be set to check for existing SLDs and a valid signature
+     * @param _domain The TLD domain to burn
+     * @param v The recovery byte of the signature
+     * @param r Half of the ECDSA signature pair
+     * @param s Half of the ECDSA signature pair
+     */
+    function burnTld(string calldata _domain, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 namehash = Namehash.getTldNamehash(_domain);
+        uint256 tokenId = uint256(namehash);
+
+        // Check that the caller is the owner of the TLD
+        require(handshakeTldContract.ownerOf(tokenId) == msg.sender, "not TLD owner");
+
+        // Check that the SLD registration manager is set
+        require(address(sldRegistrationManager) != address(0), "SLD registration manager not set");
+
+        // Check that no SLDs exist for this TLD
+        require(sldRegistrationManager.sldCountPerTld(namehash) == 0, "SLDs exist for this TLD");
+
+        // Verify the signature
+        checkSignatureValid(msg.sender, namehash, v, r, s);
+
+        // Call the burnTld function on the HandshakeTld contract
+        handshakeTldContract.burnTld(tokenId);
+
+        emit TldBurned(msg.sender, tokenId, _domain);
     }
 
     /**

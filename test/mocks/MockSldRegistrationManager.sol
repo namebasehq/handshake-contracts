@@ -40,6 +40,10 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         delete sldRegistrationHistory[_sldNamehash];
     }
 
+    function setSldCount(bytes32 _tldNamehash, uint256 _count) public {
+        sldCountPerTld[_tldNamehash] = _count;
+    }
+
     function registerWithCommit(
         string calldata _label,
         bytes32 _secret,
@@ -83,6 +87,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
 
 contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     uint256 private renewalPrice;
+    mapping(bytes32 => uint256) public sldCountPerTld;
 
     function pricesAtRegistration(bytes32, uint256) external pure returns (uint80) {
         return 69420;
@@ -116,6 +121,10 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     ) external view returns (uint256) {}
 
     function sldRegistrationHistory(bytes32 _sldNamehash) external view returns (uint80, uint80, uint96) {}
+
+    function setSldCount(bytes32 _tldNamehash, uint256 _count) public {
+        sldCountPerTld[_tldNamehash] = _count;
+    }
 
     function setRenewalPrice(uint256 _renewalPrice) external {
         renewalPrice = _renewalPrice;

@@ -510,4 +510,9 @@ contract MockSldRegistrationManager is
         require(price > 0, "error getting price");
         return (1 ether * 100000000) / price;
     }
+
+    function sldCountPerTld(bytes32 _tldNamehash) external view returns (uint256) {
+        // Mock implementation - return 0 for testing
+        return 0;
+    }
 }

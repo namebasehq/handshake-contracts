@@ -69,6 +69,10 @@ contract MockTldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelVa
         handshakeTldContract = _tld;
     }
 
+    function burnTld(string calldata _domain, uint8 v, bytes32 r, bytes32 s) external {}
+
+    function setSldRegistrationManager(ISldRegistrationManager _manager) external {}
+
     /**
      * @notice Update the chainlink price oracle.
      * @dev Probably should never need updating.

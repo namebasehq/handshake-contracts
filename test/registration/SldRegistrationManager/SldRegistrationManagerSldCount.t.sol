@@ -50,13 +50,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         // Check count incremented
         uint256 newCount = manager.sldCountPerTld(parentNamehash);
@@ -80,11 +74,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
         for (uint256 i = 0; i < 3; i++) {
             hoax(address(0x420), 2 ether);
             manager.registerWithCommit{value: 1 ether + 1}(
-                labels[i],
-                0x0,
-                registrationLength,
-                parentNamehash,
-                recipient
+                labels[i], 0x0, registrationLength, parentNamehash, recipient
             );
 
             uint256 expectedCount = i + 1;
@@ -108,13 +98,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         // Verify count is 1
         assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should be 1 after registration");
@@ -122,9 +106,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
         // Mock the ownerOf function to return our recipient address
         bytes32 sldNamehash = Namehash.getNamehash(parentNamehash, label);
         vm.mockCall(
-            address(sld),
-            abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehash)),
-            abi.encode(recipient)
+            address(sld), abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehash)), abi.encode(recipient)
         );
 
         // Burn the SLD
@@ -204,23 +186,13 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD under first TLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            "domain1",
-            0x0,
-            365,
-            parentNamehash1,
-            address(0x5555)
-        );
+        manager.registerWithCommit{value: 1 ether + 1}("domain1", 0x0, 365, parentNamehash1, address(0x5555));
 
         // Register 2 SLDs under second TLD
         for (uint256 i = 0; i < 2; i++) {
             hoax(address(0x420), 2 ether);
             manager.registerWithCommit{value: 1 ether + 1}(
-                string(abi.encodePacked("domain", i + 2)),
-                0x0,
-                365,
-                parentNamehash2,
-                address(0x5555)
+                string(abi.encodePacked("domain", i + 2)), 0x0, 365, parentNamehash2, address(0x5555)
             );
         }
 
@@ -251,15 +223,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register with signature
         hoax(buyer, 2 ether);
-        manager.registerWithSignature{value: 1 ether + 1}(
-            label,
-            365,
-            parentNamehash,
-            address(0x5555),
-            v,
-            r,
-            s
-        );
+        manager.registerWithSignature{value: 1 ether + 1}(label, 365, parentNamehash, address(0x5555), v, r, s);
 
         // Verify count incremented
         uint256 count = manager.sldCountPerTld(parentNamehash);
@@ -284,11 +248,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
         for (uint256 i = 0; i < 5; i++) {
             hoax(address(0x420), 2 ether);
             manager.registerWithCommit{value: 1 ether + 1}(
-                domainLabels[i],
-                0x0,
-                registrationLength,
-                parentNamehash,
-                recipient
+                domainLabels[i], 0x0, registrationLength, parentNamehash, recipient
             );
 
             // Store namehash for later use
@@ -299,15 +259,11 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Mock the ownerOf function for domains we want to burn
         vm.mockCall(
-            address(sld),
-            abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehashes[0])),
-            abi.encode(recipient)
+            address(sld), abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehashes[0])), abi.encode(recipient)
         );
 
         vm.mockCall(
-            address(sld),
-            abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehashes[2])),
-            abi.encode(recipient)
+            address(sld), abi.encodeWithSelector(sld.ownerOf.selector, uint256(sldNamehashes[2])), abi.encode(recipient)
         );
 
         // Burn 2 SLDs
@@ -320,19 +276,9 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register 1 more
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            "newdomain",
-            0x0,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}("newdomain", 0x0, registrationLength, parentNamehash, recipient);
 
-        assertEq(
-            manager.sldCountPerTld(parentNamehash),
-            4,
-            "should have 4 SLDs after registering 1 more"
-        );
+        assertEq(manager.sldCountPerTld(parentNamehash), 4, "should have 4 SLDs after registering 1 more");
     }
 
     function testBurnExpiredSld() public {
@@ -350,13 +296,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         // Verify count is 1
         assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should be 1 after registration");
@@ -392,13 +332,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         // Try to burn the active domain - should fail
         address randomUser = address(0x9999);
@@ -433,13 +367,7 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
 
         // Register SLD
         hoax(address(0x420), 2 ether);
-        manager.registerWithCommit{value: 1 ether + 1}(
-            label,
-            secret,
-            registrationLength,
-            parentNamehash,
-            recipient
-        );
+        manager.registerWithCommit{value: 1 ether + 1}(label, secret, registrationLength, parentNamehash, recipient);
 
         // Verify count is 1
         assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should be 1 after registration");
@@ -455,10 +383,6 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
         manager.burnExpiredSld(label, parentNamehash);
 
         // Verify count is still 1
-        assertEq(
-            manager.sldCountPerTld(parentNamehash),
-            1,
-            "count should still be 1 during grace period"
-        );
+        assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should still be 1 during grace period");
     }
 }

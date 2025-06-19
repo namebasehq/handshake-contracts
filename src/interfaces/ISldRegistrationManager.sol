@@ -34,6 +34,8 @@ interface ISldRegistrationManager {
 
     function sldRegistrationHistory(bytes32 _sldNamehash) external view returns (uint80, uint80, uint96);
 
+    function sldCountPerTld(bytes32 _tldNamehash) external view returns (uint256);
+
     function tld() external view returns (IHandshakeTld);
 
     function getRenewalPrice(
