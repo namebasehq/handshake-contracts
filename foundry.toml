@@ -21,5 +21,17 @@ gas_reports = ["HandshakeNft"
 optimizer-runs = 10_000
 via-ir=true
 
+# Network profiles for deployment
+[profile.optimism-mainnet]
+rpc_url = "${OP_MAINNET_RPC_URL}"
+private_key = "${PRIVATE_KEY}"
+etherscan_api_key = "${ETHERSCAN_API_KEY}"
+chain_id = 10
+
+[profile.optimism-sepolia]
+rpc_url = "${OP_SEPOLIA_RPC_URL}"
+private_key = "${TEST_PRIVATE_KEY}"
+etherscan_api_key = "${ETHERSCAN_API_KEY}"
+chain_id = 11155420
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
