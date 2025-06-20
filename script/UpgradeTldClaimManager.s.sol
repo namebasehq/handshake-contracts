@@ -24,7 +24,8 @@ import "interfaces/ISldRegistrationManager.sol";
  this was the the final command i used to deploy
 
  forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --broadcast --verify --rpc-url https://sepolia.optimism.io --sender 0x175F303781Efe881Ce40A511517186DbF364b3a7 --private-key $TEST_PRIVATE_KEY
- 
+ forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "upgrade(address)" 0x3d39e62E3f42771734FE13DD9227A6F75b9fE60d --rpc-url https://sepolia.optimism.io --private-key $TEST_PROXY_PRIVATE_KEY --broadcast
+ forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --rpc-url https://sepolia.optimism.io --private-key $TEST_PRIVATE_KEY --broadcast 
  */
 contract UpgradeTldClaimManagerScript is Script {
     // Production contract owner address (from Deploy.s.sol)

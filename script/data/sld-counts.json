@@ -1,0 +1,14 @@
+[
+  {
+    "name": "example",
+    "sldCount": 5
+  },
+  {
+    "name": "test",
+    "sldCount": 3
+  },
+  {
+    "name": "demo",
+    "sldCount": 10
+  }
+]

@@ -20,6 +20,7 @@ gas_reports = ["HandshakeNft"
 , "TextResolver"]
 optimizer-runs = 10_000
 via-ir=true
+fs_permissions = [{ access = "read", path = "./script/data" }]
 
 # Network profiles for deployment
 [profile.optimism-mainnet]
