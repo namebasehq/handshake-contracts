@@ -617,12 +617,15 @@ contract TestHandshakeSld is Test {
 
         sld.registerSld(to, tldNamehash, label);
 
-        vm.warp(block.timestamp + registrationLength + 1);
+        uint256 newTimestamp = block.timestamp + registrationLength + 31 days;
+        vm.warp(newTimestamp);
 
+        // Domain should still be expired during registerSld call
         sld.registerSld(to2, tldNamehash, label);
 
-        //simulate updating the registration history details
-        manager.addSldDetail(sldNamehash, uint80(block.timestamp), uint80(registrationLength), uint96(0), arr);
+        // Simulate what the real registration manager would do:
+        // Update registration details AFTER successful registration
+        manager.addSldDetail(sldNamehash, uint80(newTimestamp), uint80(registrationLength), uint96(0), arr);
 
         assertEq(sld.ownerOf(uint256(sldNamehash)), to2, "owner of token not correct");
         assertEq(sld.balanceOf(to), 0, "owner 1 should have zero balance");

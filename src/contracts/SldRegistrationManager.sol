@@ -52,9 +52,14 @@ contract SldRegistrationManager is
 
     ICommitIntent public commitIntent;
 
+    // New storage variables must be added at the END to maintain storage layout
+    mapping(bytes32 => uint256) public sldCountPerTld;
+
     event DiscountSet(bytes32 indexed _tokenNamehash, address indexed _claimant, SldDiscountSettings _discount);
 
     event NewGracePeriod(uint256 _newGracePeriod);
+
+    event ExpiredSldBurned(bytes32 indexed _parentNamehash, string _label, address burner);
 
     constructor() {
         _disableInitializers();
@@ -169,109 +174,120 @@ contract SldRegistrationManager is
         return signer;
     }
 
-  // Internal function that handles the core registration logic
-function _registerSldInternal(
-    string calldata _label,
-    bytes32 sldNamehash,
-    uint256 _registrationLength,
-    bytes32 _parentNamehash,
-    address _recipient,
-    bool returnFundsToRecipient
-) private {
-    require(canRegister(sldNamehash), "domain already registered");
+    // Internal function that handles the core registration logic
+    function _registerSldInternal(
+        string calldata _label,
+        bytes32 sldNamehash,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient,
+        bool returnFundsToRecipient
+    ) private {
+        require(canRegister(sldNamehash), "domain already registered");
 
-    _recipient = _recipient == address(0) ? msg.sender : _recipient;
-    sld.registerSld(_recipient, _parentNamehash, _label);
+        _recipient = _recipient == address(0) ? msg.sender : _recipient;
+        sld.registerSld(_recipient, _parentNamehash, _label);
 
-    require(labelValidator.isValidLabel(_label), "invalid label");
+        require(labelValidator.isValidLabel(_label), "invalid label");
 
-    ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
-    require(
-        strategy.isEnabled(_parentNamehash) || tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
-        "registration strategy disabled"
-    );
+        ISldRegistrationStrategy strategy = sld.getRegistrationStrategy(_parentNamehash);
+        require(
+            strategy.isEnabled(_parentNamehash) || tld.isApprovedOrOwner(msg.sender, uint256(_parentNamehash)),
+            "registration strategy disabled"
+        );
 
-    uint256 dollarPrice = getRegistrationPrice(address(strategy), msg.sender, _parentNamehash, _label, _registrationLength);
-    require(
-        globalStrategy.canRegister(
-            msg.sender,
-            _parentNamehash,
-            _label,
-            _registrationLength,
-            dollarPrice + 1 // plus 1 wei for rounding issue
-        ),
-        "failed global strategy"
-    );
+        uint256 dollarPrice =
+            getRegistrationPrice(address(strategy), msg.sender, _parentNamehash, _label, _registrationLength);
+        require(
+            globalStrategy.canRegister(
+                msg.sender,
+                _parentNamehash,
+                _label,
+                _registrationLength,
+                dollarPrice + 1 // plus 1 wei for rounding issue
+            ),
+            "failed global strategy"
+        );
 
-    addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
+        addRegistrationDetails(sldNamehash, strategy, _parentNamehash, _label);
 
-    sldRegistrationHistory[sldNamehash] = SldRegistrationDetail(
-        uint72(block.timestamp),
-        uint80(_registrationLength * 1 days),
-        uint96(dollarPrice)
-    );
+        sldRegistrationHistory[sldNamehash] =
+            SldRegistrationDetail(uint72(block.timestamp), uint80(_registrationLength * 1 days), uint96(dollarPrice));
 
-    uint256 weiValue = getWeiValueOfDollar();
-    uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
+        unchecked {
+            ++sldCountPerTld[_parentNamehash];
+        }
 
-    // Determine who receives the funds based on the flag
-    address fundReceiver = returnFundsToRecipient ? _recipient : msg.sender;
-    distributePrimaryFunds(fundReceiver, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
-}
+        uint256 weiValue = getWeiValueOfDollar();
+        uint256 priceInWei = (weiValue * dollarPrice) / 1 ether;
 
-// Private function for basic registration
-function registerSld(
-    string calldata _label,
-    bytes32 sldNamehash,
-    uint256 _registrationLength,
-    bytes32 _parentNamehash,
-    address _recipient
-) private {
-    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
-}
-
-// Public function for signature-based registration with standard fund distribution
-function registerWithSignature(
-    string calldata _label,
-    uint256 _registrationLength,
-    bytes32 _parentNamehash,
-    address _recipient,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-) external payable {
-    bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
-    address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
-    
-    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
-
-    unchecked {
-        ++subdomainRegistrationNonce[sldNamehash];
-        emit RegisterSld(_parentNamehash, bytes32(abi.encodePacked(signer)), _label, block.timestamp + (_registrationLength * 1 days));
+        // Determine who receives the funds based on the flag
+        address fundReceiver = returnFundsToRecipient ? _recipient : msg.sender;
+        distributePrimaryFunds(fundReceiver, tld.ownerOf(uint256(_parentNamehash)), priceInWei);
     }
-}
 
-// New public function for signature-based registration that returns funds to recipient
-function registerWithSignatureReturnFundsToRecipient(
-    string calldata _label,
-    uint256 _registrationLength,
-    bytes32 _parentNamehash,
-    address _recipient,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-) external payable {
-    bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
-    address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
-    
-    _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, true);
-
-    unchecked {
-        ++subdomainRegistrationNonce[sldNamehash];
-        emit RegisterSld(_parentNamehash, bytes32(abi.encodePacked(signer)), _label, block.timestamp + (_registrationLength * 1 days));
+    // Private function for basic registration
+    function registerSld(
+        string calldata _label,
+        bytes32 sldNamehash,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient
+    ) private {
+        _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
     }
-}
 
+    // Public function for signature-based registration with standard fund distribution
+    function registerWithSignature(
+        string calldata _label,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
+
+        _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, false);
+
+        unchecked {
+            ++subdomainRegistrationNonce[sldNamehash];
+            emit RegisterSld(
+                _parentNamehash,
+                bytes32(abi.encodePacked(signer)),
+                _label,
+                block.timestamp + (_registrationLength * 1 days)
+            );
+        }
+    }
+
+    // New public function for signature-based registration that returns funds to recipient
+    function registerWithSignatureReturnFundsToRecipient(
+        string calldata _label,
+        uint256 _registrationLength,
+        bytes32 _parentNamehash,
+        address _recipient,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+        address signer = checkSignatureValid(msg.sender, sldNamehash, v, r, s);
+
+        _registerSldInternal(_label, sldNamehash, _registrationLength, _parentNamehash, _recipient, true);
+
+        unchecked {
+            ++subdomainRegistrationNonce[sldNamehash];
+            emit RegisterSld(
+                _parentNamehash,
+                bytes32(abi.encodePacked(signer)),
+                _label,
+                block.timestamp + (_registrationLength * 1 days)
+            );
+        }
+    }
 
     function setAddressDiscounts(
         bytes32 _parentNamehash,
@@ -299,6 +315,12 @@ function registerWithSignatureReturnFundsToRecipient(
         require(sld.ownerOf(uint256(sldNamehash)) == msg.sender, "only owner can burn");
 
         delete sldRegistrationHistory[sldNamehash];
+
+        if (sldCountPerTld[_parentNamehash] > 0) {
+            unchecked {
+                --sldCountPerTld[_parentNamehash];
+            }
+        }
 
         sld.burnSld(sldNamehash);
     }
@@ -673,5 +695,44 @@ function registerWithSignatureReturnFundsToRecipient(
         uint256 price = usdOracle.getPrice();
         require(price > 0, "error getting price");
         return (1 ether * 100000000) / price;
+    }
+
+    function initializeSldCount(bytes32 _tldNamehash, uint256 _count) external onlyOwner {
+        sldCountPerTld[_tldNamehash] = _count;
+    }
+
+    /**
+     * @notice Burns an expired SLD. Anyone can call this function for domains that have expired.
+     * @dev This function checks that the domain has actually expired before allowing it to be burned.
+     *      It doesn't require ownership verification since expired domains can't have a valid owner.
+     * @param _label selected SLD label
+     * @param _parentNamehash bytes32 representation of the top level domain
+     */
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external {
+        bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _label);
+
+        // Check that the domain exists in registration history
+        SldRegistrationDetail memory detail = sldRegistrationHistory[sldNamehash];
+        require(detail.RegistrationTime > 0, "domain not registered");
+
+        // Check that the domain has expired (including grace period)
+        require(
+            detail.RegistrationTime + detail.RegistrationLength + gracePeriod < block.timestamp, "domain not expired"
+        );
+
+        // Delete registration history
+        delete sldRegistrationHistory[sldNamehash];
+
+        // Decrement the SLD count for the TLD
+        if (sldCountPerTld[_parentNamehash] > 0) {
+            unchecked {
+                --sldCountPerTld[_parentNamehash];
+            }
+        }
+
+        // Burn the SLD token
+        sld.burnSld(sldNamehash);
+
+        emit ExpiredSldBurned(_parentNamehash, _label, msg.sender);
     }
 }

@@ -44,10 +44,10 @@ contract TestLabelValidator is Test {
         assertFalse(valid, "uppercase alphanumeric is invalid");
     }
 
-    function testPunycodeFails() public {
+    function testPunycodePasses() public {
         string memory label = "xn--ls8h";
         bool valid = validator.isValidLabel(label);
-        assertFalse(valid, "punycode is invalid");
+        assertTrue(valid, "punycode is now valid");
     }
 
     function testEmptyPunycodeFails() public {
@@ -63,11 +63,11 @@ contract TestLabelValidator is Test {
         assertFalse(valid, "hyphens at position 3 & 4 is invalid");
     }
 
-    function testDoubleHyphenFails() public {
-        // double hyphens are allowed in DNS, but hyphens at position 3 & 4 indicates punycode
+    function testDoubleHyphenPasses() public {
+        // double hyphens are now allowed, including at position 3 & 4
         string memory label = "aa--a";
         bool valid = validator.isValidLabel(label);
-        assertFalse(valid, "hyphens at position 3 & 4 is invalid");
+        assertTrue(valid, "hyphens at position 3 & 4 is now valid");
     }
 
     function testHyphenAloneFails() public {

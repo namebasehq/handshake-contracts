@@ -21,6 +21,9 @@ import "./SldRegistrationManagerBase.t.sol";
 contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManagerBase {
     using stdStorage for StdStorage;
 
+    // Storage variable to hold timestamp
+    uint256 public storedTimestamp;
+
     function setUp() public override {
         vm.warp(365 days);
         super.setUp();
@@ -303,7 +306,6 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         address claimant = address(0x6666);
         address tldOwner = address(0x464646);
-
         manager.updatePaymentAddress(address(0x57595351));
 
         //we can just spoof the claim manager address using cheatcode to pass authorisation
@@ -311,10 +313,9 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
 
         vm.prank(tldOwner);
         tld.register(tldOwner, "yoyo");
-
-        uint256 registrationTimestamp = block.timestamp;
-
         hoax(claimant, 2 ether + 1);
+        // Store timestamp in contract storage to avoid Foundry bug with local variables
+        storedTimestamp = block.timestamp;
         manager.registerWithCommit{value: 2 ether + 1}( //should cost 2 ether
             label,
             0x0, //secret
@@ -348,7 +349,8 @@ contract TestSldRegistrationManagerRegisterSldTests is TestSldRegistrationManage
             NewRegistrationLength, RegistrationLength + (newRegLength * 86400), "new registrationLength not correct"
         );
 
-        assertEq(NewRegistrationTime, registrationTimestamp, "original registration time incorrect");
+        // Use storedTimestamp instead of registrationTimestamp
+        assertEq(NewRegistrationTime, storedTimestamp, "original registration time incorrect");
     }
 
     function testPurchaseSingleDomainFundsGetSentToOwnerAndHandshakeWallet() public {

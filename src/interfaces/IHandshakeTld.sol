@@ -11,6 +11,8 @@ interface IHandshakeTld {
     function registerWithResolver(address _addr, string calldata _domain, ISldRegistrationStrategy _strategy)
         external;
 
+    function burnTld(uint256 _tokenId) external;
+
     function ownerOf(uint256 _id) external view returns (address);
 
     function isApprovedOrOwner(address _operator, uint256 _id) external view returns (bool);

@@ -211,7 +211,7 @@ contract TestHandshakeTld is Test {
         vm.stopPrank();
         vm.startPrank(approved);
         MockRegistrationStrategy strategy = new MockRegistrationStrategy(0);
-
+        console.log("TESTING");
         tld.setRegistrationStrategy(parentNamehash, strategy);
 
         ISldRegistrationStrategy expectedStrategy = tld.registrationStrategy(parentNamehash);

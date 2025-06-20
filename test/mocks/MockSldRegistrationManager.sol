@@ -10,6 +10,7 @@ import "structs/SldRegistrationDetail.sol";
 
 contract MockSldRegistrationManager is ISldRegistrationManager {
     mapping(bytes32 => SldRegistrationDetail) public sldRegistrationHistory;
+    mapping(bytes32 => uint256) public sldCountPerTld;
 
     IHandshakeTld public tld;
     IGlobalRegistrationRules public globalStrategy;
@@ -33,6 +34,14 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
         SldRegistrationDetail memory detail =
             SldRegistrationDetail(_registrationTime, _registrationLength, _registrationPrice);
         addSldDetail(_sldNamehash, detail);
+    }
+
+    function deleteSldDetail(bytes32 _sldNamehash) public {
+        delete sldRegistrationHistory[_sldNamehash];
+    }
+
+    function setSldCount(bytes32 _tldNamehash, uint256 _count) public {
+        sldCountPerTld[_tldNamehash] = _count;
     }
 
     function registerWithCommit(
@@ -78,6 +87,7 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
 
 contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     uint256 private renewalPrice;
+    mapping(bytes32 => uint256) public sldCountPerTld;
 
     function pricesAtRegistration(bytes32, uint256) external pure returns (uint80) {
         return 69420;
@@ -111,6 +121,10 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     ) external view returns (uint256) {}
 
     function sldRegistrationHistory(bytes32 _sldNamehash) external view returns (uint80, uint80, uint96) {}
+
+    function setSldCount(bytes32 _tldNamehash, uint256 _count) public {
+        sldCountPerTld[_tldNamehash] = _count;
+    }
 
     function setRenewalPrice(uint256 _renewalPrice) external {
         renewalPrice = _renewalPrice;
