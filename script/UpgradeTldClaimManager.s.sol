@@ -12,10 +12,24 @@ import "interfaces/ISldRegistrationManager.sol";
  * @title Upgrade TLD Claim Manager Script
  * @notice This script upgrades the TLD Claim Manager proxy to a new implementation with burning functionality
  * @dev Usage:
- *   Mainnet: forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --profile optimism-mainnet --broadcast --verify
- *   Testnet: forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --profile optimism-sepolia --broadcast --verify
+ *   Step 1 - Deploy new implementation (can use any profile):
+ *     FOUNDRY_PROFILE=optimism-sepolia forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --broadcast
+ *
+ *   Step 2 - Upgrade proxy (requires proxy owner):
+ *     FOUNDRY_PROFILE=optimism-sepolia-proxy forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "upgrade(address)" <IMPLEMENTATION_ADDRESS> --broadcast
+ *
+ *   Step 3 - Configure contract (requires contract owner):
+ *     FOUNDRY_PROFILE=optimism-sepolia-owner forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --broadcast
+ 
+ this was the the final command i used to deploy
+
+ forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --broadcast --verify --rpc-url https://sepolia.optimism.io --sender 0x175F303781Efe881Ce40A511517186DbF364b3a7 --private-key $TEST_PRIVATE_KEY
+ 
  */
 contract UpgradeTldClaimManagerScript is Script {
+    // Production contract owner address (from Deploy.s.sol)
+    address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+
     // Chain-specific addresses
     struct NetworkConfig {
         address tldClaimManagerProxy;
@@ -29,7 +43,7 @@ contract UpgradeTldClaimManagerScript is Script {
         // Optimism Mainnet (Chain ID: 10) - PROD: hns.id
         networkConfigs[10] = NetworkConfig({
             tldClaimManagerProxy: 0x9209397263427413817Afc6957A434cF62C02c68,
-            sldRegistrationManagerProxy: 0xfda87cc032cd641ac192027353e5b25261dfe6b3,
+            sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3,
             authorizedSigner: 0xdA29bd6a46B89Cc5a5a404663524132D2f7Df10f
         });
 
@@ -41,89 +55,91 @@ contract UpgradeTldClaimManagerScript is Script {
         });
     }
 
-    function getNetworkConfig() internal view returns (NetworkConfig memory) {
+    function getNetworkConfig() internal returns (NetworkConfig memory) {
+        console.log("Current chain ID:", block.chainid);
         NetworkConfig memory config = networkConfigs[block.chainid];
-        require(config.tldClaimManagerProxy != address(0), "Network not configured");
+        require(
+            config.tldClaimManagerProxy != address(0),
+            string(
+                abi.encodePacked(
+                    "Network not configured for chain ID: ",
+                    vm.toString(block.chainid)
+                )
+            )
+        );
         return config;
     }
 
+    /**
+     * @notice Default function - only deploys new implementation
+     */
     function run() public {
         NetworkConfig memory config = getNetworkConfig();
 
-        // Private key is automatically loaded from the profile
         vm.startBroadcast();
 
-        console.log("Starting TLD Claim Manager upgrade...");
+
+        console.log("Deploying new TLD Claim Manager implementation...");
         console.log("Chain ID:", block.chainid);
-        console.log("TLD Claim Manager Proxy:", config.tldClaimManagerProxy);
-        console.log("SLD Registration Manager Proxy:", config.sldRegistrationManagerProxy);
-        console.log("Authorized Signer:", config.authorizedSigner);
         console.log("Deployer:", msg.sender);
 
-        // 1. Deploy new implementation
+        // Deploy new implementation
         TldClaimManager newImplementation = new TldClaimManager();
         console.log("New implementation deployed at:", address(newImplementation));
 
-        // 2. Get proxy admin interface
+        vm.stopBroadcast();
+
+        console.log("Deployment completed!");
+        console.log("Next steps:");
+        console.log("1. Run upgrade() with proxy owner's private key");
+        console.log("2. Run configure() with contract owner's private key");
+    }
+
+    /**
+     * @notice Upgrade the proxy to new implementation (requires PROXY_OWNER_PRIVATE_KEY)
+     * @param implementationAddress Address of the new implementation contract
+     */
+    function upgrade(address implementationAddress) public {
+        NetworkConfig memory config = getNetworkConfig();
+
+        vm.startBroadcast();
+
+        console.log("Upgrading TLD Claim Manager proxy...");
+        console.log("Chain ID:", block.chainid);
+        console.log("TLD Claim Manager Proxy:", config.tldClaimManagerProxy);
+        console.log("New Implementation:", implementationAddress);
+        console.log("Deployer (should be proxy owner):", msg.sender);
+
+        // Get proxy admin interface
         TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
             payable(config.tldClaimManagerProxy)
         );
 
-        // 3. Upgrade to new implementation
-        proxy.upgradeTo(address(newImplementation));
+        // Upgrade to new implementation
+        proxy.upgradeTo(implementationAddress);
         console.log("Proxy upgraded to new implementation");
 
         vm.stopBroadcast();
 
-        // 4. Configure the upgraded contract (as contract owner, not proxy owner)
-        // Note: This assumes the same private key can perform both proxy upgrade and contract admin functions
-        // If different keys are needed, you'll need to run the configure() function separately
-        vm.startBroadcast();
-
+        // Verify the upgrade worked
+        console.log("Verifying proxy upgrade...");
         TldClaimManager manager = TldClaimManager(config.tldClaimManagerProxy);
 
-        console.log("Configuring upgraded contract...");
-
-        // Set the SLD Registration Manager
-        manager.setSldRegistrationManager(
-            ISldRegistrationManager(config.sldRegistrationManagerProxy)
-        );
-        console.log("SLD Registration Manager set to:", config.sldRegistrationManagerProxy);
-
-        // Add authorized signer for burning
-        manager.updateSigner(config.authorizedSigner, true);
-        console.log("Authorized signer added:", config.authorizedSigner);
-
-        vm.stopBroadcast();
-
-        // 5. Verify the upgrade worked
-        console.log("Verifying upgrade...");
-
-        // Test that the new functions exist
-        try manager.sldRegistrationManager() returns (ISldRegistrationManager sldManager) {
-            console.log("✅ Upgrade successful - sldRegistrationManager function is available");
-            console.log("SLD Registration Manager:", address(sldManager));
+        try manager.sldRegistrationManager() returns (ISldRegistrationManager) {
+            console.log("Upgrade successful - new functions are available");
         } catch {
-            console.log(
-                "❌ Upgrade verification failed - sldRegistrationManager function not available"
-            );
+            console.log("Upgrade verification failed - new functions not available");
         }
 
-        try manager.ValidSigner(config.authorizedSigner) returns (bool isValid) {
-            console.log("✅ ValidSigner function is available");
-            console.log("Authorized signer status:", isValid);
-        } catch {
-            console.log("❌ ValidSigner function not available");
-        }
-
-        console.log("TLD Claim Manager upgrade completed!");
+        console.log("Proxy upgrade completed!");
+        console.log("Next step: Run configure() with the contract owner's private key");
     }
 
     /**
      * @notice Alternative function to just verify an existing deployment
-     * @dev Run with: forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "verify()" --profile optimism-mainnet
+     * @dev Run with: FOUNDRY_PROFILE=optimism-mainnet forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "verify()"
      */
-    function verify() public view {
+    function verify() public {
         NetworkConfig memory config = getNetworkConfig();
 
         console.log("Verifying TLD Claim Manager at:", config.tldClaimManagerProxy);
@@ -132,30 +148,30 @@ contract UpgradeTldClaimManagerScript is Script {
         TldClaimManager manager = TldClaimManager(config.tldClaimManagerProxy);
 
         try manager.sldRegistrationManager() returns (ISldRegistrationManager sldManager) {
-            console.log("✅ sldRegistrationManager function is available");
+            console.log("sldRegistrationManager function is available");
             console.log("SLD Registration Manager:", address(sldManager));
         } catch {
-            console.log("❌ sldRegistrationManager function not available - upgrade needed");
+            console.log("sldRegistrationManager function not available - upgrade needed");
         }
 
         try manager.ValidSigner(config.authorizedSigner) returns (bool isValid) {
-            console.log("✅ ValidSigner function is available");
+            console.log("ValidSigner function is available");
             console.log("Authorized signer status:", isValid);
         } catch {
-            console.log("❌ ValidSigner function not available - upgrade needed");
+            console.log("ValidSigner function not available - upgrade needed");
         }
 
         try manager.DOMAIN_SEPARATOR() returns (bytes32 domainSeparator) {
-            console.log("✅ DOMAIN_SEPARATOR is available");
+            console.log("DOMAIN_SEPARATOR is available");
             console.log("Domain separator:", vm.toString(domainSeparator));
         } catch {
-            console.log("❌ DOMAIN_SEPARATOR not available - upgrade needed");
+            console.log("DOMAIN_SEPARATOR not available - upgrade needed");
         }
     }
 
     /**
      * @notice Function to configure post-upgrade settings
-     * @dev Run with: forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --profile optimism-mainnet --broadcast
+     * @dev Run with: FOUNDRY_PROFILE=optimism-mainnet forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --broadcast
      */
     function configure() public {
         NetworkConfig memory config = getNetworkConfig();

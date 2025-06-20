@@ -11,10 +11,17 @@ import "contracts/SldRegistrationManager.sol";
  * @title Upgrade SLD Registration Manager Script
  * @notice This script upgrades the SLD Registration Manager proxy to a new implementation
  * @dev Usage:
- *   Mainnet: forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --profile optimism-mainnet --broadcast --verify
- *   Testnet: forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --profile optimism-sepolia --broadcast --verify
+ *   Mainnet: FOUNDRY_PROFILE=optimism-mainnet forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --broadcast --verify
+ *   Testnet: FOUNDRY_PROFILE=optimism-sepolia forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --broadcast --verify
+ *
+ * @dev NOTE: This script only performs the proxy upgrade. The SLD Registration Manager
+ *      doesn't require additional configuration for the TLD burning feature.
+ *      Expected contract owner: 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA
  */
 contract UpgradeSldRegistrationManagerScript is Script {
+    // Production contract owner address (from Deploy.s.sol)
+    address private constant CONTRACT_OWNER = 0xa90D04E5FaC9ba49520749711a12c3E5d0D9D6dA;
+
     // Chain-specific addresses
     struct NetworkConfig {
         address sldRegistrationManagerProxy;
@@ -25,7 +32,7 @@ contract UpgradeSldRegistrationManagerScript is Script {
     function setUp() public {
         // Optimism Mainnet (Chain ID: 10) - PROD: hns.id
         networkConfigs[10] = NetworkConfig({
-            sldRegistrationManagerProxy: 0xfda87cc032cd641ac192027353e5b25261dfe6b3
+            sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3
         });
 
         // Optimism Sepolia (Chain ID: 11155420)
@@ -34,9 +41,18 @@ contract UpgradeSldRegistrationManagerScript is Script {
         });
     }
 
-    function getNetworkConfig() internal view returns (NetworkConfig memory) {
+    function getNetworkConfig() internal returns (NetworkConfig memory) {
+        console.log("Current chain ID:", block.chainid);
         NetworkConfig memory config = networkConfigs[block.chainid];
-        require(config.sldRegistrationManagerProxy != address(0), "Network not configured");
+        require(
+            config.sldRegistrationManagerProxy != address(0),
+            string(
+                abi.encodePacked(
+                    "Network not configured for chain ID: ",
+                    vm.toString(block.chainid)
+                )
+            )
+        );
         return config;
     }
 
@@ -49,6 +65,7 @@ contract UpgradeSldRegistrationManagerScript is Script {
         console.log("Starting SLD Registration Manager upgrade...");
         console.log("Chain ID:", block.chainid);
         console.log("Proxy address:", config.sldRegistrationManagerProxy);
+        console.log("Expected Contract Owner:", CONTRACT_OWNER);
         console.log("Deployer:", msg.sender);
 
         // 1. Deploy new implementation
@@ -72,10 +89,10 @@ contract UpgradeSldRegistrationManagerScript is Script {
 
         // Test that the new function exists (this will revert if upgrade failed)
         try manager.sldCountPerTld(bytes32(0)) returns (uint256 count) {
-            console.log("✅ Upgrade successful - sldCountPerTld function is available");
+            console.log("Upgrade successful - sldCountPerTld function is available");
             console.log("SLD count for test namehash:", count);
         } catch {
-            console.log("❌ Upgrade verification failed - sldCountPerTld function not available");
+            console.log("Upgrade verification failed - sldCountPerTld function not available");
         }
 
         console.log("SLD Registration Manager upgrade completed!");
@@ -83,9 +100,9 @@ contract UpgradeSldRegistrationManagerScript is Script {
 
     /**
      * @notice Alternative function to just verify an existing deployment
-     * @dev Run with: forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "verify()" --profile optimism-mainnet
+     * @dev Run with: FOUNDRY_PROFILE=optimism-mainnet forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "verify()"
      */
-    function verify() public view {
+    function verify() public {
         NetworkConfig memory config = getNetworkConfig();
 
         console.log("Verifying SLD Registration Manager at:", config.sldRegistrationManagerProxy);
@@ -94,10 +111,10 @@ contract UpgradeSldRegistrationManagerScript is Script {
         SldRegistrationManager manager = SldRegistrationManager(config.sldRegistrationManagerProxy);
 
         try manager.sldCountPerTld(bytes32(0)) returns (uint256 count) {
-            console.log("✅ sldCountPerTld function is available");
+            console.log("sldCountPerTld function is available");
             console.log("SLD count for test namehash:", count);
         } catch {
-            console.log("❌ sldCountPerTld function not available - upgrade needed");
+            console.log("sldCountPerTld function not available - upgrade needed");
         }
     }
 }
