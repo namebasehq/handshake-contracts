@@ -15,6 +15,8 @@ contract MockClaimManager is ITldClaimManager {
 
     function setSldRegistrationManager(ISldRegistrationManager _manager) external {}
 
+    function initializeDomainSeparator() external {}
+
     function updateAllowedTldManager(address _addr, bool _allowed) external {}
 
     function allowedTldManager(address _addr) external view returns (bool) {}

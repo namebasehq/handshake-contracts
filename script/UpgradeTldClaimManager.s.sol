@@ -79,7 +79,6 @@ contract UpgradeTldClaimManagerScript is Script {
 
         vm.startBroadcast();
 
-
         console.log("Deploying new TLD Claim Manager implementation...");
         console.log("Chain ID:", block.chainid);
         console.log("Deployer:", msg.sender);
@@ -171,6 +170,30 @@ contract UpgradeTldClaimManagerScript is Script {
     }
 
     /**
+     * @notice Add or remove an authorized signer
+     * @dev Run with: forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "updateSigner(address,bool)" 0x... true --rpc-url https://sepolia.optimism.io --private-key $TEST_OWNER_PRIVATE_KEY --broadcast
+     */
+    function updateSigner(address signer, bool status) public {
+        NetworkConfig memory config = getNetworkConfig();
+
+        vm.startBroadcast();
+
+        console.log("Updating signer...");
+        console.log("Chain ID:", block.chainid);
+        console.log("TLD Claim Manager:", config.tldClaimManagerProxy);
+        console.log("Signer:", signer);
+        console.log("Status:", status);
+        console.log("Deployer (should be contract owner):", msg.sender);
+
+        TldClaimManager manager = TldClaimManager(config.tldClaimManagerProxy);
+        manager.updateSigner(signer, status);
+
+        vm.stopBroadcast();
+
+        console.log("Signer updated successfully!");
+    }
+
+    /**
      * @notice Function to configure post-upgrade settings
      * @dev Run with: FOUNDRY_PROFILE=optimism-mainnet forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --broadcast
      */
@@ -183,6 +206,19 @@ contract UpgradeTldClaimManagerScript is Script {
 
         console.log("Configuring TLD Claim Manager...");
         console.log("Chain ID:", block.chainid);
+
+        // Initialize domain separator for upgraded contracts
+        try manager.DOMAIN_SEPARATOR() returns (bytes32 separator) {
+            if (separator == bytes32(0)) {
+                console.log("Initializing domain separator...");
+                manager.initializeDomainSeparator();
+                console.log("Domain separator initialized");
+            } else {
+                console.log("Domain separator already initialized:", vm.toString(separator));
+            }
+        } catch {
+            console.log("Failed to check domain separator");
+        }
 
         // Set the SLD Registration Manager
         manager.setSldRegistrationManager(

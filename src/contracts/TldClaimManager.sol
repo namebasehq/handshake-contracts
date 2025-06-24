@@ -37,8 +37,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      */
     bytes32 public DOMAIN_SEPARATOR;
 
-    bytes32 private constant EIP712DOMAIN_TYPEHASH =
-        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 private immutable EIP712DOMAIN_TYPEHASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+
+    bytes32 private immutable BURN_TYPEHASH =
+        keccak256("BurnTld(address burner,bytes32 tldNamehash)");
 
     constructor() {
         _disableInitializers();
@@ -73,20 +78,27 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
             verifyingContract: address(this)
         });
 
-        return keccak256(
-            abi.encodePacked(
-                EIP712DOMAIN_TYPEHASH,
-                keccak256(bytes(eip712Domain.name)),
-                keccak256(bytes(eip712Domain.version)),
-                eip712Domain.chainId,
-                eip712Domain.verifyingContract
-            )
-        );
+        return
+            keccak256(
+                abi.encodePacked(
+                    EIP712DOMAIN_TYPEHASH,
+                    keccak256(bytes(eip712Domain.name)),
+                    keccak256(bytes(eip712Domain.version)),
+                    eip712Domain.chainId,
+                    eip712Domain.verifyingContract
+                )
+            );
     }
 
     function getBurnHash(address burner, bytes32 tldNamehash) public view returns (bytes32) {
         return
-            keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encodePacked(burner, tldNamehash))));
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    DOMAIN_SEPARATOR,
+                    keccak256(abi.encode(BURN_TYPEHASH, burner, tldNamehash))
+                )
+            );
     }
 
     function checkSignatureValid(address burner, bytes32 tldNamehash, uint8 v, bytes32 r, bytes32 s)
@@ -169,17 +181,18 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         require(canClaim(msg.sender, namehash), "not eligible to claim");
 
         if (mintPriceInDollars > 0 || msg.value > 0) {
-            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
+            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) /
+                1 ether;
             require(msg.value >= expectedEther, "not enough ether");
 
-            (bool result,) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+            (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
             require(result, "transfer failed");
             // refund any extra ether
             if (expectedEther < msg.value) {
                 unchecked {
                     // we already do a check that msg.value must be >= expectedEther
-                    (result,) = msg.sender.call{value: msg.value - expectedEther}("");
+                    (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
                     require(result, "transfer failed");
                 }
             }
@@ -228,13 +241,16 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      * @param _addr Addresses of the wallets allowed to claim
      * @param _domain string representation of the domains that will be claimed
      */
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external onlyAuthorisedTldManager {
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
+        external
+        onlyAuthorisedTldManager
+    {
         uint256 arrayLength = _addr.length;
         require(arrayLength == _domain.length, "address and domain list should be the same length");
 
         bytes32 tldNamehash;
 
-        for (uint256 i; i < arrayLength;) {
+        for (uint256 i; i < arrayLength; ) {
             require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];
@@ -283,5 +299,14 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     modifier onlyAuthorisedTldManager() {
         require(allowedTldManager[msg.sender], "not authorised to add TLD");
         _;
+    }
+
+    /**
+     * @notice Initialize the domain separator for upgraded contracts
+     * @dev This function can only be called by the contract owner and is needed for upgraded contracts
+     */
+    function initializeDomainSeparator() external onlyOwner {
+        require(DOMAIN_SEPARATOR == bytes32(0), "Domain separator already initialized");
+        DOMAIN_SEPARATOR = hashDomain();
     }
 }
