@@ -66,8 +66,6 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         mintPriceInDollars = _mintPriceInDollars;
         handshakeWalletPayoutAddress = _handshakeWalletPayoutAddress;
         _transferOwnership(_owner);
-
-        DOMAIN_SEPARATOR = hashDomain();
     }
 
     function hashDomain() internal view returns (bytes32) {
