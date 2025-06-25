@@ -38,9 +38,7 @@ contract DebugCurrentSignatureScript is Script {
         }
 
         console.log("\n=== STEP 2: Verify Message Hash ===");
-        bytes32 contractMessageHash = keccak256(
-            abi.encode(contractBurnTypehash, burner, tldNamehash)
-        );
+        bytes32 contractMessageHash = keccak256(abi.encode(contractBurnTypehash, burner, tldNamehash));
         console.log("Contract Message Hash (abi.encode):");
         console.logBytes32(contractMessageHash);
         console.log("Frontend Message Hash:");
@@ -53,9 +51,8 @@ contract DebugCurrentSignatureScript is Script {
         }
 
         console.log("\n=== STEP 3: Verify Final Digest ===");
-        bytes32 contractFinalDigest = keccak256(
-            abi.encodePacked("\x19\x01", frontendDomainSeparator, contractMessageHash)
-        );
+        bytes32 contractFinalDigest =
+            keccak256(abi.encodePacked("\x19\x01", frontendDomainSeparator, contractMessageHash));
         console.log("Contract Final Digest:");
         console.logBytes32(contractFinalDigest);
         console.log("Frontend Final Digest:");

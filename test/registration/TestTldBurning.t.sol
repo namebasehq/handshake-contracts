@@ -60,12 +60,18 @@ contract TestTldBurning is Test {
 
         manager.init(labelValidator, address(this), nft, strategy, oracle, 0, address(0));
 
+        // Initialize domain separator for EIP-712 signatures
+        manager.initializeDomainSeparator();
+
         // Add the test signer as a valid signer
         manager.updateSigner(signerAddress, true);
     }
 
-    function generateSignature(address burner, bytes32 tldNamehash) internal returns (uint8 v, bytes32 r, bytes32 s) {
-        bytes32 hash = manager.getBurnHash(burner, tldNamehash);
+    function generateSignature(address burner, bytes32 tldNamehash, uint256 expiry)
+        internal
+        returns (uint8 v, bytes32 r, bytes32 s)
+    {
+        bytes32 hash = manager.getBurnHash(burner, tldNamehash, expiry);
         (v, r, s) = vm.sign(signerPrivateKey, hash);
     }
 
@@ -91,13 +97,14 @@ contract TestTldBurning is Test {
         // Mock the SLD count to be 0 (no SLDs)
         mockSldRegistrationManager.setSldCount(tldNamehash, 0);
 
-        // Generate signature
-        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash);
+        // Generate signature with future expiry
+        uint256 expiry = block.timestamp + 1 hours;
+        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash, expiry);
 
         // Burn the TLD
         vm.expectEmit(true, true, true, true);
         emit TldBurned(address(this), uint256(tldNamehash), tldLabel);
-        manager.burnTld(tldLabel, v, r, s);
+        manager.burnTld(tldLabel, expiry, v, r, s);
 
         // Verify the TLD is burned
         vm.expectRevert("ERC721: invalid token ID");
@@ -126,12 +133,13 @@ contract TestTldBurning is Test {
         // Mock the SLD count to be > 0 (has SLDs)
         mockSldRegistrationManager.setSldCount(tldNamehash, 1);
 
-        // Generate signature
-        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash);
+        // Generate signature with future expiry
+        uint256 expiry = block.timestamp + 1 hours;
+        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash, expiry);
 
         // Try to burn the TLD, should fail
         vm.expectRevert("SLDs exist for this TLD");
-        manager.burnTld(tldLabel, v, r, s);
+        manager.burnTld(tldLabel, expiry, v, r, s);
     }
 
     function testCannotBurnTldIfNotOwner() public {
@@ -156,13 +164,14 @@ contract TestTldBurning is Test {
         // Mock the SLD count to be 0 (no SLDs)
         mockSldRegistrationManager.setSldCount(tldNamehash, 0);
 
-        // Generate signature for a different address
-        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(0x123), tldNamehash);
+        // Generate signature for a different address with future expiry
+        uint256 expiry = block.timestamp + 1 hours;
+        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(0x123), tldNamehash, expiry);
 
         // Try to burn the TLD as another address, should fail
         vm.prank(address(0x123));
         vm.expectRevert("not TLD owner");
-        manager.burnTld(tldLabel, v, r, s);
+        manager.burnTld(tldLabel, expiry, v, r, s);
     }
 
     function testCannotBurnTldWithoutSettingSldRegistrationManager() public {
@@ -181,12 +190,13 @@ contract TestTldBurning is Test {
         // Claim the TLD
         manager.claimTld(tldLabel, address(this));
 
-        // Generate signature
-        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash);
+        // Generate signature with future expiry
+        uint256 expiry = block.timestamp + 1 hours;
+        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash, expiry);
 
         // Try to burn the TLD without setting SLD registration manager, should fail
         vm.expectRevert("SLD registration manager not set");
-        manager.burnTld(tldLabel, v, r, s);
+        manager.burnTld(tldLabel, expiry, v, r, s);
     }
 
     function testCannotBurnTldWithInvalidSignature() public {
@@ -212,13 +222,14 @@ contract TestTldBurning is Test {
         mockSldRegistrationManager.setSldCount(tldNamehash, 0);
 
         // Use invalid signature values
+        uint256 expiry = block.timestamp + 1 hours;
         uint8 v = 27;
         bytes32 r = bytes32(uint256(1));
         bytes32 s = bytes32(uint256(2));
 
         // Try to burn the TLD with invalid signature, should fail
         vm.expectRevert("invalid signature");
-        manager.burnTld(tldLabel, v, r, s);
+        manager.burnTld(tldLabel, expiry, v, r, s);
     }
 
     function testCannotRemintTldAfterBurning() public {
@@ -244,8 +255,9 @@ contract TestTldBurning is Test {
         manager.setSldRegistrationManager(ISldRegistrationManager(address(mockSldRegistrationManager)));
         mockSldRegistrationManager.setSldCount(tldNamehash, 0);
 
-        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash);
-        manager.burnTld(tldLabel, v, r, s);
+        uint256 expiry = block.timestamp + 1 hours;
+        (uint8 v, bytes32 r, bytes32 s) = generateSignature(address(this), tldNamehash, expiry);
+        manager.burnTld(tldLabel, expiry, v, r, s);
 
         // Verify the TLD is burned
         vm.expectRevert("ERC721: invalid token ID");

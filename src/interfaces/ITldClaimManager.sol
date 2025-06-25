@@ -9,7 +9,7 @@ interface ITldClaimManager {
 
     function claimTld(string calldata _domain, address _addr) external payable;
 
-    function burnTld(string calldata _domain, uint8 v, bytes32 r, bytes32 s) external;
+    function burnTld(string calldata _domain, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external;
 
     function setHandshakeTldContract(IHandshakeTld _tld) external;
 

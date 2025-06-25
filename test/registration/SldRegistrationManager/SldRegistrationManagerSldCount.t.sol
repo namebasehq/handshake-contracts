@@ -385,4 +385,287 @@ contract TestSldRegistrationManagerSldCount is TestSldRegistrationManagerBase {
         // Verify count is still 1
         assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should still be 1 during grace period");
     }
+
+    // ========== BULK BURN EXPIRED SLD TESTS ==========
+
+    function testBulkBurnExpiredSld() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        // Register multiple SLDs with short registration period
+        string[] memory labels = new string[](3);
+        labels[0] = "expired1";
+        labels[1] = "expired2";
+        labels[2] = "expired3";
+
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 30; // Short registration period for testing
+        address recipient = address(0x5555);
+
+        // Register all SLDs
+        for (uint256 i = 0; i < labels.length; i++) {
+            hoax(address(0x420), 2 ether);
+            manager.registerWithCommit{value: 1 ether + 1}(
+                labels[i], secret, registrationLength, parentNamehash, recipient
+            );
+        }
+
+        // Verify count is 3
+        assertEq(manager.sldCountPerTld(parentNamehash), 3, "count should be 3 after registration");
+
+        // Fast forward time to after registration + grace period
+        vm.warp(block.timestamp + (registrationLength * 1 days) + manager.gracePeriod() + 1);
+
+        // Anyone should be able to bulk burn the expired domains
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        manager.bulkBurnExpiredSld(labels, parentNamehash);
+
+        // Verify count decremented to 0
+        uint256 countAfterBurn = manager.sldCountPerTld(parentNamehash);
+        assertEq(countAfterBurn, 0, "count should decrement to 0 after bulk burning expired domains");
+    }
+
+    function testBulkBurnExpiredSldPartialSuccess() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        // Register SLDs with different registration lengths
+        string[] memory expiredLabels = new string[](2);
+        expiredLabels[0] = "expired1";
+        expiredLabels[1] = "expired2";
+
+        string memory activeLabel = "active";
+
+        bytes32 secret = 0x0;
+        uint80 shortLength = 30; // Will expire
+        uint80 longLength = 365; // Will not expire
+        address recipient = address(0x5555);
+
+        // Register expired domains
+        for (uint256 i = 0; i < expiredLabels.length; i++) {
+            hoax(address(0x420), 2 ether);
+            manager.registerWithCommit{value: 1 ether + 1}(
+                expiredLabels[i], secret, shortLength, parentNamehash, recipient
+            );
+        }
+
+        // Register active domain
+        hoax(address(0x420), 2 ether);
+        manager.registerWithCommit{value: 1 ether + 1}(activeLabel, secret, longLength, parentNamehash, recipient);
+
+        // Verify count is 3
+        assertEq(manager.sldCountPerTld(parentNamehash), 3, "count should be 3 after registration");
+
+        // Fast forward time to expire only the short-term registrations
+        vm.warp(block.timestamp + (shortLength * 1 days) + manager.gracePeriod() + 1);
+
+        // Try to bulk burn including the active domain - should fail
+        string[] memory mixedLabels = new string[](3);
+        mixedLabels[0] = expiredLabels[0];
+        mixedLabels[1] = expiredLabels[1];
+        mixedLabels[2] = activeLabel;
+
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        vm.expectRevert("domain not expired");
+        manager.bulkBurnExpiredSld(mixedLabels, parentNamehash);
+
+        // Should be able to bulk burn just the expired ones
+        vm.prank(randomUser);
+        manager.bulkBurnExpiredSld(expiredLabels, parentNamehash);
+
+        // Verify count decremented by 2
+        uint256 countAfterBurn = manager.sldCountPerTld(parentNamehash);
+        assertEq(countAfterBurn, 1, "count should decrement to 1 after burning 2 expired domains");
+    }
+
+    function testBulkBurnExpiredSldFailsWithEmptyArray() public {
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+
+        string[] memory emptyLabels = new string[](0);
+
+        vm.expectRevert("no labels provided");
+        manager.bulkBurnExpiredSld(emptyLabels, parentNamehash);
+    }
+
+    function testBulkBurnExpiredSldFailsWithTooManyLabels() public {
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+
+        // Create array with 101 labels (exceeds limit of 100)
+        string[] memory tooManyLabels = new string[](101);
+        for (uint256 i = 0; i < 101; i++) {
+            tooManyLabels[i] = string(abi.encodePacked("domain", vm.toString(i)));
+        }
+
+        vm.expectRevert("too many labels");
+        manager.bulkBurnExpiredSld(tooManyLabels, parentNamehash);
+    }
+
+    function testBulkBurnExpiredSldFailsForNonExistentDomain() public {
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+
+        string[] memory nonExistentLabels = new string[](1);
+        nonExistentLabels[0] = "nonexistentdomain";
+
+        vm.expectRevert("domain not registered");
+        manager.bulkBurnExpiredSld(nonExistentLabels, parentNamehash);
+    }
+
+    function testBulkBurnExpiredSldFailsForNonExpiredDomains() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string[] memory labels = new string[](2);
+        labels[0] = "active1";
+        labels[1] = "active2";
+
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 365; // Long registration period
+        address recipient = address(0x5555);
+
+        // Register active domains
+        for (uint256 i = 0; i < labels.length; i++) {
+            hoax(address(0x420), 2 ether);
+            manager.registerWithCommit{value: 1 ether + 1}(
+                labels[i], secret, registrationLength, parentNamehash, recipient
+            );
+        }
+
+        // Try to bulk burn active domains - should fail
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        vm.expectRevert("domain not expired");
+        manager.bulkBurnExpiredSld(labels, parentNamehash);
+
+        // Verify count is still 2
+        assertEq(manager.sldCountPerTld(parentNamehash), 2, "count should still be 2");
+    }
+
+    function testBulkBurnExpiredSldFailsDuringGracePeriod() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        string[] memory labels = new string[](2);
+        labels[0] = "grace1";
+        labels[1] = "grace2";
+
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 30; // Short registration period for testing
+        address recipient = address(0x5555);
+
+        // Register domains
+        for (uint256 i = 0; i < labels.length; i++) {
+            hoax(address(0x420), 2 ether);
+            manager.registerWithCommit{value: 1 ether + 1}(
+                labels[i], secret, registrationLength, parentNamehash, recipient
+            );
+        }
+
+        // Verify count is 2
+        assertEq(manager.sldCountPerTld(parentNamehash), 2, "count should be 2 after registration");
+
+        // Fast forward time to after registration but within grace period
+        vm.warp(block.timestamp + (registrationLength * 1 days) + (manager.gracePeriod() / 2));
+
+        // Try to bulk burn during grace period - should fail
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        vm.expectRevert("domain not expired");
+        manager.bulkBurnExpiredSld(labels, parentNamehash);
+
+        // Verify count is still 2
+        assertEq(manager.sldCountPerTld(parentNamehash), 2, "count should still be 2 during grace period");
+    }
+
+    function testBulkBurnExpiredSldLargeArray() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        // Test with maximum allowed array size (100)
+        string[] memory labels = new string[](100);
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 30; // Short registration period for testing
+        address recipient = address(0x5555);
+
+        // Register all domains
+        for (uint256 i = 0; i < labels.length; i++) {
+            labels[i] = string(abi.encodePacked("bulk", vm.toString(i)));
+            hoax(address(0x420), 2 ether);
+            manager.registerWithCommit{value: 1 ether + 1}(
+                labels[i], secret, registrationLength, parentNamehash, recipient
+            );
+        }
+
+        // Verify count is 100
+        assertEq(manager.sldCountPerTld(parentNamehash), 100, "count should be 100 after registration");
+
+        // Fast forward time to after registration + grace period
+        vm.warp(block.timestamp + (registrationLength * 1 days) + manager.gracePeriod() + 1);
+
+        // Bulk burn all domains
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        manager.bulkBurnExpiredSld(labels, parentNamehash);
+
+        // Verify count decremented to 0
+        uint256 countAfterBurn = manager.sldCountPerTld(parentNamehash);
+        assertEq(countAfterBurn, 0, "count should decrement to 0 after bulk burning all expired domains");
+    }
+
+    function testBulkBurnExpiredSldSingleDomain() public {
+        setUpLabelValidator();
+        setUpGlobalStrategy(true, true, 1 ether);
+
+        bytes32 parentNamehash = bytes32(uint256(0x55446677));
+        tld.register(address(0x99), uint256(parentNamehash));
+        setUpRegistrationStrategy(parentNamehash);
+
+        // Test with single domain in array
+        string[] memory labels = new string[](1);
+        labels[0] = "singledomain";
+
+        bytes32 secret = 0x0;
+        uint80 registrationLength = 30; // Short registration period for testing
+        address recipient = address(0x5555);
+
+        // Register domain
+        hoax(address(0x420), 2 ether);
+        manager.registerWithCommit{value: 1 ether + 1}(labels[0], secret, registrationLength, parentNamehash, recipient);
+
+        // Verify count is 1
+        assertEq(manager.sldCountPerTld(parentNamehash), 1, "count should be 1 after registration");
+
+        // Fast forward time to after registration + grace period
+        vm.warp(block.timestamp + (registrationLength * 1 days) + manager.gracePeriod() + 1);
+
+        // Bulk burn single domain
+        address randomUser = address(0x9999);
+        vm.prank(randomUser);
+        manager.bulkBurnExpiredSld(labels, parentNamehash);
+
+        // Verify count decremented to 0
+        uint256 countAfterBurn = manager.sldCountPerTld(parentNamehash);
+        assertEq(countAfterBurn, 0, "count should decrement to 0 after bulk burning single expired domain");
+    }
 }

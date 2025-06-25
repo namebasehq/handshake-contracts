@@ -20,10 +20,9 @@ import {Namehash} from "utils/Namehash.sol";
  *
  *   Step 3 - Verify upgrade (read-only):
  *     FOUNDRY_PROFILE=optimism-sepolia forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "verify()"
- 
- // update command
- forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "setSldCountsFromJson(string)" "script/data/sld-counts.json" --rpc-url https://sepolia.optimism.io --private-key $TEST_PRIVATE_KEY
- 
+ *
+ *  // update command
+ *  forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "setSldCountsFromJson(string)" "script/data/sld-counts.json" --rpc-url https://sepolia.optimism.io --private-key $TEST_PRIVATE_KEY
  */
 contract UpgradeSldRegistrationManagerScript is Script {
     // Production contract owner address (from Deploy.s.sol)
@@ -44,14 +43,11 @@ contract UpgradeSldRegistrationManagerScript is Script {
 
     function setUp() public {
         // Optimism Mainnet (Chain ID: 10) - PROD: hns.id
-        networkConfigs[10] = NetworkConfig({
-            sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3
-        });
+        networkConfigs[10] = NetworkConfig({sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3});
 
         // Optimism Sepolia (Chain ID: 11155420)
-        networkConfigs[11155420] = NetworkConfig({
-            sldRegistrationManagerProxy: 0x529B2b5B576c27769Ae0aB811F1655012f756C00
-        });
+        networkConfigs[11155420] =
+            NetworkConfig({sldRegistrationManagerProxy: 0x529B2b5B576c27769Ae0aB811F1655012f756C00});
     }
 
     function getNetworkConfig() internal returns (NetworkConfig memory) {
@@ -59,12 +55,7 @@ contract UpgradeSldRegistrationManagerScript is Script {
         NetworkConfig memory config = networkConfigs[block.chainid];
         require(
             config.sldRegistrationManagerProxy != address(0),
-            string(
-                abi.encodePacked(
-                    "Network not configured for chain ID: ",
-                    vm.toString(block.chainid)
-                )
-            )
+            string(abi.encodePacked("Network not configured for chain ID: ", vm.toString(block.chainid)))
         );
         return config;
     }
@@ -109,9 +100,7 @@ contract UpgradeSldRegistrationManagerScript is Script {
         console.log("Deployer (should be proxy owner):", msg.sender);
 
         // Get proxy admin interface
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
-            payable(config.sldRegistrationManagerProxy)
-        );
+        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(payable(config.sldRegistrationManagerProxy));
 
         // Upgrade to new implementation
         proxy.upgradeTo(implementationAddress);

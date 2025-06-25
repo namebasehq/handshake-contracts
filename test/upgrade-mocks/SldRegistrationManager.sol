@@ -515,4 +515,12 @@ contract MockSldRegistrationManager is
         // Mock implementation - return 0 for testing
         return 0;
     }
+
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external {
+        // Mock implementation - do nothing for testing
+    }
+
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external {
+        // Mock implementation - do nothing for testing
+    }
 }

@@ -38,12 +38,9 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
     bytes32 public DOMAIN_SEPARATOR;
 
     bytes32 private immutable EIP712DOMAIN_TYPEHASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
-    bytes32 private immutable BURN_TYPEHASH =
-        keccak256("BurnTld(address burner,bytes32 tldNamehash)");
+    bytes32 private immutable BURN_TYPEHASH = keccak256("BurnTld(address burner,bytes32 tldNamehash,uint256 expiry)");
 
     constructor() {
         _disableInitializers();
@@ -76,35 +73,33 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
             verifyingContract: address(this)
         });
 
-        return
-            keccak256(
-                abi.encodePacked(
-                    EIP712DOMAIN_TYPEHASH,
-                    keccak256(bytes(eip712Domain.name)),
-                    keccak256(bytes(eip712Domain.version)),
-                    eip712Domain.chainId,
-                    eip712Domain.verifyingContract
-                )
-            );
+        return keccak256(
+            abi.encodePacked(
+                EIP712DOMAIN_TYPEHASH,
+                keccak256(bytes(eip712Domain.name)),
+                keccak256(bytes(eip712Domain.version)),
+                eip712Domain.chainId,
+                eip712Domain.verifyingContract
+            )
+        );
     }
 
-    function getBurnHash(address burner, bytes32 tldNamehash) public view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    DOMAIN_SEPARATOR,
-                    keccak256(abi.encode(BURN_TYPEHASH, burner, tldNamehash))
-                )
-            );
+    function getBurnHash(address burner, bytes32 tldNamehash, uint256 expiry) public view returns (bytes32) {
+        return keccak256(
+            abi.encodePacked(
+                "\x19\x01", DOMAIN_SEPARATOR, keccak256(abi.encode(BURN_TYPEHASH, burner, tldNamehash, expiry))
+            )
+        );
     }
 
-    function checkSignatureValid(address burner, bytes32 tldNamehash, uint8 v, bytes32 r, bytes32 s)
+    function checkSignatureValid(address burner, bytes32 tldNamehash, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
         public
         view
         returns (address)
     {
-        bytes32 message = getBurnHash(burner, tldNamehash);
+        require(block.timestamp <= expiry, "signature expired");
+
+        bytes32 message = getBurnHash(burner, tldNamehash, expiry);
 
         address signer = ecrecover(message, v, r, s);
 
@@ -179,18 +174,17 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         require(canClaim(msg.sender, namehash), "not eligible to claim");
 
         if (mintPriceInDollars > 0 || msg.value > 0) {
-            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) /
-                1 ether;
+            uint256 expectedEther = (usdOracle.getWeiValueOfDollar() * mintPriceInDollars) / 1 ether;
             require(msg.value >= expectedEther, "not enough ether");
 
-            (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+            (bool result,) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
             require(result, "transfer failed");
             // refund any extra ether
             if (expectedEther < msg.value) {
                 unchecked {
                     // we already do a check that msg.value must be >= expectedEther
-                    (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
+                    (result,) = msg.sender.call{value: msg.value - expectedEther}("");
                     require(result, "transfer failed");
                 }
             }
@@ -206,11 +200,12 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      * @notice Burns a TLD if the caller is the owner, no SLDs exist for it, and signature is valid
      * @dev Requires the SldRegistrationManager to be set to check for existing SLDs and a valid signature
      * @param _domain The TLD domain to burn
+     * @param expiry The expiry timestamp for the signature (must be >= current block timestamp)
      * @param v The recovery byte of the signature
      * @param r Half of the ECDSA signature pair
      * @param s Half of the ECDSA signature pair
      */
-    function burnTld(string calldata _domain, uint8 v, bytes32 r, bytes32 s) external {
+    function burnTld(string calldata _domain, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external {
         bytes32 namehash = Namehash.getTldNamehash(_domain);
         uint256 tokenId = uint256(namehash);
 
@@ -223,8 +218,8 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
         // Check that no SLDs exist for this TLD
         require(sldRegistrationManager.sldCountPerTld(namehash) == 0, "SLDs exist for this TLD");
 
-        // Verify the signature
-        checkSignatureValid(msg.sender, namehash, v, r, s);
+        // Verify the signature (includes expiry check)
+        checkSignatureValid(msg.sender, namehash, expiry, v, r, s);
 
         // Call the burnTld function on the HandshakeTld contract
         handshakeTldContract.burnTld(tokenId);
@@ -239,16 +234,13 @@ contract TldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValida
      * @param _addr Addresses of the wallets allowed to claim
      * @param _domain string representation of the domains that will be claimed
      */
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
-        external
-        onlyAuthorisedTldManager
-    {
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external onlyAuthorisedTldManager {
         uint256 arrayLength = _addr.length;
         require(arrayLength == _domain.length, "address and domain list should be the same length");
 
         bytes32 tldNamehash;
 
-        for (uint256 i; i < arrayLength; ) {
+        for (uint256 i; i < arrayLength;) {
             require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];

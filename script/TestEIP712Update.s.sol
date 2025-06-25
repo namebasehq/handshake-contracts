@@ -71,9 +71,7 @@ contract TestEIP712UpdateScript is Script {
 
         console.log("\n=== STEP 3: Message Hash Check ===");
         // Calculate what the contract's message hash should be
-        bytes32 contractMessageHash = keccak256(
-            abi.encode(contractBurnTypehash, burner, tldNamehash)
-        );
+        bytes32 contractMessageHash = keccak256(abi.encode(contractBurnTypehash, burner, tldNamehash));
         console.log("Contract Message Hash:");
         console.logBytes32(contractMessageHash);
         console.log("Frontend Message Hash:");
@@ -86,7 +84,8 @@ contract TestEIP712UpdateScript is Script {
         }
 
         console.log("\n=== STEP 4: Final Hash Check ===");
-        bytes32 contractFinalHash = updatedContract.getBurnHash(burner, tldNamehash);
+        uint256 expiry = block.timestamp + 1 hours;
+        bytes32 contractFinalHash = updatedContract.getBurnHash(burner, tldNamehash, expiry);
         console.log("Contract Final Hash (getBurnHash):");
         console.logBytes32(contractFinalHash);
         console.log("Frontend Final Digest:");
@@ -100,15 +99,9 @@ contract TestEIP712UpdateScript is Script {
 
         console.log("\n=== STEP 5: Signature Validation Test ===");
         // Test signature validation
-        try
-            updatedContract.checkSignatureValid(
-                burner,
-                tldNamehash,
-                frontendV,
-                frontendR,
-                frontendS
-            )
-        returns (address signer) {
+        try updatedContract.checkSignatureValid(burner, tldNamehash, expiry, frontendV, frontendR, frontendS) returns (
+            address signer
+        ) {
             console.log("[OK] Signature validation PASSED!");
             console.log("Returned signer:");
             console.logAddress(signer);

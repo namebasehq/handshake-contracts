@@ -14,12 +14,7 @@ import "src/contracts/HasUsdOracle.sol";
  * @notice This contract is for managing the TLDs that can be claimed
  *         TLD managers can add allowed TLDs that can be minted by address
  */
-contract MockTldClaimManager is
-    OwnableUpgradeable,
-    ITldClaimManager,
-    HasLabelValidator,
-    HasUsdOracle
-{
+contract MockTldClaimManager is OwnableUpgradeable, ITldClaimManager, HasLabelValidator, HasUsdOracle {
     mapping(bytes32 => bool) public isNodeRegistered;
     mapping(address => bool) public allowedTldManager;
     mapping(bytes32 => address) public tldClaimantMap;
@@ -74,7 +69,7 @@ contract MockTldClaimManager is
         handshakeTldContract = _tld;
     }
 
-    function burnTld(string calldata _domain, uint8 v, bytes32 r, bytes32 s) external {}
+    function burnTld(string calldata _domain, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external {}
 
     function setSldRegistrationManager(ISldRegistrationManager _manager) external {}
 
@@ -115,12 +110,12 @@ contract MockTldClaimManager is
         isNodeRegistered[namehash] = true;
         handshakeTldContract.registerWithResolver(_addr, _domain, defaultRegistrationStrategy);
 
-        (bool result, ) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
+        (bool result,) = handshakeWalletPayoutAddress.call{value: expectedEther}("");
 
         require(result, "transfer failed");
         // refund any extra ether
         if (expectedEther < msg.value) {
-            (result, ) = msg.sender.call{value: msg.value - expectedEther}("");
+            (result,) = msg.sender.call{value: msg.value - expectedEther}("");
             require(result, "transfer failed");
         }
 
@@ -134,18 +129,12 @@ contract MockTldClaimManager is
      * @param _addr Addresses of the wallets allowed to claim
      * @param _domain string representation of the domains that will be claimed
      */
-    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain)
-        external
-        onlyAuthorisedTldManager
-    {
-        require(
-            _addr.length == _domain.length,
-            "address and domain list should be the same length"
-        );
+    function addTldAndClaimant(address[] calldata _addr, string[] calldata _domain) external onlyAuthorisedTldManager {
+        require(_addr.length == _domain.length, "address and domain list should be the same length");
 
         bytes32 tldNamehash;
 
-        for (uint256 i; i < _addr.length; ) {
+        for (uint256 i; i < _addr.length;) {
             require(labelValidator.isValidLabel(_domain[i]), "domain not valid");
             tldNamehash = Namehash.getTldNamehash(_domain[i]);
             tldClaimantMap[tldNamehash] = _addr[i];

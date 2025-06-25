@@ -53,9 +53,8 @@ contract TestSignatureAnalysisScript is Script {
 
         console.log("\n=== STEP 3: Final Message Hash Comparison ===");
         // Calculate the final message hash using contract's domain separator
-        bytes32 contractFinalHash = keccak256(
-            abi.encodePacked("\x19\x01", contractDomainSeparator, calculatedMessageHash)
-        );
+        bytes32 contractFinalHash =
+            keccak256(abi.encodePacked("\x19\x01", contractDomainSeparator, calculatedMessageHash));
         console.log("Contract Final Hash:");
         console.logBytes32(contractFinalHash);
         console.log("Frontend Final Hash:");
@@ -69,12 +68,7 @@ contract TestSignatureAnalysisScript is Script {
 
         console.log("\n=== STEP 4: Signature Recovery Test ===");
         // Test signature recovery using frontend's final hash
-        address recoveredFromFrontend = ecrecover(
-            frontendFinalHash,
-            frontendV,
-            frontendR,
-            frontendS
-        );
+        address recoveredFromFrontend = ecrecover(frontendFinalHash, frontendV, frontendR, frontendS);
         console.log("Frontend signature recovers to:");
         console.logAddress(recoveredFromFrontend);
         console.log("Expected signer:");
@@ -88,12 +82,7 @@ contract TestSignatureAnalysisScript is Script {
 
         console.log("\n=== STEP 5: Test Against Contract Hash ===");
         // Test signature recovery using contract's final hash
-        address recoveredFromContract = ecrecover(
-            contractFinalHash,
-            frontendV,
-            frontendR,
-            frontendS
-        );
+        address recoveredFromContract = ecrecover(contractFinalHash, frontendV, frontendR, frontendS);
         console.log("Frontend signature with contract hash recovers to:");
         console.logAddress(recoveredFromContract);
 
@@ -106,10 +95,7 @@ contract TestSignatureAnalysisScript is Script {
         console.log("\n=== STEP 6: Generate Correct Signature ===");
         // Generate correct signature using contract's hash
         uint256 privateKey = vm.envUint("SIGNER_PRIVATE_KEY");
-        (uint8 correctV, bytes32 correctR, bytes32 correctS) = vm.sign(
-            privateKey,
-            contractFinalHash
-        );
+        (uint8 correctV, bytes32 correctR, bytes32 correctS) = vm.sign(privateKey, contractFinalHash);
 
         console.log("Correct signature for contract hash:");
         console.log("v:", correctV);
@@ -124,8 +110,6 @@ contract TestSignatureAnalysisScript is Script {
         console.log("\n=== SUMMARY ===");
         console.log("The issue is likely in the domain separator calculation.");
         console.log("Your frontend is calculating a different domain separator than the contract.");
-        console.log(
-            "This causes the final message hash to be different, making the signature invalid."
-        );
+        console.log("This causes the final message hash to be different, making the signature invalid.");
     }
 }

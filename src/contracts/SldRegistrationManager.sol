@@ -735,4 +735,49 @@ contract SldRegistrationManager is
 
         emit ExpiredSldBurned(_parentNamehash, _label, msg.sender);
     }
+
+    /**
+     * @notice Burns multiple expired SLDs for a single TLD. Anyone can call this function for domains that have expired.
+     * @dev This function checks that each domain has actually expired before allowing it to be burned.
+     *      It doesn't require ownership verification since expired domains can't have a valid owner.
+     *      All labels must belong to the same parent TLD.
+     * @param _labels Array of selected SLD labels to burn
+     * @param _parentNamehash bytes32 representation of the top level domain
+     */
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external {
+        require(_labels.length > 0, "no labels provided");
+        require(_labels.length <= 100, "too many labels"); // Gas limit protection
+
+        for (uint256 i = 0; i < _labels.length; i++) {
+            bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _labels[i]);
+
+            // Check that the domain exists in registration history
+            SldRegistrationDetail memory detail = sldRegistrationHistory[sldNamehash];
+            require(detail.RegistrationTime > 0, "domain not registered");
+
+            // Check that the domain has expired (including grace period)
+            require(
+                detail.RegistrationTime + detail.RegistrationLength + gracePeriod < block.timestamp,
+                "domain not expired"
+            );
+
+            // Delete registration history
+            delete sldRegistrationHistory[sldNamehash];
+
+            // Burn the SLD token
+            sld.burnSld(sldNamehash);
+
+            emit ExpiredSldBurned(_parentNamehash, _labels[i], msg.sender);
+        }
+
+        // Decrement the SLD count for the TLD by the number of burned domains
+        if (sldCountPerTld[_parentNamehash] >= _labels.length) {
+            unchecked {
+                sldCountPerTld[_parentNamehash] -= _labels.length;
+            }
+        } else {
+            // Should not happen in normal operation, but protect against underflow
+            sldCountPerTld[_parentNamehash] = 0;
+        }
+    }
 }

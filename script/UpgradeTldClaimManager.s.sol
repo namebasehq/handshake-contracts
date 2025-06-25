@@ -20,12 +20,12 @@ import "interfaces/ISldRegistrationManager.sol";
  *
  *   Step 3 - Configure contract (requires contract owner):
  *     FOUNDRY_PROFILE=optimism-sepolia-owner forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --broadcast
- 
- this was the the final command i used to deploy
-
- forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --broadcast --verify --rpc-url https://sepolia.optimism.io --sender 0x175F303781Efe881Ce40A511517186DbF364b3a7 --private-key $TEST_PRIVATE_KEY
- forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "upgrade(address)" 0x3d39e62E3f42771734FE13DD9227A6F75b9fE60d --rpc-url https://sepolia.optimism.io --private-key $TEST_PROXY_PRIVATE_KEY --broadcast
- forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --rpc-url https://sepolia.optimism.io --private-key $TEST_PRIVATE_KEY --broadcast 
+ *
+ *  this was the the final command i used to deploy
+ *
+ *  forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --broadcast --verify --rpc-url https://sepolia.optimism.io --sender 0x175F303781Efe881Ce40A511517186DbF364b3a7 --private-key $TEST_PRIVATE_KEY
+ *  forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "upgrade(address)" 0x3d39e62E3f42771734FE13DD9227A6F75b9fE60d --rpc-url https://sepolia.optimism.io --private-key $TEST_PROXY_PRIVATE_KEY --broadcast
+ *  forge script script/UpgradeTldClaimManager.s.sol:UpgradeTldClaimManagerScript --sig "configure()" --rpc-url https://sepolia.optimism.io --private-key $TEST_PRIVATE_KEY --broadcast
  */
 contract UpgradeTldClaimManagerScript is Script {
     // Production contract owner address (from Deploy.s.sol)
@@ -61,12 +61,7 @@ contract UpgradeTldClaimManagerScript is Script {
         NetworkConfig memory config = networkConfigs[block.chainid];
         require(
             config.tldClaimManagerProxy != address(0),
-            string(
-                abi.encodePacked(
-                    "Network not configured for chain ID: ",
-                    vm.toString(block.chainid)
-                )
-            )
+            string(abi.encodePacked("Network not configured for chain ID: ", vm.toString(block.chainid)))
         );
         return config;
     }
@@ -111,9 +106,7 @@ contract UpgradeTldClaimManagerScript is Script {
         console.log("Deployer (should be proxy owner):", msg.sender);
 
         // Get proxy admin interface
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
-            payable(config.tldClaimManagerProxy)
-        );
+        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(payable(config.tldClaimManagerProxy));
 
         // Upgrade to new implementation
         proxy.upgradeTo(implementationAddress);
@@ -221,9 +214,7 @@ contract UpgradeTldClaimManagerScript is Script {
         }
 
         // Set the SLD Registration Manager
-        manager.setSldRegistrationManager(
-            ISldRegistrationManager(config.sldRegistrationManagerProxy)
-        );
+        manager.setSldRegistrationManager(ISldRegistrationManager(config.sldRegistrationManagerProxy));
         console.log("SLD Registration Manager set to:", config.sldRegistrationManagerProxy);
 
         // Add authorized signer for burning

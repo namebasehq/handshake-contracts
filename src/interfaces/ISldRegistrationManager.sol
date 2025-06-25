@@ -49,6 +49,10 @@ interface ISldRegistrationManager {
 
     function pricesAtRegistration(bytes32 _sldNamehash, uint256 _index) external view returns (uint80);
 
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external;
+
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external;
+
     event RegisterSld(bytes32 indexed _tldNamehash, bytes32 _secret, string _label, uint256 _expiry);
 
     event RenewSld(bytes32 indexed _tldNamehash, string _label, uint256 _expiry);

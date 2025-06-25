@@ -83,6 +83,11 @@
         "internalType": "string"
       },
       {
+        "name": "expiry",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
         "name": "v",
         "type": "uint8",
         "internalType": "uint8"
@@ -138,6 +143,11 @@
         "name": "tldNamehash",
         "type": "bytes32",
         "internalType": "bytes32"
+      },
+      {
+        "name": "expiry",
+        "type": "uint256",
+        "internalType": "uint256"
       },
       {
         "name": "v",
@@ -208,6 +218,11 @@
         "name": "tldNamehash",
         "type": "bytes32",
         "internalType": "bytes32"
+      },
+      {
+        "name": "expiry",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [
@@ -298,6 +313,13 @@
         "internalType": "address"
       }
     ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "initializeDomainSeparator",
+    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },

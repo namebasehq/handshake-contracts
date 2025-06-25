@@ -83,6 +83,10 @@ contract MockSldRegistrationManager is ISldRegistrationManager {
     function pricesAtRegistration(bytes32, uint256) external pure returns (uint80) {
         return 69420;
     }
+
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external {}
+
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external {}
 }
 
 contract MockEmptySldRegistrationManager is ISldRegistrationManager {
@@ -137,4 +141,8 @@ contract MockEmptySldRegistrationManager is ISldRegistrationManager {
     function tld() external view returns (IHandshakeTld) {}
 
     function globalStrategy() external view returns (IGlobalRegistrationRules) {}
+
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external {}
+
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external {}
 }

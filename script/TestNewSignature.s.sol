@@ -49,16 +49,13 @@ contract TestNewSignatureScript is Script {
             console.log("[OK] Message hashes match!");
         } else {
             console.log("[FAIL] Message hashes DO NOT match");
-            console.log(
-                "This suggests you might be using a typed struct instead of simple concatenation"
-            );
+            console.log("This suggests you might be using a typed struct instead of simple concatenation");
         }
 
         console.log("\n=== STEP 3: Contract's Expected Final Hash ===");
         // What the contract's getBurnHash function returns
-        bytes32 contractFinalHash = keccak256(
-            abi.encodePacked("\x19\x01", contractDomainSeparator, contractMessageHash)
-        );
+        bytes32 contractFinalHash =
+            keccak256(abi.encodePacked("\x19\x01", contractDomainSeparator, contractMessageHash));
         console.log("Contract Final Hash (getBurnHash):");
         console.logBytes32(contractFinalHash);
         console.log("Frontend Final Digest:");
@@ -72,12 +69,7 @@ contract TestNewSignatureScript is Script {
 
         console.log("\n=== STEP 4: Signature Recovery Test ===");
         // Test your signature against your final digest
-        address recoveredFromFrontend = ecrecover(
-            frontendFinalDigest,
-            frontendV,
-            frontendR,
-            frontendS
-        );
+        address recoveredFromFrontend = ecrecover(frontendFinalDigest, frontendV, frontendR, frontendS);
         console.log("Your signature with your digest recovers to:");
         console.logAddress(recoveredFromFrontend);
         console.log("Expected signer:");
@@ -91,12 +83,7 @@ contract TestNewSignatureScript is Script {
 
         console.log("\n=== STEP 5: Test Against Contract Hash ===");
         // Test your signature against contract's expected hash
-        address recoveredFromContract = ecrecover(
-            contractFinalHash,
-            frontendV,
-            frontendR,
-            frontendS
-        );
+        address recoveredFromContract = ecrecover(contractFinalHash, frontendV, frontendR, frontendS);
         console.log("Your signature with contract hash recovers to:");
         console.logAddress(recoveredFromContract);
 
@@ -109,10 +96,7 @@ contract TestNewSignatureScript is Script {
         console.log("\n=== STEP 6: Generate Contract-Compatible Signature ===");
         // Generate what the contract expects
         uint256 privateKey = vm.envUint("SIGNER_PRIVATE_KEY");
-        (uint8 correctV, bytes32 correctR, bytes32 correctS) = vm.sign(
-            privateKey,
-            contractFinalHash
-        );
+        (uint8 correctV, bytes32 correctR, bytes32 correctS) = vm.sign(privateKey, contractFinalHash);
 
         console.log("Contract-compatible signature:");
         console.log("v:", correctV);
@@ -130,15 +114,11 @@ contract TestNewSignatureScript is Script {
         }
 
         if (contractMessageHash != frontendMessageHash) {
-            console.log(
-                "[FAIL] You're still using EIP-712 typed structs instead of simple concatenation"
-            );
+            console.log("[FAIL] You're still using EIP-712 typed structs instead of simple concatenation");
             console.log("  Contract expects: keccak256(abi.encodePacked(address, bytes32))");
             console.log("  You're using: EIP-712 typed struct with burn typehash");
         }
 
-        console.log(
-            "The contract uses a simple approach, not full EIP-712 typed structs for the message."
-        );
+        console.log("The contract uses a simple approach, not full EIP-712 typed structs for the message.");
     }
 }
