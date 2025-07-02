@@ -82,6 +82,24 @@
   },
   {
     "type": "function",
+    "name": "bulkBurnExpiredSld",
+    "inputs": [
+      {
+        "name": "_labels",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "_parentNamehash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "burnExpiredSld",
     "inputs": [
       {

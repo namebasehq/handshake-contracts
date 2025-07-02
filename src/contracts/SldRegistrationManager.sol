@@ -748,6 +748,8 @@ contract SldRegistrationManager is
         require(_labels.length > 0, "no labels provided");
         require(_labels.length <= 100, "too many labels"); // Gas limit protection
 
+        uint256 burnedCount = 0;
+
         for (uint256 i = 0; i < _labels.length; i++) {
             bytes32 sldNamehash = Namehash.getNamehash(_parentNamehash, _labels[i]);
 
@@ -764,19 +766,29 @@ contract SldRegistrationManager is
             // Delete registration history
             delete sldRegistrationHistory[sldNamehash];
 
-            // Burn the SLD token
-            sld.burnSld(sldNamehash);
-
-            emit ExpiredSldBurned(_parentNamehash, _labels[i], msg.sender);
+            // Try to burn the SLD token if it exists
+            try sld.ownerOf(uint256(sldNamehash)) returns (address) {
+                // Token exists, try to burn it
+                try sld.burnSld(sldNamehash) {
+                    burnedCount++;
+                    emit ExpiredSldBurned(_parentNamehash, _labels[i], msg.sender);
+                } catch {
+                    // If burn fails for any reason, revert
+                    revert("failed to burn token");
+                }
+            } catch {
+                // Token doesn't exist (already burned), just count it and emit event
+                burnedCount++;
+                emit ExpiredSldBurned(_parentNamehash, _labels[i], msg.sender);
+            }
         }
 
         // Decrement the SLD count for the TLD by the number of burned domains
-        if (sldCountPerTld[_parentNamehash] >= _labels.length) {
+        if (sldCountPerTld[_parentNamehash] >= burnedCount) {
             unchecked {
-                sldCountPerTld[_parentNamehash] -= _labels.length;
+                sldCountPerTld[_parentNamehash] -= burnedCount;
             }
         } else {
-            // Should not happen in normal operation, but protect against underflow
             sldCountPerTld[_parentNamehash] = 0;
         }
     }
