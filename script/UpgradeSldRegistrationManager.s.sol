@@ -43,11 +43,14 @@ contract UpgradeSldRegistrationManagerScript is Script {
 
     function setUp() public {
         // Optimism Mainnet (Chain ID: 10) - PROD: hns.id
-        networkConfigs[10] = NetworkConfig({sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3});
+        networkConfigs[10] = NetworkConfig({
+            sldRegistrationManagerProxy: 0xfda87CC032cD641ac192027353e5B25261dfe6b3
+        });
 
         // Optimism Sepolia (Chain ID: 11155420)
-        networkConfigs[11155420] =
-            NetworkConfig({sldRegistrationManagerProxy: 0x529B2b5B576c27769Ae0aB811F1655012f756C00});
+        networkConfigs[11155420] = NetworkConfig({
+            sldRegistrationManagerProxy: 0x529B2b5B576c27769Ae0aB811F1655012f756C00
+        });
     }
 
     function getNetworkConfig() internal returns (NetworkConfig memory) {
@@ -55,7 +58,12 @@ contract UpgradeSldRegistrationManagerScript is Script {
         NetworkConfig memory config = networkConfigs[block.chainid];
         require(
             config.sldRegistrationManagerProxy != address(0),
-            string(abi.encodePacked("Network not configured for chain ID: ", vm.toString(block.chainid)))
+            string(
+                abi.encodePacked(
+                    "Network not configured for chain ID: ",
+                    vm.toString(block.chainid)
+                )
+            )
         );
         return config;
     }
@@ -100,7 +108,9 @@ contract UpgradeSldRegistrationManagerScript is Script {
         console.log("Deployer (should be proxy owner):", msg.sender);
 
         // Get proxy admin interface
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(payable(config.sldRegistrationManagerProxy));
+        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
+            payable(config.sldRegistrationManagerProxy)
+        );
 
         // Upgrade to new implementation
         proxy.upgradeTo(implementationAddress);
@@ -157,6 +167,41 @@ contract UpgradeSldRegistrationManagerScript is Script {
         vm.stopBroadcast();
 
         console.log("SLD counts updated successfully from JSON!");
+    }
+
+    /**
+     * @notice Initialize SLD counts using the hardcoded production data (requires CONTRACT_OWNER_PRIVATE_KEY)
+     * @dev Run with: forge script script/UpgradeSldRegistrationManager.s.sol:UpgradeSldRegistrationManagerScript --sig "initializeSldCounts()" --rpc-url https://sepolia.optimism.io --private-key $CONTRACT_OWNER_PRIVATE_KEY --broadcast
+     */
+    function initializeSldCounts() public {
+        NetworkConfig memory config = getNetworkConfig();
+
+        vm.startBroadcast();
+
+        console.log("Initializing SLD counts with production data...");
+        console.log("Chain ID:", block.chainid);
+        console.log("SLD Registration Manager:", config.sldRegistrationManagerProxy);
+        console.log("Deployer (should be contract owner):", msg.sender);
+
+        SldRegistrationManager manager = SldRegistrationManager(config.sldRegistrationManagerProxy);
+
+        // Call the reinitializeSldCounts function
+        manager.reinitializeSldCounts();
+
+        vm.stopBroadcast();
+
+        // Verify a few counts were set correctly
+        console.log("Verifying SLD counts were initialized...");
+
+        bytes32 walletNamehash = 0x1e3f482b3363eb4710dae2cb2183128e272eafbe137f686851c1caea32502230;
+        uint256 walletCount = manager.sldCountPerTld(walletNamehash);
+        console.log("Wallet TLD count:", walletCount, "(expected: 4720)");
+
+        bytes32 hnsNamehash = 0xfb667b5dbbd33e7c0717051928f3b5eb9f4c4de9e1f1c14c71774773504711ca;
+        uint256 hnsCount = manager.sldCountPerTld(hnsNamehash);
+        console.log("HNS TLD count:", hnsCount, "(expected: 558)");
+
+        console.log("SLD counts initialization completed!");
     }
 
     /**
