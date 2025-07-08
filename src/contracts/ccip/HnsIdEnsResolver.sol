@@ -26,7 +26,12 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
     mapping(string => string) public tldMappings;
 
-    event AuthorisationChanged(bytes32 indexed node, address indexed owner, address indexed target, bool isAuthorised);
+    event AuthorisationChanged(
+        bytes32 indexed node,
+        address indexed owner,
+        address indexed target,
+        bool isAuthorised
+    );
 
     /**
      * @dev Sets or clears an authorisation.
@@ -111,8 +116,15 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
-    function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IExtendedResolver.resolve.selector, name, data);
+    function resolve(
+        bytes calldata name,
+        bytes calldata data
+    ) external view override returns (bytes memory) {
+        bytes memory callData = abi.encodeWithSelector(
+            IExtendedResolver.resolve.selector,
+            name,
+            data
+        );
         string[] memory urls = new string[](1);
         urls[0] = getUrl(name);
 
@@ -138,7 +150,8 @@ contract HnsIdEnsResolver is IExtendedResolver, IERC165, Ownable {
 
         require(bytes(tld).length > 0, "TLD not found");
 
-        return string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
+        return
+            string(abi.encodePacked(url, tld, "/ccip/", ensName, "?sender={sender}&data={data}"));
     }
 
     /**
