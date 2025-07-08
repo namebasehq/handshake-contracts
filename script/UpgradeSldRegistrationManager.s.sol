@@ -74,7 +74,7 @@ contract UpgradeSldRegistrationManagerScript is Script {
     function run() public {
         NetworkConfig memory config = getNetworkConfig();
 
-        vm.startBroadcast();
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
         console.log("Deploying new SLD Registration Manager implementation...");
         console.log("Chain ID:", block.chainid);

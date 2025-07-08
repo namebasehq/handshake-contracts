@@ -61,7 +61,12 @@ contract UpgradeTldClaimManagerScript is Script {
         NetworkConfig memory config = networkConfigs[block.chainid];
         require(
             config.tldClaimManagerProxy != address(0),
-            string(abi.encodePacked("Network not configured for chain ID: ", vm.toString(block.chainid)))
+            string(
+                abi.encodePacked(
+                    "Network not configured for chain ID: ",
+                    vm.toString(block.chainid)
+                )
+            )
         );
         return config;
     }
@@ -72,7 +77,7 @@ contract UpgradeTldClaimManagerScript is Script {
     function run() public {
         NetworkConfig memory config = getNetworkConfig();
 
-        vm.startBroadcast();
+        vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
         console.log("Deploying new TLD Claim Manager implementation...");
         console.log("Chain ID:", block.chainid);
@@ -106,7 +111,9 @@ contract UpgradeTldClaimManagerScript is Script {
         console.log("Deployer (should be proxy owner):", msg.sender);
 
         // Get proxy admin interface
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(payable(config.tldClaimManagerProxy));
+        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
+            payable(config.tldClaimManagerProxy)
+        );
 
         // Upgrade to new implementation
         proxy.upgradeTo(implementationAddress);
@@ -214,7 +221,9 @@ contract UpgradeTldClaimManagerScript is Script {
         }
 
         // Set the SLD Registration Manager
-        manager.setSldRegistrationManager(ISldRegistrationManager(config.sldRegistrationManagerProxy));
+        manager.setSldRegistrationManager(
+            ISldRegistrationManager(config.sldRegistrationManagerProxy)
+        );
         console.log("SLD Registration Manager set to:", config.sldRegistrationManagerProxy);
 
         // Add authorized signer for burning
