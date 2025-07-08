@@ -34,6 +34,8 @@ interface ISldRegistrationManager {
 
     function sldRegistrationHistory(bytes32 _sldNamehash) external view returns (uint80, uint80, uint96);
 
+    function sldCountPerTld(bytes32 _tldNamehash) external view returns (uint256);
+
     function tld() external view returns (IHandshakeTld);
 
     function getRenewalPrice(
@@ -46,6 +48,10 @@ interface ISldRegistrationManager {
     function globalStrategy() external view returns (IGlobalRegistrationRules);
 
     function pricesAtRegistration(bytes32 _sldNamehash, uint256 _index) external view returns (uint80);
+
+    function burnExpiredSld(string calldata _label, bytes32 _parentNamehash) external;
+
+    function bulkBurnExpiredSld(string[] calldata _labels, bytes32 _parentNamehash) external;
 
     event RegisterSld(bytes32 indexed _tldNamehash, bytes32 _secret, string _label, uint256 _expiry);
 

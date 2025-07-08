@@ -49,6 +49,10 @@ contract MockHandshakeTld is IHandshakeTld, ERC721 {
         external
     {}
 
+    function burnTld(uint256 _tokenId) external {
+        _burn(_tokenId);
+    }
+
     function ownerOf(uint256 _tokenId) public view override(ERC721, IHandshakeTld) returns (address) {
         return ERC721.ownerOf(_tokenId);
     }
